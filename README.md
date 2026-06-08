@@ -37,6 +37,32 @@ http://192.168.0.40:8001/
 
 Modtageren skal vaere paa samme WiFi/netvaerk, og din computer skal vaere taendt med serveren kørende. Hvis linket ikke aabner, kan macOS firewall skulle tillade indgaaende forbindelser til Python.
 
+## Automatisk opdatering
+
+Branchen indeholder et GitHub Actions workflow, `.github/workflows/source-check.yml`, som kan koere automatisk hver mandag morgen eller startes manuelt fra GitHub under `Actions`.
+
+Workflowet:
+
+- laeser `data/fonde_seed.csv`
+- tjekker `website`, `application_url` og `source_url` for hver fond
+- skriver en rapport i `reports/source-check-report.json`
+- opretter en pull request, hvis der er ændringer
+
+Det er vigtigt: workflowet garanterer ikke, at alle fondsoplysninger er fagligt korrekte. Det kan opdage doede links, flyttede sider og records der skal gennemgaas. Endelige ændringer i støtteområder, frister og ansøgningskriterier bør stadig verificeres på fondens egen hjemmeside. Derfor ændrer standard-workflowet ikke CSV'en automatisk.
+
+Koer samme tjek lokalt:
+
+```bash
+node scripts/check_foundation_sources.mjs --dry-run
+```
+
+Hvis du efter manuel vurdering vil opdatere `last_checked` og markere fejlede kilder som `needs_update`, kan du koere:
+
+```bash
+node scripts/check_foundation_sources.mjs --update-csv
+sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
+```
+
 ## Eksempelsoegninger
 
 Find fonde inden for kultur:
