@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dansk Fondsdatabase</title>
+    <link rel="stylesheet" href="frontend/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Dansk Fondsdatabase</p>
+        <h1>Fonde i Danmark</h1>
+      </div>
+      <div class="top-actions" aria-label="Datahandlinger">
+        <a class="icon-link" href="data/fonde_seed.csv" download title="Download CSV" aria-label="Download CSV">
+          <span aria-hidden="true">CSV</span>
+        </a>
+        <a class="icon-link" href="outputs/dansk_fonds_database.xlsx" download title="Download Excel" aria-label="Download Excel">
+          <span aria-hidden="true">XLS</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="summary-band" aria-label="Overblik">
+        <div class="metric">
+          <span class="metric-label">Fonde</span>
+          <strong id="totalCount">0</strong>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Kilde-tjekket</span>
+          <strong id="checkedCount">0</strong>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Skal verificeres</span>
+          <strong id="verifyCount">0</strong>
+        </div>
+        <div class="metric wide">
+          <span class="metric-label">Hyppigste by</span>
+          <strong id="topCity">-</strong>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="Søgning og filtre">
+        <label class="search-box">
+          <span>Søg</span>
+          <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
+        </label>
+        <label>
+          <span>Støtteområde</span>
+          <select id="areaFilter">
+            <option value="">Alle områder</option>
+          </select>
+        </label>
+        <label>
+          <span>Status</span>
+          <select id="statusFilter">
+            <option value="">Alle statusser</option>
+            <option value="source_checked">Kilde-tjekket</option>
+            <option value="to_verify">Skal verificeres</option>
+            <option value="needs_update">Skal opdateres</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="content-grid">
+        <aside class="insights" aria-label="Datavisualisering">
+          <div class="section-heading">
+            <h2>Fordeling</h2>
+            <span id="visibleCount">0 vist</span>
+          </div>
+          <div id="areaChart" class="bar-chart" aria-label="Top støtteområder"></div>
+          <div class="status-strip" aria-label="Verifikationsstatus">
+            <div>
+              <span>Kilde-tjekket</span>
+              <meter id="checkedMeter" min="0" max="100" value="0"></meter>
+            </div>
+            <div>
+              <span>Skal verificeres</span>
+              <meter id="verifyMeter" min="0" max="100" value="0"></meter>
+            </div>
+          </div>
+        </aside>
+
+        <section class="results-panel" aria-label="Fondsliste">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fond</th>
+                  <th>Støtteområder</th>
+                  <th>Fristmodel</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="foundationRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="detail-panel" aria-label="Detaljer">
+          <div id="detailEmpty" class="empty-state">Vælg en fond i listen</div>
+          <article id="detailContent" class="detail-content" hidden></article>
+        </aside>
+      </section>
+    </main>
+
+    <script src="frontend/app.js" defer></script>
+  </body>
+</html>
