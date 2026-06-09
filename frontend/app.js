@@ -19,6 +19,8 @@ const els = {
   searchInput: document.querySelector("#searchInput"),
   areaFilter: document.querySelector("#areaFilter"),
   statusFilter: document.querySelector("#statusFilter"),
+  updateButton: document.querySelector("#updateButton"),
+  updateStatus: document.querySelector("#updateStatus"),
 };
 
 function parseCsv(text) {
@@ -102,6 +104,12 @@ function renderSummary() {
   els.checkedCount.textContent = statusCounts.get("source_checked") || 0;
   els.verifyCount.textContent = statusCounts.get("to_verify") || 0;
   els.topCity.textContent = cityCount ? `${city} (${cityCount})` : "-";
+}
+
+function setUpdateStatus(message, isError = false) {
+  els.updateStatus.hidden = false;
+  els.updateStatus.classList.toggle("error", isError);
+  els.updateStatus.textContent = message;
 }
 
 function renderAreaOptions() {
@@ -254,7 +262,7 @@ function selectFoundation(id) {
 }
 
 async function init() {
-  const response = await fetch("data/fonde_seed.csv");
+  const response = await fetch(`data/fonde_seed.csv?ts=${Date.now()}`);
   const csvText = await response.text();
   state.foundations = csvToObjects(csvText);
   state.filtered = [...state.foundations];
@@ -279,6 +287,33 @@ async function init() {
     if (row) {
       event.preventDefault();
       selectFoundation(row.dataset.id);
+    }
+  });
+
+  els.updateButton.addEventListener("click", async () => {
+    els.updateButton.disabled = true;
+    setUpdateStatus("Opdaterer kilder og database...");
+
+    try {
+      const response = await fetch("/api/update-sources", { method: "POST" });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || "Opdatering fejlede");
+      }
+
+      state.foundations = csvToObjects(await (await fetch(`data/fonde_seed.csv?ts=${Date.now()}`)).text());
+      state.filtered = [...state.foundations];
+      renderSummary();
+      applyFilters();
+
+      setUpdateStatus(
+        `Opdateret. ${payload.report.total_foundations} fonde tjekket, ${payload.report.failed_foundations} kræver gennemgang.`,
+      );
+    } catch (error) {
+      setUpdateStatus(`Opdatering fejlede: ${error.message}`, true);
+    } finally {
+      els.updateButton.disabled = false;
     }
   });
 }

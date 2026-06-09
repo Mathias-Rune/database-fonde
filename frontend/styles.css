@@ -84,6 +84,11 @@ h2 {
   text-decoration: none;
 }
 
+.action-button {
+  cursor: pointer;
+  font: inherit;
+}
+
 .icon-link:hover,
 .icon-link:focus-visible {
   border-color: var(--accent);
@@ -103,6 +108,23 @@ h2 {
   border-radius: 8px;
   background: var(--line);
   box-shadow: var(--shadow);
+}
+
+.update-status {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+
+.update-status.error {
+  border-left-color: #b42318;
 }
 
 .metric {

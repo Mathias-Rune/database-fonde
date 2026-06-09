@@ -20,13 +20,13 @@ sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
 Kun paa din egen computer:
 
 ```bash
-python3 -m http.server 8000 --bind 127.0.0.1
+node server.mjs
 ```
 
 Del paa samme lokale netvaerk:
 
 ```bash
-python3 -m http.server 8001 --bind 0.0.0.0
+HOST=0.0.0.0 PORT=8001 node server.mjs
 ```
 
 Send derefter linket med din computers lokale IP-adresse, for eksempel:
@@ -62,6 +62,8 @@ Hvis du efter manuel vurdering vil opdatere `last_checked` og markere fejlede ki
 node scripts/check_foundation_sources.mjs --update-csv
 sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
 ```
+
+Frontendens `OPD`-knap koerer samme opdatering via den lokale `server.mjs`, genbygger SQLite-databasen og genindlaeser visningen.
 
 ## Eksempelsoegninger
 
