@@ -17,6 +17,12 @@ sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
 
 ## Start frontend
 
+Nemmest paa Mac:
+
+Dobbelklik paa `Start fondsdatabase.command`.
+
+Hvis databasen skal deles paa samme WiFi/netvaerk, dobbelklik paa `Start fondsdatabase netvaerk.command`.
+
 Kun paa din egen computer:
 
 ```bash
