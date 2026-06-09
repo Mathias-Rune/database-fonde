@@ -110,6 +110,34 @@
           <article id="detailContent" class="detail-content" hidden></article>
         </aside>
       </section>
+
+      <section class="scrape-admin" aria-label="Scraping og validering">
+        <div class="scrape-header">
+          <div>
+            <p class="eyebrow dark">Webscraping</p>
+            <h2>Overvågning og manuel godkendelse</h2>
+          </div>
+          <div class="scrape-actions">
+            <button id="scrapeTestButton" class="secondary-control" type="button">Test 5 fonde</button>
+            <button id="scrapeRunButton" class="secondary-control primary-control" type="button">Kør scraper</button>
+          </div>
+        </div>
+        <p id="scrapeStatus" class="scrape-status" aria-live="polite">Ingen scraper-kørsel i denne session.</p>
+        <div class="scrape-table-wrap">
+          <table class="scrape-table">
+            <thead>
+              <tr>
+                <th>Fond</th>
+                <th>Felt</th>
+                <th>Ny værdi</th>
+                <th>Vurdering</th>
+                <th>Handling</th>
+              </tr>
+            </thead>
+            <tbody id="scrapeChangeRows"></tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
     <script src="frontend/app.js" defer></script>

@@ -71,6 +71,44 @@ sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
 
 Frontendens `OPD`-knap koerer samme opdatering via den lokale `server.mjs`, genbygger SQLite-databasen og genindlaeser visningen.
 
+## Fond-scraping
+
+Branchen `webscraping` indeholder en første version af et fond-scraping værktøj.
+
+Scraperen:
+
+- opretter scraping-tabeller fra `database/scraping_schema.sql`
+- henter HTML fra hver fonds `application_url`, `source_url` og `website`
+- gemmer snapshots og content hashes
+- udtrækker fire felter: ansøgningsfrister, beløbsrammer, kontaktoplysninger samt formål/kriterier
+- sammenligner nye udtræk med senest godkendte værdier
+- auto-godkender kun lavrisiko/høj-confidence ændringer
+- markerer usikre eller væsentlige ændringer til manuel gennemgang
+- gemmer versionshistorik i `foundation_field_changes`
+- opretter et notifikationssammendrag i `scrape_notifications`
+
+Kør scraperen lokalt:
+
+```bash
+node scripts/fond_scraper.mjs
+```
+
+Test kun de første fem fonde:
+
+```bash
+SCRAPER_LIMIT=5 node scripts/fond_scraper.mjs
+```
+
+I appen findes der et `Webscraping`-panel, hvor du kan køre scraperen og godkende eller afvise ændringer manuelt.
+
+E-mail-notifikationer kan sendes fra køen med:
+
+```bash
+NOTIFICATION_EMAIL_TO=modtager@example.com node scripts/send_scrape_notifications.mjs
+```
+
+Det kræver at miljøet har `sendmail` eller at `SENDMAIL_PATH` peger på en kompatibel mail-kommando.
+
 ## Eksempelsoegninger
 
 Find fonde inden for kultur:

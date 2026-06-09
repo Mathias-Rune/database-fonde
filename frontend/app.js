@@ -21,6 +21,10 @@ const els = {
   statusFilter: document.querySelector("#statusFilter"),
   updateButton: document.querySelector("#updateButton"),
   updateStatus: document.querySelector("#updateStatus"),
+  scrapeRunButton: document.querySelector("#scrapeRunButton"),
+  scrapeTestButton: document.querySelector("#scrapeTestButton"),
+  scrapeStatus: document.querySelector("#scrapeStatus"),
+  scrapeChangeRows: document.querySelector("#scrapeChangeRows"),
 };
 
 function parseCsv(text) {
@@ -83,6 +87,23 @@ function statusLabel(status) {
   }[status] || status;
 }
 
+function fieldLabel(fieldName) {
+  return {
+    deadlines: "Ansøgningsfrister",
+    funding_amounts: "Beløbsrammer",
+    contact_info: "Kontakt",
+    purpose_criteria: "Formål og kriterier",
+  }[fieldName] || fieldName;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
 function countBy(items, getter) {
   return items.reduce((counts, item) => {
     const key = getter(item) || "Ukendt";
@@ -110,6 +131,11 @@ function setUpdateStatus(message, isError = false) {
   els.updateStatus.hidden = false;
   els.updateStatus.classList.toggle("error", isError);
   els.updateStatus.textContent = message;
+}
+
+function setScrapeStatus(message, isError = false) {
+  els.scrapeStatus.textContent = message;
+  els.scrapeStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
 }
 
 function renderAreaOptions() {
@@ -261,6 +287,63 @@ function selectFoundation(id) {
   renderDetail();
 }
 
+async function loadScrapeChanges() {
+  const response = await fetch("/api/scrape/changes");
+  const payload = await response.json();
+  if (!response.ok || !payload.ok) throw new Error(payload.message || "Kunne ikke hente ændringer");
+
+  els.scrapeChangeRows.replaceChildren();
+  if (!payload.changes.length) {
+    els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Ingen ændringer til manuel gennemgang.</td></tr>`;
+    return;
+  }
+
+  payload.changes.forEach((change) => {
+    const tr = document.createElement("tr");
+    tr.dataset.changeId = change.change_id;
+    tr.innerHTML = `
+      <td class="name-cell"><strong>${escapeHtml(change.foundation_name)}</strong><span>${escapeHtml(change.detected_at)}</span></td>
+      <td>${escapeHtml(fieldLabel(change.field_name))}</td>
+      <td><div class="value-preview">${escapeHtml(change.new_value)}</div></td>
+      <td><span class="status ${change.significance === "high" ? "needs_update" : "to_verify"}">${escapeHtml(change.significance)} · ${Math.round(change.confidence * 100)}%</span></td>
+      <td>
+        <div class="review-actions">
+          <button class="mini-button approve" type="button" data-action="approve">Godkend</button>
+          <button class="mini-button reject" type="button" data-action="reject">Afvis</button>
+        </div>
+      </td>
+    `;
+    els.scrapeChangeRows.append(tr);
+  });
+}
+
+async function runScraper({ limit = 0 } = {}) {
+  els.scrapeRunButton.disabled = true;
+  els.scrapeTestButton.disabled = true;
+  setScrapeStatus(limit ? "Tester scraper på 5 fonde..." : "Kører scraper på alle fonde...");
+
+  try {
+    const response = await fetch("/api/scrape/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ limit }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) throw new Error(payload.message || "Scraper-kørsel fejlede");
+
+    const report = payload.report;
+    setScrapeStatus(
+      `Scraper færdig. ${report.targets_checked} fonde tjekket, ${report.changes_detected} mulige ændringer, ${report.manual_review} kræver gennemgang.`,
+    );
+    await loadScrapeChanges();
+  } catch (error) {
+    setScrapeStatus(`Scraper fejlede: ${error.message}`, true);
+  } finally {
+    els.scrapeRunButton.disabled = false;
+    els.scrapeTestButton.disabled = false;
+  }
+}
+
 async function init() {
   const response = await fetch(`data/fonde_seed.csv?ts=${Date.now()}`);
   const csvText = await response.text();
@@ -315,6 +398,35 @@ async function init() {
     } finally {
       els.updateButton.disabled = false;
     }
+  });
+
+  els.scrapeRunButton.addEventListener("click", () => runScraper());
+  els.scrapeTestButton.addEventListener("click", () => runScraper({ limit: 5 }));
+
+  els.scrapeChangeRows.addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-action]");
+    const row = event.target.closest("tr[data-change-id]");
+    if (!button || !row) return;
+
+    button.disabled = true;
+    try {
+      const response = await fetch("/api/scrape/changes/decide", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ change_id: row.dataset.changeId, decision: button.dataset.action }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.message || "Beslutning fejlede");
+      await loadScrapeChanges();
+      setScrapeStatus(button.dataset.action === "approve" ? "Ændringen blev godkendt." : "Ændringen blev afvist.");
+    } catch (error) {
+      setScrapeStatus(`Beslutning fejlede: ${error.message}`, true);
+      button.disabled = false;
+    }
+  });
+
+  loadScrapeChanges().catch(() => {
+    els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;
   });
 }
 
