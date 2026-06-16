@@ -1,0 +1,49 @@
+name: Source check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-sources:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check source URLs
+        run: node scripts/check_foundation_sources.mjs
+
+      - name: Detect changes
+        id: changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automated/source-check
+          delete-branch: true
+          title: "Automatisk kilde-tjek"
+          commit-message: "Update foundation source check data"
+          body: |
+            Automatisk kilde-tjek har opdateret rapporten i `reports/source-check-report.json`.
+
+            Gennemgå især records med fejlede `website`, `application_url` eller `source_url`.
+            Scriptet ændrer ikke CSV/databasen automatisk, fordi støtteområder, frister og kriterier stadig skal verificeres mod fondens egen hjemmeside.
