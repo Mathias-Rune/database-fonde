@@ -54,10 +54,34 @@
           <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
         </label>
         <label>
-          <span>Støtteområde</span>
-          <select id="areaFilter">
-            <option value="">Alle områder</option>
+          <span>Lokation</span>
+          <select id="locationFilter">
+            <option value="">Alle lokationer</option>
           </select>
+        </label>
+        <label>
+          <span>Kategori</span>
+          <select id="categoryFilter">
+            <option value="">Alle kategorier</option>
+          </select>
+        </label>
+        <label>
+          <span>Beløb</span>
+          <select id="amountFilter">
+            <option value="">Alle beløb</option>
+            <option value="under-100000">Under 100.000 kr.</option>
+            <option value="100000-500000">100.000-500.000 kr.</option>
+            <option value="500000-1000000">500.000-1 mio. kr.</option>
+            <option value="over-1000000">Over 1 mio. kr.</option>
+          </select>
+        </label>
+        <label>
+          <span>Min. beløb</span>
+          <input id="amountMinInput" type="number" min="0" step="10000" placeholder="fx 250000" inputmode="numeric" />
+        </label>
+        <label>
+          <span>Maks. beløb</span>
+          <input id="amountMaxInput" type="number" min="0" step="10000" placeholder="fx 1000000" inputmode="numeric" />
         </label>
         <label>
           <span>Status</span>
@@ -95,7 +119,9 @@
               <thead>
                 <tr>
                   <th>Fond</th>
+                  <th>Lokation</th>
                   <th>Støtteområder</th>
+                  <th>Beløb</th>
                   <th>Fristmodel</th>
                   <th>Status</th>
                 </tr>

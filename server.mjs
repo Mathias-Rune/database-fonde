@@ -19,6 +19,70 @@ const mimeTypes = {
   ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 };
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      field += '"';
+      index += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(field);
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(field);
+      if (row.some((value) => value.length > 0)) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function csvEscape(value) {
+  const stringValue = String(value ?? "");
+  if (/[",\n\r]/.test(stringValue)) {
+    return `"${stringValue.replaceAll('"', '""')}"`;
+  }
+  return stringValue;
+}
+
+function toCsv(headers, records) {
+  const lines = [headers.map(csvEscape).join(",")];
+  records.forEach((record) => {
+    lines.push(headers.map((header) => csvEscape(record[header])).join(","));
+  });
+  return `${lines.join("\n")}\n`;
+}
+
+function csvToObjects(text) {
+  const rows = parseCsv(text);
+  const headers = rows.shift();
+  return {
+    headers,
+    records: rows.map((row) =>
+      Object.fromEntries(headers.map((header, index) => [header, row[index] || ""])),
+    ),
+  };
+}
+
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
@@ -121,6 +185,49 @@ async function listScrapeChanges() {
      LIMIT 100;`,
     { cwd: rootDir },
   );
+}
+
+async function listFoundationExtractedFields() {
+  await ensureScrapingSchema();
+  const dbPath = path.join(rootDir, "outputs", "fonds_database.sqlite");
+  return runSqlite(
+    dbPath,
+    `SELECT foundation_id, field_name, field_value, source_url, confidence, updated_at
+     FROM foundation_extracted_fields
+     ORDER BY foundation_id, field_name;`,
+    { cwd: rootDir },
+  );
+}
+
+async function updateFoundationVerification(foundationId, status) {
+  const allowedStatuses = new Set(["source_checked", "to_verify", "needs_update"]);
+  if (!foundationId || !allowedStatuses.has(status)) {
+    return { ok: false, message: "Ugyldig fond eller status" };
+  }
+
+  const csvPath = path.join(rootDir, "data", "fonde_seed.csv");
+  const csvText = await fs.readFile(csvPath, "utf8");
+  const { headers, records } = csvToObjects(csvText);
+  const foundation = records.find((record) => record.foundation_id === foundationId);
+
+  if (!foundation) {
+    return { ok: false, message: "Fonden blev ikke fundet" };
+  }
+
+  foundation.verification_status = status;
+  foundation.last_checked = new Date().toISOString().slice(0, 10);
+  await fs.writeFile(csvPath, toCsv(headers, records));
+
+  await runSqlite(
+    path.join(rootDir, "outputs", "fonds_database.sqlite"),
+    `UPDATE foundations
+     SET verification_status = ${sqlString(foundation.verification_status)},
+         last_checked = ${sqlString(foundation.last_checked)}
+     WHERE foundation_id = ${sqlString(foundation.foundation_id)};`,
+    { cwd: rootDir },
+  );
+
+  return { ok: true, foundation };
 }
 
 async function decideScrapeChange(changeId, decision) {
@@ -237,6 +344,26 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "GET" && requestUrl.pathname === "/api/scrape/changes") {
     try {
       sendJson(response, 200, { ok: true, changes: await listScrapeChanges() });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/foundations/extracted-fields") {
+    try {
+      sendJson(response, 200, { ok: true, fields: await listFoundationExtractedFields() });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/foundations/verification") {
+    try {
+      const body = await readJsonBody(request);
+      const result = await updateFoundationVerification(body.foundation_id, body.status);
+      sendJson(response, result.ok ? 200 : 400, result);
     } catch (error) {
       sendJson(response, 500, { ok: false, message: error.message });
     }

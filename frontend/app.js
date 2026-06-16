@@ -1,6 +1,7 @@
 const state = {
   foundations: [],
   filtered: [],
+  extractedFields: new Map(),
   selectedId: null,
 };
 
@@ -17,7 +18,11 @@ const els = {
   detailEmpty: document.querySelector("#detailEmpty"),
   detailContent: document.querySelector("#detailContent"),
   searchInput: document.querySelector("#searchInput"),
-  areaFilter: document.querySelector("#areaFilter"),
+  locationFilter: document.querySelector("#locationFilter"),
+  categoryFilter: document.querySelector("#categoryFilter"),
+  amountFilter: document.querySelector("#amountFilter"),
+  amountMinInput: document.querySelector("#amountMinInput"),
+  amountMaxInput: document.querySelector("#amountMaxInput"),
   statusFilter: document.querySelector("#statusFilter"),
   updateButton: document.querySelector("#updateButton"),
   updateStatus: document.querySelector("#updateStatus"),
@@ -25,6 +30,16 @@ const els = {
   scrapeTestButton: document.querySelector("#scrapeTestButton"),
   scrapeStatus: document.querySelector("#scrapeStatus"),
   scrapeChangeRows: document.querySelector("#scrapeChangeRows"),
+};
+
+const locationMap = {
+  Aalborg: { municipality: "Aalborg Kommune", region: "Region Nordjylland" },
+  Billund: { municipality: "Billund Kommune", region: "Region Syddanmark" },
+  Hellerup: { municipality: "Gentofte Kommune", region: "Region Hovedstaden" },
+  "Kgs. Lyngby": { municipality: "Lyngby-Taarbæk Kommune", region: "Region Hovedstaden" },
+  København: { municipality: "Københavns Kommune", region: "Region Hovedstaden" },
+  Smørum: { municipality: "Egedal Kommune", region: "Region Hovedstaden" },
+  Søborg: { municipality: "Gladsaxe Kommune", region: "Region Hovedstaden" },
 };
 
 function parseCsv(text) {
@@ -79,12 +94,105 @@ function splitList(value) {
     .filter(Boolean);
 }
 
+function locationForFoundation(foundation) {
+  const mapped = locationMap[foundation.city] || {};
+  return {
+    city: foundation.city || "Ukendt by",
+    municipality: mapped.municipality || foundation.city || "Ukendt kommune",
+    region: mapped.region || "Ukendt region",
+  };
+}
+
+function formatDkk(value) {
+  if (!Number.isFinite(value)) return "Ukendt";
+  return `${Math.round(value).toLocaleString("da-DK")} kr.`;
+}
+
+function parseDkkAmounts(value) {
+  const text = String(value || "").toLocaleLowerCase("da");
+  const matches = [...text.matchAll(/(\d+(?:[.,]\d+)?)\s*(mio\.?|million(?:er)?|kr\.?|kroner)/g)];
+  return matches
+    .map((match) => {
+      const number = Number(match[1].replace(",", "."));
+      if (!Number.isFinite(number)) return null;
+      const unit = match[2];
+      return unit.startsWith("mio") || unit.startsWith("million") ? number * 1000000 : number;
+    })
+    .filter((amount) => Number.isFinite(amount) && amount > 0);
+}
+
+function amountProfile(foundation) {
+  const extracted = state.extractedFields.get(foundation.foundation_id) || {};
+  const amountText = [
+    foundation.average_amount_dkk,
+    foundation.amount_dkk,
+    foundation.funding_amounts,
+    foundation.funding_amount_text,
+    foundation.notes,
+    extracted.funding_amounts,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const explicitAmount = Number(foundation.average_amount_dkk || foundation.amount_dkk);
+  const amounts = Number.isFinite(explicitAmount) && explicitAmount > 0 ? [explicitAmount] : parseDkkAmounts(amountText);
+  if (!amounts.length) return { average: null, label: "Ukendt", source: extracted.funding_amounts ? "scraped" : "none" };
+  const average = amounts.reduce((sum, amount) => sum + amount, 0) / amounts.length;
+  return { average, label: formatDkk(average), source: extracted.funding_amounts ? "scraped" : "parsed" };
+}
+
+function matchesAmountRange(average, selectedRange, minValue, maxValue) {
+  if (!selectedRange && !minValue && !maxValue) return true;
+  if (!Number.isFinite(average)) return false;
+
+  const ranges = {
+    "under-100000": [0, 100000],
+    "100000-500000": [100000, 500000],
+    "500000-1000000": [500000, 1000000],
+    "over-1000000": [1000000, Infinity],
+  };
+
+  const [rangeMin, rangeMax] = ranges[selectedRange] || [0, Infinity];
+  const finalMin = Math.max(rangeMin, minValue || 0);
+  const finalMax = Math.min(rangeMax, maxValue || Infinity);
+  return average >= finalMin && average <= finalMax;
+}
+
 function statusLabel(status) {
   return {
     source_checked: "Kilde-tjekket",
     to_verify: "Skal verificeres",
     needs_update: "Skal opdateres",
   }[status] || status;
+}
+
+function verificationChecklist(foundation) {
+  if (foundation.verification_status === "source_checked") {
+    return ["Ingen aktive tjekpunkter. Fonden er markeret som kilde-tjekket."];
+  }
+
+  const tasks = [];
+  if (foundation.verification_status === "needs_update") {
+    tasks.push("Kildelink eller ansøgningsside skal åbnes og kontrolleres, fordi seneste kildetjek fandt et problem.");
+  }
+
+  if (!foundation.source_url) {
+    tasks.push("Tilføj eller bekræft en kilde-URL.");
+  } else {
+    tasks.push("Åbn kilde-linket og bekræft at data stadig matcher fondens egen side.");
+  }
+
+  if (foundation.regulator === "To verify" || foundation.legal_type?.includes("fondslignende")) {
+    tasks.push("Bekræft juridisk type og registrering.");
+  }
+
+  if (foundation.notes?.toLocaleLowerCase("da").includes("bør valideres")) {
+    tasks.push(foundation.notes);
+  } else {
+    tasks.push("Tjek støtteområder, ansøgertyper og fristmodel.");
+  }
+
+  return [...new Set(tasks)];
 }
 
 function fieldLabel(fieldName) {
@@ -102,6 +210,16 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function decodeHtmlEntities(value) {
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = String(value ?? "");
+  return textarea.value;
+}
+
+function displayScrapedText(value) {
+  return escapeHtml(decodeHtmlEntities(value));
 }
 
 function countBy(items, getter) {
@@ -138,17 +256,52 @@ function setScrapeStatus(message, isError = false) {
   els.scrapeStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
 }
 
-function renderAreaOptions() {
-  const areas = new Set();
+function isFilePreview() {
+  return window.location.protocol === "file:";
+}
+
+function redirectToLocalhost() {
+  window.location.href = "http://127.0.0.1:8010/";
+}
+
+function configureServerOnlyControls() {
+  if (!isFilePreview()) return false;
+
+  setScrapeStatus("Webscraperen kræver LocalHost. Klik på knappen for at åbne appen korrekt.", true);
+  els.scrapeTestButton.textContent = "Åbn LocalHost";
+  els.scrapeRunButton.disabled = true;
+  els.scrapeRunButton.title = "Start appen via LocalHost for at køre scraperen";
+  return true;
+}
+
+function renderFilterOptions() {
+  const categories = new Set();
+  const locations = new Map();
+
   state.foundations.forEach((foundation) => {
-    splitList(foundation.support_areas).forEach((area) => areas.add(area));
+    splitList(foundation.support_areas).forEach((area) => categories.add(area));
+    const location = locationForFoundation(foundation);
+    [
+      [`region:${location.region}`, `Region: ${location.region}`],
+      [`municipality:${location.municipality}`, `Kommune: ${location.municipality}`],
+      [`city:${location.city}`, `By: ${location.city}`],
+    ].forEach(([value, label]) => locations.set(value, label));
   });
 
-  [...areas].sort((a, b) => a.localeCompare(b, "da")).forEach((area) => {
+  [...locations.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], "da"))
+    .forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      els.locationFilter.append(option);
+    });
+
+  [...categories].sort((a, b) => a.localeCompare(b, "da")).forEach((area) => {
     const option = document.createElement("option");
     option.value = area;
     option.textContent = area;
-    els.areaFilter.append(option);
+    els.categoryFilter.append(option);
   });
 }
 
@@ -189,6 +342,8 @@ function renderRows() {
     tr.tabIndex = 0;
     tr.className = foundation.foundation_id === state.selectedId ? "active" : "";
     tr.dataset.id = foundation.foundation_id;
+    const location = locationForFoundation(foundation);
+    const amount = amountProfile(foundation);
 
     const areas = splitList(foundation.support_areas)
       .slice(0, 4)
@@ -196,8 +351,10 @@ function renderRows() {
       .join("");
 
     tr.innerHTML = `
-      <td class="name-cell"><strong>${foundation.name}</strong><span>${foundation.city || "Ukendt by"}</span></td>
+      <td class="name-cell"><strong>${foundation.name}</strong><span>${foundation.legal_type || "Fond"}</span></td>
+      <td class="name-cell"><strong>${location.municipality}</strong><span>${location.region}</span></td>
       <td><div class="pill-list">${areas}</div></td>
+      <td>${amount.label}</td>
       <td>${foundation.deadline_model || "-"}</td>
       <td><span class="status ${foundation.verification_status}">${statusLabel(foundation.verification_status)}</span></td>
     `;
@@ -217,47 +374,73 @@ function renderDetail() {
 
   els.detailEmpty.hidden = true;
   els.detailContent.hidden = false;
+  const location = locationForFoundation(foundation);
+  const amount = amountProfile(foundation);
+  const checklist = verificationChecklist(foundation);
+  const canVerify = foundation.verification_status !== "source_checked" && !isFilePreview();
   els.detailContent.innerHTML = `
     <div class="detail-title">
-      <h2>${foundation.name}</h2>
-      <p>${foundation.legal_type || "Fond"} · ${foundation.city || "Danmark"}</p>
+      <h2>${escapeHtml(foundation.name)}</h2>
+      <p>${escapeHtml(foundation.legal_type || "Fond")} · ${escapeHtml(location.municipality)} · ${escapeHtml(location.region)}</p>
     </div>
     <div class="pill-list">
-      ${splitList(foundation.support_areas).map((area) => `<span class="pill">${area}</span>`).join("")}
+      ${splitList(foundation.support_areas).map((area) => `<span class="pill">${escapeHtml(area)}</span>`).join("")}
     </div>
     <div class="detail-block">
       <h3>Ansøgere</h3>
-      <p>${foundation.applicant_types || "-"}</p>
+      <p>${escapeHtml(foundation.applicant_types || "-")}</p>
     </div>
     <div class="detail-block">
       <h3>Fristmodel</h3>
-      <p>${foundation.deadline_model || "-"}</p>
+      <p>${escapeHtml(foundation.deadline_model || "-")}</p>
+    </div>
+    <div class="detail-block">
+      <h3>Beløb</h3>
+      <p>${escapeHtml(amount.label)}${amount.source === "scraped" ? " · fra scraper" : ""}</p>
     </div>
     <div class="detail-block">
       <h3>Note</h3>
-      <p>${foundation.notes || "-"}</p>
+      <p>${escapeHtml(foundation.notes || "-")}</p>
     </div>
-    <div class="detail-block">
-      <h3>Datastatus</h3>
-      <p>${statusLabel(foundation.verification_status)} · tjekket ${foundation.last_checked || "-"}</p>
+    <div class="verification-panel ${foundation.verification_status}">
+      <div>
+        <h3>Verificering</h3>
+        <p><span class="status ${foundation.verification_status}">${escapeHtml(statusLabel(foundation.verification_status))}</span> · tjekket ${escapeHtml(foundation.last_checked || "-")}</p>
+      </div>
+      <ul>
+        ${checklist.map((task) => `<li>${escapeHtml(task)}</li>`).join("")}
+      </ul>
+      ${
+        canVerify
+          ? `<button class="detail-action" type="button" data-verify-foundation="${escapeHtml(foundation.foundation_id)}">Markér som verificeret</button>`
+          : ""
+      }
     </div>
     <div class="detail-links">
-      <a class="button-link" href="${foundation.application_url}" target="_blank" rel="noreferrer">Ansøgning</a>
-      <a class="button-link secondary" href="${foundation.website}" target="_blank" rel="noreferrer">Website</a>
-      <a class="button-link secondary" href="${foundation.source_url}" target="_blank" rel="noreferrer">Kilde</a>
+      <a class="button-link" href="${escapeHtml(foundation.application_url)}" target="_blank" rel="noreferrer">Ansøgning</a>
+      <a class="button-link secondary" href="${escapeHtml(foundation.website)}" target="_blank" rel="noreferrer">Website</a>
+      <a class="button-link secondary" href="${escapeHtml(foundation.source_url)}" target="_blank" rel="noreferrer">Kilde</a>
     </div>
   `;
 }
 
 function applyFilters() {
   const query = els.searchInput.value.trim().toLocaleLowerCase("da");
-  const area = els.areaFilter.value;
+  const locationValue = els.locationFilter.value;
+  const category = els.categoryFilter.value;
+  const amountRange = els.amountFilter.value;
+  const amountMin = Number(els.amountMinInput.value || 0);
+  const amountMax = Number(els.amountMaxInput.value || 0);
   const status = els.statusFilter.value;
 
   state.filtered = state.foundations.filter((foundation) => {
+    const location = locationForFoundation(foundation);
+    const amount = amountProfile(foundation);
     const haystack = [
       foundation.name,
       foundation.city,
+      location.municipality,
+      location.region,
       foundation.support_areas,
       foundation.applicant_types,
       foundation.deadline_model,
@@ -267,9 +450,15 @@ function applyFilters() {
       .toLocaleLowerCase("da");
 
     const matchesQuery = !query || haystack.includes(query);
-    const matchesArea = !area || splitList(foundation.support_areas).includes(area);
+    const matchesLocation =
+      !locationValue ||
+      locationValue === `region:${location.region}` ||
+      locationValue === `municipality:${location.municipality}` ||
+      locationValue === `city:${location.city}`;
+    const matchesCategory = !category || splitList(foundation.support_areas).includes(category);
+    const matchesAmount = matchesAmountRange(amount.average, amountRange, amountMin, amountMax);
     const matchesStatus = !status || foundation.verification_status === status;
-    return matchesQuery && matchesArea && matchesStatus;
+    return matchesQuery && matchesLocation && matchesCategory && matchesAmount && matchesStatus;
   });
 
   if (!state.filtered.some((foundation) => foundation.foundation_id === state.selectedId)) {
@@ -287,7 +476,31 @@ function selectFoundation(id) {
   renderDetail();
 }
 
+async function loadExtractedFields() {
+  if (isFilePreview()) return;
+
+  try {
+    const response = await fetch("/api/foundations/extracted-fields");
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) return;
+
+    state.extractedFields = payload.fields.reduce((map, field) => {
+      const current = map.get(field.foundation_id) || {};
+      current[field.field_name] = field.field_value;
+      map.set(field.foundation_id, current);
+      return map;
+    }, new Map());
+  } catch {
+    state.extractedFields = new Map();
+  }
+}
+
 async function loadScrapeChanges() {
+  if (isFilePreview()) {
+    els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Åbn appen via LocalHost for at bruge webscraperen.</td></tr>`;
+    return;
+  }
+
   const response = await fetch("/api/scrape/changes");
   const payload = await response.json();
   if (!response.ok || !payload.ok) throw new Error(payload.message || "Kunne ikke hente ændringer");
@@ -304,7 +517,7 @@ async function loadScrapeChanges() {
     tr.innerHTML = `
       <td class="name-cell"><strong>${escapeHtml(change.foundation_name)}</strong><span>${escapeHtml(change.detected_at)}</span></td>
       <td>${escapeHtml(fieldLabel(change.field_name))}</td>
-      <td><div class="value-preview">${escapeHtml(change.new_value)}</div></td>
+      <td><div class="value-preview">${displayScrapedText(change.new_value)}</div></td>
       <td><span class="status ${change.significance === "high" ? "needs_update" : "to_verify"}">${escapeHtml(change.significance)} · ${Math.round(change.confidence * 100)}%</span></td>
       <td>
         <div class="review-actions">
@@ -318,6 +531,11 @@ async function loadScrapeChanges() {
 }
 
 async function runScraper({ limit = 0 } = {}) {
+  if (isFilePreview()) {
+    redirectToLocalhost();
+    return;
+  }
+
   els.scrapeRunButton.disabled = true;
   els.scrapeTestButton.disabled = true;
   setScrapeStatus(limit ? "Tester scraper på 5 fonde..." : "Kører scraper på alle fonde...");
@@ -335,6 +553,8 @@ async function runScraper({ limit = 0 } = {}) {
     setScrapeStatus(
       `Scraper færdig. ${report.targets_checked} fonde tjekket, ${report.changes_detected} mulige ændringer, ${report.manual_review} kræver gennemgang.`,
     );
+    await loadExtractedFields();
+    applyFilters();
     await loadScrapeChanges();
   } catch (error) {
     setScrapeStatus(`Scraper fejlede: ${error.message}`, true);
@@ -344,18 +564,58 @@ async function runScraper({ limit = 0 } = {}) {
   }
 }
 
+async function markFoundationVerified(foundationId, button) {
+  if (isFilePreview()) {
+    redirectToLocalhost();
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Gemmer...";
+
+  try {
+    const response = await fetch("/api/foundations/verification", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ foundation_id: foundationId, status: "source_checked" }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) throw new Error(payload.message || "Kunne ikke gemme verificering");
+
+    const index = state.foundations.findIndex((foundation) => foundation.foundation_id === foundationId);
+    if (index >= 0) state.foundations[index] = payload.foundation;
+    renderSummary();
+    applyFilters();
+    setUpdateStatus(`${payload.foundation.name} er markeret som kilde-tjekket.`);
+  } catch (error) {
+    setUpdateStatus(`Verificering fejlede: ${error.message}`, true);
+    button.disabled = false;
+    button.textContent = "Markér som verificeret";
+  }
+}
+
 async function init() {
   const response = await fetch(`data/fonde_seed.csv?ts=${Date.now()}`);
   const csvText = await response.text();
   state.foundations = csvToObjects(csvText);
+  const filePreviewMode = configureServerOnlyControls();
+  await loadExtractedFields();
   state.filtered = [...state.foundations];
   state.selectedId = state.foundations[0]?.foundation_id || null;
 
   renderSummary();
-  renderAreaOptions();
+  renderFilterOptions();
   applyFilters();
 
-  [els.searchInput, els.areaFilter, els.statusFilter].forEach((control) => {
+  [
+    els.searchInput,
+    els.locationFilter,
+    els.categoryFilter,
+    els.amountFilter,
+    els.amountMinInput,
+    els.amountMaxInput,
+    els.statusFilter,
+  ].forEach((control) => {
     control.addEventListener("input", applyFilters);
   });
 
@@ -371,6 +631,12 @@ async function init() {
       event.preventDefault();
       selectFoundation(row.dataset.id);
     }
+  });
+
+  els.detailContent.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-verify-foundation]");
+    if (!button) return;
+    markFoundationVerified(button.dataset.verifyFoundation, button);
   });
 
   els.updateButton.addEventListener("click", async () => {
@@ -425,9 +691,13 @@ async function init() {
     }
   });
 
-  loadScrapeChanges().catch(() => {
-    els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;
-  });
+  if (filePreviewMode) {
+    loadScrapeChanges();
+  } else {
+    loadScrapeChanges().catch(() => {
+      els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;
+    });
+  }
 }
 
 init().catch((error) => {

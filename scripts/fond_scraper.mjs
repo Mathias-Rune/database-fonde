@@ -26,6 +26,8 @@ function normalizeWhitespace(value) {
 
 function decodeHtml(value) {
   return String(value || "")
+    .replace(/&#x([0-9a-f]+);?/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&#(\d+);?/g, (_, code) => String.fromCodePoint(Number.parseInt(code, 10)))
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&aring;/g, "å")
