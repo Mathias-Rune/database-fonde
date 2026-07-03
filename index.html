@@ -7,15 +7,18 @@
     <link rel="stylesheet" href="frontend/styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#resultsTitle">Spring til fondslisten</a>
+    <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
     <header class="topbar">
-      <div>
+      <div class="brand-mark" aria-hidden="true">DF</div>
+      <div class="hero-copy">
         <p class="eyebrow">Fonde i Danmark</p>
         <h1>Dansk Fondsdatabase</h1>
-        <p class="subtitle">Søg, filtrér og kvalitetstjek fondsdata fra ét samlet arbejdsbord.</p>
+        <p class="subtitle">Find relevante fonde, vurder datakvalitet og gennemgå kildeændringer i et samlet arbejdsbord.</p>
       </div>
       <div class="top-actions" aria-label="Datahandlinger">
         <button id="updateButton" class="icon-link action-button primary-action" type="button" title="Opdater kilde-tjek" aria-label="Opdater kilde-tjek">
-          <span aria-hidden="true">Opdater</span>
+          <span aria-hidden="true">Opdater kilder</span>
         </button>
         <a class="icon-link" href="data/fonde_seed.csv" download title="Download CSV" aria-label="Download CSV">
           <span aria-hidden="true">CSV</span>
@@ -48,50 +51,59 @@
 
       <section id="updateStatus" class="update-status" aria-live="polite" hidden></section>
 
-      <section class="toolbar" aria-label="Søgning og filtre">
-        <label class="search-box">
-          <span>Søg</span>
-          <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
-        </label>
-        <label>
-          <span>Lokation</span>
-          <select id="locationFilter">
-            <option value="">Alle lokationer</option>
-          </select>
-        </label>
-        <label>
-          <span>Kategori</span>
-          <select id="categoryFilter">
-            <option value="">Alle kategorier</option>
-          </select>
-        </label>
-        <label>
-          <span>Beløb</span>
-          <select id="amountFilter">
-            <option value="">Alle beløb</option>
-            <option value="under-100000">Under 100.000 kr.</option>
-            <option value="100000-500000">100.000-500.000 kr.</option>
-            <option value="500000-1000000">500.000-1 mio. kr.</option>
-            <option value="over-1000000">Over 1 mio. kr.</option>
-          </select>
-        </label>
-        <label>
-          <span>Min. beløb</span>
-          <input id="amountMinInput" type="number" min="0" step="10000" placeholder="fx 250000" inputmode="numeric" />
-        </label>
-        <label>
-          <span>Maks. beløb</span>
-          <input id="amountMaxInput" type="number" min="0" step="10000" placeholder="fx 1000000" inputmode="numeric" />
-        </label>
-        <label>
-          <span>Status</span>
-          <select id="statusFilter">
-            <option value="">Alle statusser</option>
-            <option value="source_checked">Kilde-tjekket</option>
-            <option value="to_verify">Skal verificeres</option>
-            <option value="needs_update">Skal opdateres</option>
-          </select>
-        </label>
+      <section class="toolbar" aria-labelledby="searchTitle">
+        <div class="toolbar-heading">
+          <div>
+            <p class="eyebrow dark">Søgning</p>
+            <h2 id="searchTitle">Find den rette fond</h2>
+          </div>
+          <p>Start med søgning, og indsnævr derefter med filtre.</p>
+        </div>
+        <div class="filter-grid">
+          <label class="search-box">
+            <span>Søg</span>
+            <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
+          </label>
+          <label>
+            <span>Lokation</span>
+            <select id="locationFilter">
+              <option value="">Alle lokationer</option>
+            </select>
+          </label>
+          <label>
+            <span>Kategori</span>
+            <select id="categoryFilter">
+              <option value="">Alle kategorier</option>
+            </select>
+          </label>
+          <label>
+            <span>Beløb</span>
+            <select id="amountFilter">
+              <option value="">Alle beløb</option>
+              <option value="under-100000">Under 100.000 kr.</option>
+              <option value="100000-500000">100.000-500.000 kr.</option>
+              <option value="500000-1000000">500.000-1 mio. kr.</option>
+              <option value="over-1000000">Over 1 mio. kr.</option>
+            </select>
+          </label>
+          <label>
+            <span>Min. beløb</span>
+            <input id="amountMinInput" type="number" min="0" step="10000" placeholder="fx 250000" inputmode="numeric" />
+          </label>
+          <label>
+            <span>Maks. beløb</span>
+            <input id="amountMaxInput" type="number" min="0" step="10000" placeholder="fx 1000000" inputmode="numeric" />
+          </label>
+          <label>
+            <span>Status</span>
+            <select id="statusFilter">
+              <option value="">Alle statusser</option>
+              <option value="source_checked">Kilde-tjekket</option>
+              <option value="to_verify">Skal verificeres</option>
+              <option value="needs_update">Skal opdateres</option>
+            </select>
+          </label>
+        </div>
       </section>
 
       <section class="content-grid">
@@ -113,7 +125,14 @@
           </div>
         </aside>
 
-        <section class="results-panel" aria-label="Fondsliste">
+        <section class="results-panel" aria-labelledby="resultsTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow dark">Resultater</p>
+              <h2 id="resultsTitle">Fondsliste</h2>
+            </div>
+            <span id="resultsHint">Vælg en række for detaljer</span>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -131,7 +150,13 @@
           </div>
         </section>
 
-        <aside class="detail-panel" aria-label="Detaljer">
+        <aside class="detail-panel" aria-labelledby="detailTitle">
+          <div class="panel-heading detail-heading">
+            <div>
+              <p class="eyebrow dark">Detaljer</p>
+              <h2 id="detailTitle">Fondsoverblik</h2>
+            </div>
+          </div>
           <div id="detailEmpty" class="empty-state">Vælg en fond i listen</div>
           <article id="detailContent" class="detail-content" hidden></article>
         </aside>

@@ -30,6 +30,7 @@ const els = {
   scrapeTestButton: document.querySelector("#scrapeTestButton"),
   scrapeStatus: document.querySelector("#scrapeStatus"),
   scrapeChangeRows: document.querySelector("#scrapeChangeRows"),
+  resultsHint: document.querySelector("#resultsHint"),
 };
 
 const locationMap = {
@@ -253,7 +254,12 @@ function setUpdateStatus(message, isError = false) {
 
 function setScrapeStatus(message, isError = false) {
   els.scrapeStatus.textContent = message;
+  els.scrapeStatus.classList.toggle("error", isError);
   els.scrapeStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+}
+
+function setPageLoading(isLoading) {
+  document.body.classList.toggle("is-loading", isLoading);
 }
 
 function isFilePreview() {
@@ -332,16 +338,37 @@ function renderChart() {
   els.checkedMeter.value = ((statusCounts.get("source_checked") || 0) / total) * 100;
   els.verifyMeter.value = ((statusCounts.get("to_verify") || 0) / total) * 100;
   els.visibleCount.textContent = `${state.filtered.length} vist`;
+  if (els.resultsHint) {
+    els.resultsHint.textContent = state.filtered.length
+      ? "Vælg en række for detaljer"
+      : "Juster søgning eller filtre";
+  }
 }
 
 function renderRows() {
   els.rows.replaceChildren();
+
+  if (!state.filtered.length) {
+    const tr = document.createElement("tr");
+    tr.className = "empty-row";
+    tr.innerHTML = `
+      <td colspan="6">
+        <div class="empty-table-state">
+          <strong>Ingen fonde matcher filtrene</strong>
+          <span>Prøv at fjerne et filter, udvide beløbsintervallet eller søge bredere.</span>
+        </div>
+      </td>
+    `;
+    els.rows.append(tr);
+    return;
+  }
 
   state.filtered.forEach((foundation) => {
     const tr = document.createElement("tr");
     tr.tabIndex = 0;
     tr.className = foundation.foundation_id === state.selectedId ? "active" : "";
     tr.dataset.id = foundation.foundation_id;
+    tr.setAttribute("aria-selected", foundation.foundation_id === state.selectedId ? "true" : "false");
     const location = locationForFoundation(foundation);
     const amount = amountProfile(foundation);
 
@@ -351,12 +378,12 @@ function renderRows() {
       .join("");
 
     tr.innerHTML = `
-      <td class="name-cell"><strong>${foundation.name}</strong><span>${foundation.legal_type || "Fond"}</span></td>
-      <td class="name-cell"><strong>${location.municipality}</strong><span>${location.region}</span></td>
-      <td><div class="pill-list">${areas}</div></td>
-      <td>${amount.label}</td>
-      <td>${foundation.deadline_model || "-"}</td>
-      <td><span class="status ${foundation.verification_status}">${statusLabel(foundation.verification_status)}</span></td>
+      <td class="name-cell" data-label="Fond"><strong>${foundation.name}</strong><span>${foundation.legal_type || "Fond"}</span></td>
+      <td class="name-cell" data-label="Lokation"><strong>${location.municipality}</strong><span>${location.region}</span></td>
+      <td data-label="Støtteområder"><div class="pill-list">${areas}</div></td>
+      <td data-label="Beløb">${amount.label}</td>
+      <td data-label="Fristmodel">${foundation.deadline_model || "-"}</td>
+      <td data-label="Status"><span class="status ${foundation.verification_status}">${statusLabel(foundation.verification_status)}</span></td>
     `;
 
     els.rows.append(tr);
@@ -538,6 +565,7 @@ async function runScraper({ limit = 0 } = {}) {
 
   els.scrapeRunButton.disabled = true;
   els.scrapeTestButton.disabled = true;
+  setPageLoading(true);
   setScrapeStatus(limit ? "Tester scraper på 5 fonde..." : "Kører scraper på alle fonde...");
 
   try {
@@ -559,6 +587,7 @@ async function runScraper({ limit = 0 } = {}) {
   } catch (error) {
     setScrapeStatus(`Scraper fejlede: ${error.message}`, true);
   } finally {
+    setPageLoading(false);
     els.scrapeRunButton.disabled = false;
     els.scrapeTestButton.disabled = false;
   }
@@ -570,8 +599,12 @@ async function markFoundationVerified(foundationId, button) {
     return;
   }
 
+  const feedback = button.parentElement.querySelector(".verification-feedback");
+  const wasVerificationFilterActive = els.statusFilter.value === "to_verify";
+  setPageLoading(true);
   button.disabled = true;
   button.textContent = "Gemmer...";
+  if (feedback) feedback.hidden = true;
 
   try {
     const response = await fetch("/api/foundations/verification", {
@@ -586,15 +619,26 @@ async function markFoundationVerified(foundationId, button) {
     if (index >= 0) state.foundations[index] = payload.foundation;
     renderSummary();
     applyFilters();
-    setUpdateStatus(`${payload.foundation.name} er markeret som kilde-tjekket.`);
+    const message = wasVerificationFilterActive
+      ? `${payload.foundation.name} er verificeret og fjernet fra filteret "Skal verificeres".`
+      : `${payload.foundation.name} er markeret som kilde-tjekket.`;
+    setUpdateStatus(message);
   } catch (error) {
-    setUpdateStatus(`Verificering fejlede: ${error.message}`, true);
+    const message = `Verificering fejlede: ${error.message}`;
+    if (feedback) {
+      feedback.hidden = false;
+      feedback.textContent = message;
+    }
+    setUpdateStatus(message, true);
     button.disabled = false;
     button.textContent = "Markér som verificeret";
+  } finally {
+    setPageLoading(false);
   }
 }
 
 async function init() {
+  setPageLoading(true);
   const response = await fetch(`data/fonde_seed.csv?ts=${Date.now()}`);
   const csvText = await response.text();
   state.foundations = csvToObjects(csvText);
@@ -641,6 +685,7 @@ async function init() {
 
   els.updateButton.addEventListener("click", async () => {
     els.updateButton.disabled = true;
+    setPageLoading(true);
     setUpdateStatus("Opdaterer kilder og database...");
 
     try {
@@ -662,6 +707,7 @@ async function init() {
     } catch (error) {
       setUpdateStatus(`Opdatering fejlede: ${error.message}`, true);
     } finally {
+      setPageLoading(false);
       els.updateButton.disabled = false;
     }
   });
@@ -675,6 +721,7 @@ async function init() {
     if (!button || !row) return;
 
     button.disabled = true;
+    setPageLoading(true);
     try {
       const response = await fetch("/api/scrape/changes/decide", {
         method: "POST",
@@ -688,6 +735,8 @@ async function init() {
     } catch (error) {
       setScrapeStatus(`Beslutning fejlede: ${error.message}`, true);
       button.disabled = false;
+    } finally {
+      setPageLoading(false);
     }
   });
 
@@ -698,9 +747,12 @@ async function init() {
       els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;
     });
   }
+
+  setPageLoading(false);
 }
 
 init().catch((error) => {
   console.error(error);
+  setPageLoading(false);
   els.rows.innerHTML = `<tr><td colspan="4">Data kunne ikke indlæses.</td></tr>`;
 });
