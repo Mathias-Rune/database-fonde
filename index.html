@@ -43,6 +43,10 @@
           <span class="metric-label">Skal verificeres</span>
           <strong id="verifyCount">0</strong>
         </div>
+        <div class="metric">
+          <span class="metric-label">Datakvalitet</span>
+          <strong id="qualityCount">0%</strong>
+        </div>
         <div class="metric wide">
           <span class="metric-label">Hyppigste by</span>
           <strong id="topCity">-</strong>
@@ -58,6 +62,9 @@
             <h2 id="searchTitle">Find den rette fond</h2>
           </div>
           <p>Start med søgning, og indsnævr derefter med filtre.</p>
+        </div>
+        <div class="toolbar-actions" aria-label="Hurtige handlinger">
+          <button id="exportFilteredButton" class="secondary-control" type="button">Eksportér viste</button>
         </div>
         <div class="filter-grid">
           <label class="search-box">
@@ -104,6 +111,12 @@
             </select>
           </label>
         </div>
+        <div class="quick-filters" aria-label="Hurtigfiltre">
+          <button class="quick-filter active" type="button" data-quick-filter="">Alle</button>
+          <button class="quick-filter" type="button" data-quick-filter="attention">Kræver handling</button>
+          <button class="quick-filter" type="button" data-quick-filter="high_quality">Høj datakvalitet</button>
+          <button class="quick-filter" type="button" data-quick-filter="stale">Forældet tjek</button>
+        </div>
       </section>
 
       <section class="content-grid">
@@ -142,6 +155,7 @@
                   <th>Støtteområder</th>
                   <th>Beløb</th>
                   <th>Fristmodel</th>
+                  <th>Datakvalitet</th>
                   <th>Status</th>
                 </tr>
               </thead>

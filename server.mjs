@@ -230,7 +230,7 @@ async function updateFoundationVerification(foundationId, status) {
   return { ok: true, foundation };
 }
 
-async function decideScrapeChange(changeId, decision) {
+async function decideScrapeChange(changeId, decision, note = "") {
   await ensureScrapingSchema();
   const dbPath = path.join(rootDir, "outputs", "fonds_database.sqlite");
   const [change] = await runSqlite(
@@ -244,6 +244,7 @@ async function decideScrapeChange(changeId, decision) {
   }
 
   if (decision === "approve") {
+    const decisionNote = note || "Approved in local admin UI";
     await runSqlite(
       dbPath,
       `INSERT INTO foundation_extracted_fields (foundation_id, field_name, field_value, source_url, confidence, updated_at)
@@ -257,15 +258,16 @@ async function decideScrapeChange(changeId, decision) {
     );
     await runSqlite(
       dbPath,
-      `UPDATE foundation_field_changes SET validation_status = 'approved_manual', decided_at = ${sqlString(new Date().toISOString())}, decision_note = 'Approved in local admin UI' WHERE change_id = ${Number(changeId)};`,
+      `UPDATE foundation_field_changes SET validation_status = 'approved_manual', decided_at = ${sqlString(new Date().toISOString())}, decision_note = ${sqlString(decisionNote)} WHERE change_id = ${Number(changeId)};`,
       { cwd: rootDir },
     );
     return { ok: true, status: "approved_manual" };
   }
 
+  const decisionNote = note || "Rejected in local admin UI";
   await runSqlite(
     dbPath,
-    `UPDATE foundation_field_changes SET validation_status = 'rejected', decided_at = ${sqlString(new Date().toISOString())}, decision_note = 'Rejected in local admin UI' WHERE change_id = ${Number(changeId)};`,
+    `UPDATE foundation_field_changes SET validation_status = 'rejected', decided_at = ${sqlString(new Date().toISOString())}, decision_note = ${sqlString(decisionNote)} WHERE change_id = ${Number(changeId)};`,
     { cwd: rootDir },
   );
   return { ok: true, status: "rejected" };
@@ -373,7 +375,7 @@ const server = http.createServer(async (request, response) => {
   if (request.method === "POST" && requestUrl.pathname === "/api/scrape/changes/decide") {
     try {
       const body = await readJsonBody(request);
-      const result = await decideScrapeChange(body.change_id, body.decision);
+      const result = await decideScrapeChange(body.change_id, body.decision, body.note);
       sendJson(response, result.ok ? 200 : 404, result);
     } catch (error) {
       sendJson(response, 500, { ok: false, message: error.message });

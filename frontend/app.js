@@ -3,12 +3,14 @@ const state = {
   filtered: [],
   extractedFields: new Map(),
   selectedId: null,
+  quickFilter: "",
 };
 
 const els = {
   totalCount: document.querySelector("#totalCount"),
   checkedCount: document.querySelector("#checkedCount"),
   verifyCount: document.querySelector("#verifyCount"),
+  qualityCount: document.querySelector("#qualityCount"),
   topCity: document.querySelector("#topCity"),
   visibleCount: document.querySelector("#visibleCount"),
   checkedMeter: document.querySelector("#checkedMeter"),
@@ -31,6 +33,9 @@ const els = {
   scrapeStatus: document.querySelector("#scrapeStatus"),
   scrapeChangeRows: document.querySelector("#scrapeChangeRows"),
   resultsHint: document.querySelector("#resultsHint"),
+  exportFilteredButton: document.querySelector("#exportFilteredButton"),
+  quickFilterButtons: document.querySelectorAll("[data-quick-filter]"),
+  actionToast: document.querySelector("#actionToast"),
 };
 
 const locationMap = {
@@ -142,6 +147,77 @@ function amountProfile(foundation) {
   return { average, label: formatDkk(average), source: extracted.funding_amounts ? "scraped" : "parsed" };
 }
 
+function daysSince(dateValue) {
+  if (!dateValue) return Infinity;
+  const date = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return Infinity;
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
+}
+
+function qualityProfile(foundation) {
+  const issues = [];
+  const amount = amountProfile(foundation);
+  let score = 100;
+
+  if (foundation.verification_status === "needs_update") {
+    score -= 35;
+    issues.push("Kræver kildeopdatering");
+  } else if (foundation.verification_status === "to_verify") {
+    score -= 18;
+    issues.push("Mangler manuel verificering");
+  }
+
+  const age = daysSince(foundation.last_checked);
+  if (!Number.isFinite(age)) {
+    score -= 24;
+    issues.push("Mangler tjekdato");
+  } else if (age > 365) {
+    score -= 28;
+    issues.push("Tjekket for over 1 år siden");
+  } else if (age > 180) {
+    score -= 16;
+    issues.push("Tjekket for over 6 måneder siden");
+  }
+
+  [
+    ["website", "Website mangler"],
+    ["application_url", "Ansøgningslink mangler"],
+    ["source_url", "Kildelink mangler"],
+  ].forEach(([field, issue]) => {
+    if (!foundation[field]) {
+      score -= 10;
+      issues.push(issue);
+    }
+  });
+
+  if (!splitList(foundation.support_areas).length) {
+    score -= 12;
+    issues.push("Støtteområder mangler");
+  }
+  if (!foundation.deadline_model) {
+    score -= 8;
+    issues.push("Fristmodel mangler");
+  }
+  if (!Number.isFinite(amount.average)) {
+    score -= 6;
+    issues.push("Beløb ukendt");
+  }
+  if (foundation.notes?.toLocaleLowerCase("da").includes("bør valideres")) {
+    score -= 10;
+    issues.push("Note kræver validering");
+  }
+
+  const finalScore = Math.max(0, Math.min(100, Math.round(score)));
+  const level = finalScore >= 80 ? "good" : finalScore >= 60 ? "warn" : "risk";
+  return {
+    score: finalScore,
+    level,
+    label: finalScore >= 80 ? "Høj" : finalScore >= 60 ? "Middel" : "Lav",
+    issues: issues.length ? issues : ["Ingen tydelige dataproblemer"],
+    stale: !Number.isFinite(age) || age > 180,
+  };
+}
+
 function matchesAmountRange(average, selectedRange, minValue, maxValue) {
   if (!selectedRange && !minValue && !maxValue) return true;
   if (!Number.isFinite(average)) return false;
@@ -239,10 +315,15 @@ function renderSummary() {
   const statusCounts = countBy(state.foundations, (foundation) => foundation.verification_status);
   const cityCounts = countBy(state.foundations, (foundation) => foundation.city);
   const [city, cityCount] = topEntries(cityCounts, 1)[0] || ["-", 0];
+  const qualityScores = state.foundations.map((foundation) => qualityProfile(foundation).score);
+  const averageQuality = qualityScores.length
+    ? Math.round(qualityScores.reduce((sum, score) => sum + score, 0) / qualityScores.length)
+    : 0;
 
   els.totalCount.textContent = state.foundations.length;
   els.checkedCount.textContent = statusCounts.get("source_checked") || 0;
   els.verifyCount.textContent = statusCounts.get("to_verify") || 0;
+  els.qualityCount.textContent = `${averageQuality}%`;
   els.topCity.textContent = cityCount ? `${city} (${cityCount})` : "-";
 }
 
@@ -256,6 +337,90 @@ function setScrapeStatus(message, isError = false) {
   els.scrapeStatus.textContent = message;
   els.scrapeStatus.classList.toggle("error", isError);
   els.scrapeStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+}
+
+let actionToastTimer;
+function showActionToast(message, isError = false) {
+  if (!els.actionToast) return;
+  window.clearTimeout(actionToastTimer);
+  els.actionToast.hidden = false;
+  els.actionToast.classList.toggle("error", isError);
+  els.actionToast.textContent = message;
+  actionToastTimer = window.setTimeout(() => {
+    els.actionToast.hidden = true;
+  }, 5000);
+}
+
+function qualityBadge(profile) {
+  return `
+    <div class="quality-badge ${profile.level}" title="${escapeHtml(profile.issues.join(". "))}">
+      <span>${profile.score}%</span>
+      <meter min="0" max="100" value="${profile.score}" aria-label="Datakvalitet ${profile.score} procent"></meter>
+    </div>
+  `;
+}
+
+function csvEscape(value) {
+  const stringValue = String(value ?? "");
+  if (/[",\n\r]/.test(stringValue)) {
+    return `"${stringValue.replaceAll('"', '""')}"`;
+  }
+  return stringValue;
+}
+
+function exportFilteredCsv() {
+  const headers = [
+    "foundation_id",
+    "name",
+    "legal_type",
+    "municipality",
+    "region",
+    "support_areas",
+    "applicant_types",
+    "deadline_model",
+    "amount",
+    "verification_status",
+    "last_checked",
+    "data_quality_score",
+    "data_quality_issues",
+    "application_url",
+    "website",
+    "source_url",
+  ];
+  const rows = state.filtered.map((foundation) => {
+    const location = locationForFoundation(foundation);
+    const amount = amountProfile(foundation);
+    const quality = qualityProfile(foundation);
+    return {
+      foundation_id: foundation.foundation_id,
+      name: foundation.name,
+      legal_type: foundation.legal_type,
+      municipality: location.municipality,
+      region: location.region,
+      support_areas: foundation.support_areas,
+      applicant_types: foundation.applicant_types,
+      deadline_model: foundation.deadline_model,
+      amount: amount.label,
+      verification_status: statusLabel(foundation.verification_status),
+      last_checked: foundation.last_checked,
+      data_quality_score: quality.score,
+      data_quality_issues: quality.issues.join("; "),
+      application_url: foundation.application_url,
+      website: foundation.website,
+      source_url: foundation.source_url,
+    };
+  });
+  const csv = [headers.join(","), ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(","))].join("\n");
+  const blob = new Blob([`${csv}\n`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `fonde-filtreret-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showActionToast(`${rows.length} viste fonde eksporteret.`);
 }
 
 function setPageLoading(isLoading) {
@@ -343,6 +508,11 @@ function renderChart() {
       ? "Vælg en række for detaljer"
       : "Juster søgning eller filtre";
   }
+  els.quickFilterButtons.forEach((button) => {
+    const isActive = button.dataset.quickFilter === state.quickFilter;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
 }
 
 function renderRows() {
@@ -352,7 +522,7 @@ function renderRows() {
     const tr = document.createElement("tr");
     tr.className = "empty-row";
     tr.innerHTML = `
-      <td colspan="6">
+      <td colspan="7">
         <div class="empty-table-state">
           <strong>Ingen fonde matcher filtrene</strong>
           <span>Prøv at fjerne et filter, udvide beløbsintervallet eller søge bredere.</span>
@@ -371,6 +541,7 @@ function renderRows() {
     tr.setAttribute("aria-selected", foundation.foundation_id === state.selectedId ? "true" : "false");
     const location = locationForFoundation(foundation);
     const amount = amountProfile(foundation);
+    const quality = qualityProfile(foundation);
 
     const areas = splitList(foundation.support_areas)
       .slice(0, 4)
@@ -383,6 +554,7 @@ function renderRows() {
       <td data-label="Støtteområder"><div class="pill-list">${areas}</div></td>
       <td data-label="Beløb">${amount.label}</td>
       <td data-label="Fristmodel">${foundation.deadline_model || "-"}</td>
+      <td data-label="Datakvalitet">${qualityBadge(quality)}</td>
       <td data-label="Status"><span class="status ${foundation.verification_status}">${statusLabel(foundation.verification_status)}</span></td>
     `;
 
@@ -403,6 +575,7 @@ function renderDetail() {
   els.detailContent.hidden = false;
   const location = locationForFoundation(foundation);
   const amount = amountProfile(foundation);
+  const quality = qualityProfile(foundation);
   const checklist = verificationChecklist(foundation);
   const canVerify = foundation.verification_status !== "source_checked" && !isFilePreview();
   els.detailContent.innerHTML = `
@@ -412,6 +585,16 @@ function renderDetail() {
     </div>
     <div class="pill-list">
       ${splitList(foundation.support_areas).map((area) => `<span class="pill">${escapeHtml(area)}</span>`).join("")}
+    </div>
+    <div class="quality-card ${quality.level}">
+      <div>
+        <h3>Datakvalitet</h3>
+        <strong>${quality.score}% · ${quality.label}</strong>
+      </div>
+      <meter min="0" max="100" value="${quality.score}" aria-label="Datakvalitet ${quality.score} procent"></meter>
+      <ul>
+        ${quality.issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}
+      </ul>
     </div>
     <div class="detail-block">
       <h3>Ansøgere</h3>
@@ -463,6 +646,7 @@ function applyFilters() {
   state.filtered = state.foundations.filter((foundation) => {
     const location = locationForFoundation(foundation);
     const amount = amountProfile(foundation);
+    const quality = qualityProfile(foundation);
     const haystack = [
       foundation.name,
       foundation.city,
@@ -485,7 +669,12 @@ function applyFilters() {
     const matchesCategory = !category || splitList(foundation.support_areas).includes(category);
     const matchesAmount = matchesAmountRange(amount.average, amountRange, amountMin, amountMax);
     const matchesStatus = !status || foundation.verification_status === status;
-    return matchesQuery && matchesLocation && matchesCategory && matchesAmount && matchesStatus;
+    const matchesQuickFilter =
+      !state.quickFilter ||
+      (state.quickFilter === "attention" && (foundation.verification_status !== "source_checked" || quality.score < 70)) ||
+      (state.quickFilter === "high_quality" && quality.score >= 80) ||
+      (state.quickFilter === "stale" && quality.stale);
+    return matchesQuery && matchesLocation && matchesCategory && matchesAmount && matchesStatus && matchesQuickFilter;
   });
 
   if (!state.filtered.some((foundation) => foundation.foundation_id === state.selectedId)) {
@@ -544,10 +733,22 @@ async function loadScrapeChanges() {
     tr.innerHTML = `
       <td class="name-cell"><strong>${escapeHtml(change.foundation_name)}</strong><span>${escapeHtml(change.detected_at)}</span></td>
       <td>${escapeHtml(fieldLabel(change.field_name))}</td>
-      <td><div class="value-preview">${displayScrapedText(change.new_value)}</div></td>
+      <td>
+        <div class="compare-values">
+          <div>
+            <span>Før</span>
+            <div class="value-preview muted">${displayScrapedText(change.old_value || "Ingen tidligere værdi")}</div>
+          </div>
+          <div>
+            <span>Nu</span>
+            <div class="value-preview">${displayScrapedText(change.new_value)}</div>
+          </div>
+        </div>
+      </td>
       <td><span class="status ${change.significance === "high" ? "needs_update" : "to_verify"}">${escapeHtml(change.significance)} · ${Math.round(change.confidence * 100)}%</span></td>
       <td>
         <div class="review-actions">
+          <textarea class="review-note" rows="2" placeholder="Kort note"></textarea>
           <button class="mini-button approve" type="button" data-action="approve">Godkend</button>
           <button class="mini-button reject" type="button" data-action="reject">Afvis</button>
         </div>
@@ -663,6 +864,15 @@ async function init() {
     control.addEventListener("input", applyFilters);
   });
 
+  els.quickFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.quickFilter = button.dataset.quickFilter || "";
+      applyFilters();
+    });
+  });
+
+  els.exportFilteredButton.addEventListener("click", exportFilteredCsv);
+
   els.rows.addEventListener("click", (event) => {
     const row = event.target.closest("tr[data-id]");
     if (row) selectFoundation(row.dataset.id);
@@ -719,6 +929,7 @@ async function init() {
     const button = event.target.closest("button[data-action]");
     const row = event.target.closest("tr[data-change-id]");
     if (!button || !row) return;
+    const note = row.querySelector(".review-note")?.value?.trim() || "";
 
     button.disabled = true;
     setPageLoading(true);
@@ -726,7 +937,7 @@ async function init() {
       const response = await fetch("/api/scrape/changes/decide", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ change_id: row.dataset.changeId, decision: button.dataset.action }),
+        body: JSON.stringify({ change_id: row.dataset.changeId, decision: button.dataset.action, note }),
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok) throw new Error(payload.message || "Beslutning fejlede");
