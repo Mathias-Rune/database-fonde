@@ -1,0 +1,843 @@
+{
+  "generated_at": "2026-07-20T09:35:20.751Z",
+  "total_foundations": 20,
+  "failed_foundations": 14,
+  "dry_run": false,
+  "updated_csv": false,
+  "results": [
+    {
+      "foundation_id": "novo-nordisk-fonden",
+      "name": "Novo Nordisk Fonden",
+      "checked_at": "2026-07-20T09:34:43.645Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://novonordiskfonden.dk/en/apply-for-grants/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://novonordiskfonden.dk/",
+          "hash": "b1e8675d575916d2e4f29ba3666bc996e34f5a5b0738e18578b4a1eca0a3ccae",
+          "bytes": 102482,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://novonordiskfonden.dk/en/apply-for-grants/",
+          "hash": "1bcf89f85d655675c083ae7bbab343054dcb2a7b18815d1d0cd00e6353dc1a1f",
+          "bytes": 67346,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://novonordiskfonden.dk/en/how-we-work/what-are-grants/applying-for-a-grant/",
+          "hash": "1a6cd1781d50497826c3fa80f23bcebecac2bfa3bfa28eab15c674776415979f",
+          "bytes": 79823,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "realdania",
+      "name": "Realdania",
+      "checked_at": "2026-07-20T09:34:46.062Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://realdania.dk/",
+          "hash": "de20c7c8cd574ad3c7a3ae9c359c8d2415ed557a180ec53f0786b86936f9c013",
+          "bytes": 1437005,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://realdania.dk/soeg-stoette",
+          "hash": "a6d27781234b18850f10c4b65b089b8a6a272362c8a1a17a231fce5c57700f20",
+          "bytes": 1339665,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://realdania.dk/soeg-stoette",
+          "hash": "a6d27781234b18850f10c4b65b089b8a6a272362c8a1a17a231fce5c57700f20",
+          "bytes": 1339665,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "nordea-fonden",
+      "name": "Nordea-fonden",
+      "checked_at": "2026-07-20T09:34:47.611Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://nordeafonden.dk/",
+          "hash": "7833ca8dc4ea6a6952a6fd529c20820e34effefcc14f60e1f14150fcc780c698",
+          "bytes": 100247,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://nordeafonden.dk/soeg-stoette",
+          "hash": "5da032dd59ac9d7646bb9cf04f7a7e4e6b73db2b8c75f113d822cae52ed9271d",
+          "bytes": 89593,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://nordeafonden.dk/soeg-stoette",
+          "hash": "5da032dd59ac9d7646bb9cf04f7a7e4e6b73db2b8c75f113d822cae52ed9271d",
+          "bytes": 89593,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "trygfonden",
+      "name": "TrygFonden",
+      "checked_at": "2026-07-20T09:34:48.414Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://tryghed.dk/",
+          "hash": "9170e2e41f03747f691be7efe96b33e77f96401ac6c98376fad51450ced6d104",
+          "bytes": 63982,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://tryghed.dk/sog-stotte",
+          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
+          "bytes": 52146,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://tryghed.dk/sog-stotte",
+          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
+          "bytes": 52146,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "villum-fonden",
+      "name": "VILLUM FONDEN",
+      "checked_at": "2026-07-20T09:34:51.130Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://veluxfoundations.dk/en/apply-grant/villum-fonden"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://veluxfoundations.dk/en/apply-grant/villum-fonden"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://fondene.dk/da",
+          "hash": "17989d501a02bdfd339b2ae5129d07b35ac7c2812e08c5c2e060dc79a9de24fb",
+          "bytes": 21974,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://fondene.dk/en/apply-grant/villum-fonden",
+          "hash": "b94a4a943660a710cce62f9d766389a190bb87815b3a1be6cdba3e038c124045",
+          "bytes": 21989,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://fondene.dk/en/apply-grant/villum-fonden",
+          "hash": "b94a4a943660a710cce62f9d766389a190bb87815b3a1be6cdba3e038c124045",
+          "bytes": 21989,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "velux-fonden",
+      "name": "VELUX FONDEN",
+      "checked_at": "2026-07-20T09:34:52.909Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://veluxfoundations.dk/en/apply-grant/velux-fonden"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://veluxfoundations.dk/en/apply-grant/velux-fonden"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://fondene.dk/da",
+          "hash": "17989d501a02bdfd339b2ae5129d07b35ac7c2812e08c5c2e060dc79a9de24fb",
+          "bytes": 21974,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://fondene.dk/en/apply-grant/velux-fonden",
+          "hash": "b94a4a943660a710cce62f9d766389a190bb87815b3a1be6cdba3e038c124045",
+          "bytes": 21989,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://fondene.dk/en/apply-grant/velux-fonden",
+          "hash": "b94a4a943660a710cce62f9d766389a190bb87815b3a1be6cdba3e038c124045",
+          "bytes": 21989,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "lundbeckfonden",
+      "name": "Lundbeckfonden",
+      "checked_at": "2026-07-20T09:34:54.739Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://lundbeckfonden.com/grants/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://lundbeckfonden.com/grants/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://lundbeckfonden.com/",
+          "hash": "804b702c0a9af97b78278a859fb3483c93b9c9a793209183b3344918fbf23a36",
+          "bytes": 83774,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://lundbeckfonden.com/grants/",
+          "hash": "655f36040454266b321a9ec734ef1a696b89b0951b3b8b383ce2c201b891fc6b",
+          "bytes": 55403,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://lundbeckfonden.com/grants/",
+          "hash": "655f36040454266b321a9ec734ef1a696b89b0951b3b8b383ce2c201b891fc6b",
+          "bytes": 55403,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "carlsbergfondet",
+      "name": "Carlsbergfondet",
+      "checked_at": "2026-07-20T09:34:55.601Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://carlsbergfondet.dk/",
+          "hash": "f68c25554743c3ea9120419e86b79677de51f2316b08f54ceb066ea72c1c13f0",
+          "bytes": 233458,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://carlsbergfondet.dk/ansoeger/",
+          "hash": "11c893e94f8c899b269e3a2993ef489fcbc91c488ea6157db897875350c6d95f",
+          "bytes": 226449,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://carlsbergfondet.dk/bevillingsenhed/vores-forskningsstoette/",
+          "hash": "94ae8fec5f371a09c93542eec43023d4da1ad8c05bd378522d93b86f83f03057",
+          "bytes": 167410,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "ap-moeller-fonden",
+      "name": "A.P. Møller Fonden",
+      "checked_at": "2026-07-20T09:34:57.090Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://www.apmollerfonde.dk/",
+          "hash": "352d1764ff927d246d1af6524434bdd8bc42ab765266f56d0319c10affbd8a9a",
+          "bytes": 55613,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://www.apmollerfonde.dk/ansoegning/a-p-moeller-fonden/",
+          "hash": "66e566dd75b09662535cf9814834ac6e3378d99d265e93b97a52d8b2a559314d",
+          "bytes": 48417,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://www.apmollerfonde.dk/ansoegning/a-p-moeller-fonden/",
+          "hash": "66e566dd75b09662535cf9814834ac6e3378d99d265e93b97a52d8b2a559314d",
+          "bytes": 48417,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "augustinus-fonden",
+      "name": "Augustinus Fonden",
+      "checked_at": "2026-07-20T09:34:59.222Z",
+      "failed": [],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://augustinusfonden.dk/da",
+          "hash": "9cc4184403e76bbce041e48aaf64eee4fb94681e6a4198cd8010b6306db8f5ed",
+          "bytes": 317443,
+          "error": ""
+        },
+        "application_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://augustinusfonden.dk/da/sadan-kommer-du-i-gang",
+          "hash": "84ab702952ae5eabd1e5117171742ae846cb767942f4f4a1ddd896451918518a",
+          "bytes": 272187,
+          "error": ""
+        },
+        "source_url": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://augustinusfonden.dk/da/sadan-kommer-du-i-gang",
+          "hash": "84da1a8da919b9879c51d2e454b510d7a00f4d26c5d49d065bbdc00f485b8b28",
+          "bytes": 273463,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "bikubenfonden",
+      "name": "Bikubenfonden",
+      "checked_at": "2026-07-20T09:35:00.802Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.bikubenfonden.dk/soeg-stoette"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.bikubenfonden.dk/soeg-stoette"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://www.bikubenfonden.dk/",
+          "hash": "276f85f8ae10e180071a6495cbc36302c5fba664532bd3ba7ba603682e59ab6b",
+          "bytes": 156540,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://www.bikubenfonden.dk/soeg-stoette",
+          "hash": "bfa3f55376b33707541aabb225ac22b20e53da048efcb15d60554b465814e5b0",
+          "bytes": 40987,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://www.bikubenfonden.dk/soeg-stoette",
+          "hash": "bfa3f55376b33707541aabb225ac22b20e53da048efcb15d60554b465814e5b0",
+          "bytes": 40987,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "tuborgfondet",
+      "name": "Tuborgfondet",
+      "checked_at": "2026-07-20T09:35:05.061Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.tuborgfondet.dk/soeg-stotte/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.tuborgfondet.dk/soeg-stotte/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://tuborgfondet.dk/",
+          "hash": "1d48def0e215eb4ffd4ee198494760ba33a3327f2bc4b701ba33e1bd09fd773f",
+          "bytes": 187937,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://tuborgfondet.dk/soeg-stotte",
+          "hash": "59c2c54a4f2b876d929227aab6c5097018e9947fc8dccee9bfd282da2800bf18",
+          "bytes": 31816,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://tuborgfondet.dk/soeg-stotte",
+          "hash": "833bc92492b0cd06794d8811b08de473527011803118a92d13a1ecb46795fcaa",
+          "bytes": 31773,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "egmont-fonden",
+      "name": "Egmont Fonden",
+      "checked_at": "2026-07-20T09:35:06.037Z",
+      "failed": [
+        {
+          "field": "website",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.egmontfonden.dk"
+        },
+        {
+          "field": "application_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.egmontfonden.dk/ansoegning"
+        },
+        {
+          "field": "source_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.egmontfonden.dk/ansoegning"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.egmontfonden.dk",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "application_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.egmontfonden.dk/ansoegning",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "source_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.egmontfonden.dk/ansoegning",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "foundation_id": "lauritzen-fonden",
+      "name": "Lauritzen Fonden",
+      "checked_at": "2026-07-20T09:35:08.495Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://lauritzenfonden.com/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://lauritzenfonden.com/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://lauritzenfonden.com/",
+          "hash": "dcfd05bfcb5cbd9c1c335d5d18cee306f6f6f4a3047e2fccd6c5620505295e7f",
+          "bytes": 123299,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://lauritzenfonden.com/ansoegning/",
+          "hash": "40d7d1407962ab944fec6bbf8c2a96effdff981d0641200e8ffaa6850e1b9854",
+          "bytes": 63145,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://lauritzenfonden.com/ansoegning/",
+          "hash": "b25ecb50ba7821a3b9606d95022f3c4ca8ff0054bf1dd3d117fc0684e0812e3c",
+          "bytes": 63145,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "william-demant-fonden",
+      "name": "William Demant Fonden",
+      "checked_at": "2026-07-20T09:35:10.717Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.williamdemantfonden.dk/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://www.williamdemantfonden.dk/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://www.williamdemantfonden.dk/",
+          "hash": "a7edcb7c7375017526d60bc3fef46aa07e8e2638fd412b798b1564144c0ef2ef",
+          "bytes": 21443,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://www.williamdemantfonden.dk/sitecore/service/notfound.aspx?item=%2fansoegning&user=extranet%5cAnonymous&site=William+Demant+Foundation+DK",
+          "hash": "d68e7cbc908cfede0761d938cc207594ae7c683938573265f9534bec3cdb503b",
+          "bytes": 3250,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://www.williamdemantfonden.dk/sitecore/service/notfound.aspx?item=%2fansoegning&user=extranet%5cAnonymous&site=William+Demant+Foundation+DK",
+          "hash": "d68e7cbc908cfede0761d938cc207594ae7c683938573265f9534bec3cdb503b",
+          "bytes": 3250,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "ole-kirks-fond",
+      "name": "Ole Kirk's Fond",
+      "checked_at": "2026-07-20T09:35:12.044Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://olekirksfond.dk/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://olekirksfond.dk/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://olekirksfond.dk/",
+          "hash": "370c86c6fb76d8274781efc9c743a686834cab08f40be9f67253c03ac6339b43",
+          "bytes": 122139,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://olekirksfond.dk/ansoegning/",
+          "hash": "048b370ae1ad8d9b4138e9936b1f6f282688acc728f072abaa0d5e23db874192",
+          "bytes": 71710,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://olekirksfond.dk/ansoegning/",
+          "hash": "dfbc51e45c8bf8256370ac82d332dc60605683a9972e1ba3aed6c8453f1c60a5",
+          "bytes": 71710,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "kr-foundation",
+      "name": "KR Foundation",
+      "checked_at": "2026-07-20T09:35:13.605Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://krfnd.org/apply-for-funding/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://krfnd.org/apply-for-funding/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://krfnd.org/",
+          "hash": "4d056cf99468185764a0d4bdf36e3acc9c9ab0f3ada941c2c8cbfb8ddc6ffb7b",
+          "bytes": 62116,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://krfnd.org/apply-for-funding/",
+          "hash": "9805e79f66904cb4f06708a8d97500b6a0fe7bfdcefd0cbee7dce50305b55954",
+          "bytes": 28362,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://krfnd.org/apply-for-funding/",
+          "hash": "9805e79f66904cb4f06708a8d97500b6a0fe7bfdcefd0cbee7dce50305b55954",
+          "bytes": 28362,
+          "error": ""
+        }
+      }
+    },
+    {
+      "foundation_id": "louis-hansen-fonden",
+      "name": "Louis-Hansen Fonden",
+      "checked_at": "2026-07-20T09:35:14.817Z",
+      "failed": [
+        {
+          "field": "website",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://louishansenfonden.dk"
+        },
+        {
+          "field": "application_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://louishansenfonden.dk/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://louishansenfonden.dk/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://louishansenfonden.dk",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "application_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://louishansenfonden.dk/ansoegning/",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "source_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://louishansenfonden.dk/ansoegning/",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "foundation_id": "15-juni-fonden",
+      "name": "15. Juni Fonden",
+      "checked_at": "2026-07-20T09:35:18.016Z",
+      "failed": [
+        {
+          "field": "website",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.15junifonden.dk"
+        },
+        {
+          "field": "application_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.15junifonden.dk/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": null,
+          "error": "fetch failed",
+          "url": "https://www.15junifonden.dk/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.15junifonden.dk",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "application_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.15junifonden.dk/ansoegning/",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        },
+        "source_url": {
+          "ok": false,
+          "status": null,
+          "finalUrl": "https://www.15junifonden.dk/ansoegning/",
+          "hash": "",
+          "bytes": 0,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "foundation_id": "den-obelske-familiefond",
+      "name": "Det Obelske Familiefond",
+      "checked_at": "2026-07-20T09:35:20.751Z",
+      "failed": [
+        {
+          "field": "application_url",
+          "status": 404,
+          "error": "",
+          "url": "https://obel.com/ansoegning/"
+        },
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://obel.com/ansoegning/"
+        }
+      ],
+      "checks": {
+        "website": {
+          "ok": true,
+          "status": 200,
+          "finalUrl": "https://obel.com/",
+          "hash": "8f20c1cfb679d90e499e523500e00e72f93c7a336b2535736f475b826e1c8ed9",
+          "bytes": 158458,
+          "error": ""
+        },
+        "application_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://obel.com/ansoegning/",
+          "hash": "ebe203269e7e3ec655566c54941b3438e119bf963fd3aaad2ef6b589ed066f4f",
+          "bytes": 120951,
+          "error": ""
+        },
+        "source_url": {
+          "ok": false,
+          "status": 404,
+          "finalUrl": "https://obel.com/ansoegning/",
+          "hash": "4942e05838de86571f1fa94cc597d874c44ccdc2094116058d87e97aaa81cce7",
+          "bytes": 120951,
+          "error": ""
+        }
+      }
+    }
+  ]
+}
