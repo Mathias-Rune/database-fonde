@@ -1,0 +1,16 @@
+{
+  "name": "sustainary-funding-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check:sources": "node scripts/check_foundation_sources.mjs --dry-run",
+    "scrape": "node scripts/fond_scraper.mjs",
+    "scan": "node scripts/scan_fund_calls.mjs",
+    "scan:deep": "node scripts/deep_scan_fund_calls.mjs",
+    "discover": "node scripts/discover_funding_calls.mjs",
+    "digest": "node scripts/weekly_digest.mjs",
+    "test": "node --test scripts/*.test.mjs"
+  }
+}

@@ -1,0 +1,7 @@
+source_id,source_name,provider_name,url
+state-pools,Statens Tilskudspuljer,Statens Tilskudspuljer,https://www.statens-tilskudspuljer.dk/
+copenhagen-pools,Københavns Kommunes puljeoversigt,Københavns Kommune,https://www.kk.dk/brug-byen/foreninger-og-fritidsliv/tilskud-og-puljer-for-foreninger-og-aftenskoler
+frederiksberg-pools,Frederiksberg Kommunes puljeoversigt,Frederiksberg Kommune,https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer
+sbst-pools,Social- og Boligstyrelsens puljer,Social- og Boligstyrelsen,https://www.sbst.dk/puljer-og-tilskud
+slks-grants,Slots- og Kulturstyrelsens tilskud,Slots- og Kulturstyrelsen,https://slks.dk/tilskud
+energy-pools,Energistyrelsens tilskud og puljer,Energistyrelsen,https://ens.dk/tilskud-og-puljer

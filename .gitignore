@@ -1,2 +1,11 @@
 node_modules
 .DS_Store
+outputs/weekly-digest/
+.env
+crawler/dist/
+crawler/outputs/
+crawler/node_modules/
+data/crawler_profiles/
+data/deep_scan_state.json
+data/discovery_results.csv
+data/notification_digest_*.md

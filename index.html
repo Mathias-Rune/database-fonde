@@ -4,22 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
-    <link rel="stylesheet" href="frontend/styles.css" />
+    <link rel="stylesheet" href="frontend/styles.css?v=6" />
   </head>
   <body>
-    <a class="skip-link" href="#resultsTitle">Spring til fondslisten</a>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
     <header class="topbar">
-      <div class="brand-mark" aria-hidden="true">DF</div>
-      <div class="hero-copy">
-        <p class="eyebrow">Fonde i Danmark</p>
-        <h1>Dansk Fondsdatabase</h1>
-        <p class="subtitle">Find relevante fonde, vurder datakvalitet og gennemgå kildeændringer i et samlet arbejdsbord.</p>
+      <div>
+        <p class="eyebrow">Dansk Fondsdatabase</p>
+        <h1>Fonde i Danmark</h1>
       </div>
       <div class="top-actions" aria-label="Datahandlinger">
-        <button id="updateButton" class="icon-link action-button primary-action" type="button" title="Opdater kilde-tjek" aria-label="Opdater kilde-tjek">
-          <span aria-hidden="true">Opdater kilder</span>
-        </button>
+        <button id="updateButton" class="icon-link action-button" type="button">Opdater kilder</button>
         <a class="icon-link" href="data/fonde_seed.csv" download title="Download CSV" aria-label="Download CSV">
           <span aria-hidden="true">CSV</span>
         </a>
@@ -36,70 +31,90 @@
           <strong id="totalCount">0</strong>
         </div>
         <div class="metric">
-          <span class="metric-label">Kilde-tjekket</span>
-          <strong id="checkedCount">0</strong>
+          <span class="metric-label">Puljer</span>
+          <strong id="programCount">0</strong>
         </div>
         <div class="metric">
+          <span class="metric-label">Løbende åbne</span>
+          <strong id="openCount">0</strong>
+        </div>
+        <div class="metric wide">
           <span class="metric-label">Skal verificeres</span>
           <strong id="verifyCount">0</strong>
         </div>
-        <div class="metric">
-          <span class="metric-label">Datakvalitet</span>
-          <strong id="qualityCount">0%</strong>
-        </div>
-        <div class="metric wide">
-          <span class="metric-label">Hyppigste by</span>
-          <strong id="topCity">-</strong>
-        </div>
       </section>
 
-      <section id="updateStatus" class="update-status" aria-live="polite" hidden></section>
+      <nav class="work-tabs" aria-label="Arbejdsområder">
+        <button class="tab-button active" type="button" data-tab="fund">Fund</button>
+        <button class="tab-button" type="button" data-tab="fonde">Fonde</button>
+        <button class="tab-button" type="button" data-tab="favoritter">Favoritter</button>
+        <button class="tab-button" type="button" data-tab="alerts">Alerts</button>
+        <button class="tab-button" type="button" data-tab="data">Data</button>
+      </nav>
 
-      <section class="toolbar" aria-labelledby="searchTitle">
-        <div class="toolbar-heading">
-          <div>
-            <p class="eyebrow dark">Søgning</p>
-            <h2 id="searchTitle">Find den rette fond</h2>
+      <section id="panel-fund" class="tab-panel active" data-panel="fund">
+        <section class="review-panel primary-workspace" aria-label="Review af fundne calls">
+          <div class="review-header">
+            <div>
+              <h2>Review fund</h2>
+              <p>Prioritér, godkend eller ignorér fund fra hurtig scanner og deep crawler.</p>
+            </div>
+            <div class="review-stats">
+              <span><strong id="reviewNewCount">0</strong> nye</span>
+              <span><strong id="reviewHighCount">0</strong> høj kvalitet</span>
+              <span><strong id="reviewIgnoredCount">0</strong> ignoreret</span>
+            </div>
           </div>
-          <p>Start med søgning, og indsnævr derefter med filtre.</p>
-        </div>
-        <div class="toolbar-actions" aria-label="Hurtige handlinger">
-          <button id="exportFilteredButton" class="secondary-control" type="button">Eksportér viste</button>
-        </div>
-        <div class="filter-grid">
+          <div class="review-toolbar">
+            <label>
+              <span>Reviewstatus</span>
+              <select id="reviewStatusFilter">
+                <option value="new">Nye</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="ignored">Ignoreret</option>
+                <option value="">Alle</option>
+              </select>
+            </label>
+            <label>
+              <span>Kvalitet</span>
+              <select id="reviewQualityFilter">
+                <option value="">Alle niveauer</option>
+                <option value="high">Høj</option>
+                <option value="medium">Middel</option>
+                <option value="low">Lav</option>
+              </select>
+            </label>
+          </div>
+          <div id="reviewList" class="review-list"></div>
+        </section>
+      </section>
+
+      <section id="panel-fonde" class="tab-panel" data-panel="fonde" hidden>
+        <section class="toolbar" aria-label="Søgning og filtre">
           <label class="search-box">
             <span>Søg</span>
             <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
           </label>
           <label>
-            <span>Lokation</span>
-            <select id="locationFilter">
-              <option value="">Alle lokationer</option>
+            <span>Støtteområde</span>
+            <select id="areaFilter">
+              <option value="">Alle områder</option>
             </select>
           </label>
           <label>
-            <span>Kategori</span>
-            <select id="categoryFilter">
-              <option value="">Alle kategorier</option>
+            <span>Ansøger</span>
+            <select id="applicantFilter">
+              <option value="">Alle ansøgere</option>
             </select>
           </label>
           <label>
-            <span>Beløb</span>
-            <select id="amountFilter">
-              <option value="">Alle beløb</option>
-              <option value="under-100000">Under 100.000 kr.</option>
-              <option value="100000-500000">100.000-500.000 kr.</option>
-              <option value="500000-1000000">500.000-1 mio. kr.</option>
-              <option value="over-1000000">Over 1 mio. kr.</option>
+            <span>Frist</span>
+            <select id="deadlineFilter">
+              <option value="">Alle frister</option>
+              <option value="open">Løbende åbne</option>
+              <option value="to_verify">Skal tjekkes</option>
+              <option value="call">Opslag/calls</option>
             </select>
-          </label>
-          <label>
-            <span>Min. beløb</span>
-            <input id="amountMinInput" type="number" min="0" step="10000" placeholder="fx 250000" inputmode="numeric" />
-          </label>
-          <label>
-            <span>Maks. beløb</span>
-            <input id="amountMaxInput" type="number" min="0" step="10000" placeholder="fx 1000000" inputmode="numeric" />
           </label>
           <label>
             <span>Status</span>
@@ -110,101 +125,136 @@
               <option value="needs_update">Skal opdateres</option>
             </select>
           </label>
-        </div>
-        <div class="quick-filters" aria-label="Hurtigfiltre">
-          <button class="quick-filter active" type="button" data-quick-filter="">Alle</button>
-          <button class="quick-filter" type="button" data-quick-filter="attention">Kræver handling</button>
-          <button class="quick-filter" type="button" data-quick-filter="high_quality">Høj datakvalitet</button>
-          <button class="quick-filter" type="button" data-quick-filter="stale">Forældet tjek</button>
-        </div>
+        </section>
+
+        <section class="content-grid">
+          <aside class="insights" aria-label="Datavisualisering">
+            <div class="section-heading">
+              <h2>Fordeling</h2>
+              <span id="visibleCount">0 vist</span>
+            </div>
+            <div id="areaChart" class="bar-chart" aria-label="Top støtteområder"></div>
+            <div class="status-strip" aria-label="Verifikationsstatus">
+              <div>
+                <span>Kilde-tjekket</span>
+                <meter id="checkedMeter" min="0" max="100" value="0"></meter>
+              </div>
+              <div>
+                <span>Skal verificeres</span>
+                <meter id="verifyMeter" min="0" max="100" value="0"></meter>
+              </div>
+            </div>
+          </aside>
+
+          <section class="results-panel" aria-label="Fondsliste">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mulighed</th>
+                    <th>Støtteområder</th>
+                    <th>Ansøgere</th>
+                    <th>Frist</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="programRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="detail-panel" aria-label="Detaljer">
+            <div id="detailEmpty" class="empty-state">Vælg en mulighed i listen</div>
+            <article id="detailContent" class="detail-content" hidden></article>
+          </aside>
+        </section>
       </section>
 
-      <section class="content-grid">
-        <aside class="insights" aria-label="Datavisualisering">
+      <section id="panel-favoritter" class="tab-panel" data-panel="favoritter" hidden>
+        <section class="favorite-panel" aria-label="Favoritter">
           <div class="section-heading">
-            <h2>Fordeling</h2>
-            <span id="visibleCount">0 vist</span>
+            <h2>Favoritter</h2>
+            <span id="favoriteCount">0 favoritter</span>
           </div>
-          <div id="areaChart" class="bar-chart" aria-label="Top støtteområder"></div>
-          <div class="status-strip" aria-label="Verifikationsstatus">
-            <div>
-              <span>Kilde-tjekket</span>
-              <meter id="checkedMeter" min="0" max="100" value="0"></meter>
-            </div>
-            <div>
-              <span>Skal verificeres</span>
-              <meter id="verifyMeter" min="0" max="100" value="0"></meter>
-            </div>
-          </div>
-        </aside>
+          <div id="favoriteList" class="favorite-list"></div>
+        </section>
+      </section>
 
-        <section class="results-panel" aria-labelledby="resultsTitle">
-          <div class="panel-heading">
+      <section id="panel-alerts" class="tab-panel" data-panel="alerts" hidden>
+        <section class="alerts-panel" aria-label="Emailvarslinger og favoritter">
+          <div class="alerts-header">
             <div>
-              <p class="eyebrow dark">Resultater</p>
-              <h2 id="resultsTitle">Fondsliste</h2>
+              <h2>Alerts</h2>
+              <p>Få overblik over frister, nye fonde og ændringer på favoritter.</p>
             </div>
-            <span id="resultsHint">Vælg en række for detaljer</span>
           </div>
-          <div class="table-wrap">
-            <table>
+          <div class="alert-settings">
+            <label>
+              <span>Email</span>
+              <input id="emailInput" type="email" placeholder="din@email.dk" autocomplete="email" />
+            </label>
+            <label class="check-control">
+              <input id="deadlineAlertToggle" type="checkbox" />
+              <span>Frist ca. 2 uger</span>
+            </label>
+            <label class="check-control">
+              <input id="newFoundationAlertToggle" type="checkbox" />
+              <span>Ny fond</span>
+            </label>
+            <label class="check-control">
+              <input id="newCallAlertToggle" type="checkbox" />
+              <span>Nye calls</span>
+            </label>
+            <label class="check-control">
+              <input id="favoriteUpdateAlertToggle" type="checkbox" />
+              <span>Favorit-opdatering</span>
+            </label>
+            <button id="emailDigestButton" class="button-link" type="button">Emailkladde</button>
+          </div>
+          <div id="alertList" class="alert-list"></div>
+        </section>
+      </section>
+
+      <section id="panel-data" class="tab-panel" data-panel="data" hidden>
+        <section id="updateStatus" class="update-status" aria-live="polite" hidden></section>
+        <section class="data-panel" aria-label="Datastatus">
+          <div class="section-heading">
+            <h2>Datastatus</h2>
+            <span id="scanHealthText">Scanner ikke indlæst</span>
+          </div>
+          <div id="dataHealthList" class="data-health-list"></div>
+        </section>
+
+        <section class="scrape-admin" aria-label="Scraping og validering">
+          <div class="scrape-header">
+            <div>
+              <h2>Overvågning og manuel godkendelse</h2>
+              <p>Den eksisterende scraper sammenligner fondenes kilder og sender usikre ændringer til review.</p>
+            </div>
+            <div class="scrape-actions">
+              <button id="scrapeTestButton" class="button-link" type="button">Test 5 fonde</button>
+              <button id="scrapeRunButton" class="button-link" type="button">Kør scraper</button>
+            </div>
+          </div>
+          <p id="scrapeStatus" class="scrape-status" aria-live="polite">Ingen scraper-kørsel i denne session.</p>
+          <div class="scrape-table-wrap">
+            <table class="scrape-table">
               <thead>
                 <tr>
                   <th>Fond</th>
-                  <th>Lokation</th>
-                  <th>Støtteområder</th>
-                  <th>Beløb</th>
-                  <th>Fristmodel</th>
-                  <th>Datakvalitet</th>
-                  <th>Status</th>
+                  <th>Felt</th>
+                  <th>Ny værdi</th>
+                  <th>Vurdering</th>
+                  <th>Handling</th>
                 </tr>
               </thead>
-              <tbody id="foundationRows"></tbody>
+              <tbody id="scrapeChangeRows"></tbody>
             </table>
           </div>
         </section>
-
-        <aside class="detail-panel" aria-labelledby="detailTitle">
-          <div class="panel-heading detail-heading">
-            <div>
-              <p class="eyebrow dark">Detaljer</p>
-              <h2 id="detailTitle">Fondsoverblik</h2>
-            </div>
-          </div>
-          <div id="detailEmpty" class="empty-state">Vælg en fond i listen</div>
-          <article id="detailContent" class="detail-content" hidden></article>
-        </aside>
-      </section>
-
-      <section class="scrape-admin" aria-label="Scraping og validering">
-        <div class="scrape-header">
-          <div>
-            <p class="eyebrow dark">Webscraping</p>
-            <h2>Overvågning og manuel godkendelse</h2>
-          </div>
-          <div class="scrape-actions">
-            <button id="scrapeTestButton" class="secondary-control" type="button">Test 5 fonde</button>
-            <button id="scrapeRunButton" class="secondary-control primary-control" type="button">Kør scraper</button>
-          </div>
-        </div>
-        <p id="scrapeStatus" class="scrape-status" aria-live="polite">Ingen scraper-kørsel i denne session.</p>
-        <div class="scrape-table-wrap">
-          <table class="scrape-table">
-            <thead>
-              <tr>
-                <th>Fond</th>
-                <th>Felt</th>
-                <th>Ny værdi</th>
-                <th>Vurdering</th>
-                <th>Handling</th>
-              </tr>
-            </thead>
-            <tbody id="scrapeChangeRows"></tbody>
-          </table>
-        </div>
       </section>
     </main>
 
-    <script src="frontend/app.js" defer></script>
+    <script src="frontend/app.js?v=6" defer></script>
   </body>
 </html>
