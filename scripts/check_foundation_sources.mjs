@@ -4,6 +4,7 @@ import path from "node:path";
 
 const rootDir = process.cwd();
 const csvPath = path.join(rootDir, "data", "fonde_seed.csv");
+const programsCsvPath = path.join(rootDir, "data", "programs_seed.csv");
 const reportDir = path.join(rootDir, "reports");
 const reportPath = path.join(reportDir, "source-check-report.json");
 const today = new Date().toISOString().slice(0, 10);
@@ -139,9 +140,37 @@ async function checkFoundation(foundation) {
   };
 }
 
+async function checkProgram(program) {
+  const checks = {
+    application_url: await fetchWithTimeout(program.application_url),
+    source_url: await fetchWithTimeout(program.source_url),
+  };
+
+  const failed = Object.entries(checks)
+    .filter(([, result]) => !result.ok)
+    .map(([field, result]) => ({
+      field,
+      status: result.status,
+      error: result.error,
+      url: program[field],
+    }));
+
+  return {
+    program_id: program.program_id,
+    foundation_id: program.foundation_id,
+    name: program.program_name,
+    checked_at: new Date().toISOString(),
+    failed,
+    checks,
+  };
+}
+
 const csvText = await fs.readFile(csvPath, "utf8");
 const { headers, records } = csvToObjects(csvText);
+const programsCsvText = await fs.readFile(programsCsvPath, "utf8");
+const { records: programRecords } = csvToObjects(programsCsvText);
 const results = [];
+const programResults = [];
 
 for (const foundation of records) {
   const result = await checkFoundation(foundation);
@@ -157,13 +186,20 @@ for (const foundation of records) {
   }
 }
 
+for (const program of programRecords) {
+  programResults.push(await checkProgram(program));
+}
+
 const report = {
   generated_at: new Date().toISOString(),
   total_foundations: records.length,
   failed_foundations: results.filter((result) => result.failed.length > 0).length,
+  total_programs: programRecords.length,
+  failed_programs: programResults.filter((result) => result.failed.length > 0).length,
   dry_run: dryRun,
   updated_csv: updateCsv,
   results,
+  program_results: programResults,
 };
 
 await fs.mkdir(reportDir, { recursive: true });
@@ -178,6 +214,8 @@ console.log(
     {
       total_foundations: report.total_foundations,
       failed_foundations: report.failed_foundations,
+      total_programs: report.total_programs,
+      failed_programs: report.failed_programs,
       report: path.relative(rootDir, reportPath),
       updated_csv: updateCsv,
     },
@@ -186,6 +224,6 @@ console.log(
   ),
 );
 
-if (report.failed_foundations > 0 && process.env.FAIL_ON_SOURCE_ERRORS === "true") {
+if ((report.failed_foundations > 0 || report.failed_programs > 0) && process.env.FAIL_ON_SOURCE_ERRORS === "true") {
   process.exitCode = 1;
 }

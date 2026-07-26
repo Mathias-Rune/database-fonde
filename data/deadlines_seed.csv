@@ -1,0 +1,23 @@
+deadline_id,program_id,deadline_type,status,opens_on,closes_on,recurrence,summary,last_checked,verification_status
+nordea-fonden-good-lives-deadline,nordea-fonden-good-lives,rolling,open,,,Løbende,Løbende og puljer,2026-06-08,to_verify
+trygfonden-safety-deadline,trygfonden-safety,rolling,open,,,Løbende,Løbende og landsdækkende puljer,2026-06-08,source_checked
+villum-research-calls-deadline,villum-research-calls,call,to_verify,,,Efter opslag,Frister afhænger af konkrete calls,2026-06-08,to_verify
+velux-humanities-calls-deadline,velux-humanities-calls,call,to_verify,,,Efter opslag,Frister afhænger af konkrete calls,2026-06-08,to_verify
+bikuben-art-social-deadline,bikuben-art-social,call,to_verify,,,Efter opslag,Opslag/calls,2026-06-08,to_verify
+tuborg-youth-deadline,tuborg-youth,rolling,open,,,Løbende,Løbende og puljer,2026-06-08,to_verify
+egmont-children-deadline,egmont-children,call,to_verify,,,Efter opslag,Opslag/calls,2026-06-08,to_verify
+lauritzen-general-deadline,lauritzen-general,rolling,open,,,Løbende,Løbende og opslag,2026-06-08,to_verify
+ole-kirks-children-deadline,ole-kirks-children,rolling,open,,,Løbende,Løbende og opslag,2026-06-08,to_verify
+kr-climate-deadline,kr-climate,invitation,to_verify,,,Invitation/opslag,Opslag/invitation,2026-06-08,to_verify
+duf-initiativstoetten-deadline,duf-initiativstoetten,fixed,upcoming,,2026-08-10,Flere årlige runder,Næste frist 10. august 2026 kl. 12,2026-07-02,source_checked
+oestifterne-pools-deadline,oestifterne-pools,call,to_verify,,,Efter pulje,Løbende og konkrete puljer,2026-07-02,source_checked
+lb-national-grants-deadline,lb-national-grants,call,to_verify,,,Efter opslag,Regionale og nationale uddelinger,2026-07-02,source_checked
+nordjyllandsfonden-community-deadline,nordjyllandsfonden-community,call,to_verify,,,Efter uddelingsrunde,Løbende og uddelingsrunder,2026-07-02,source_checked
+velliv-youth-mental-health-deadline,velliv-youth-mental-health,fixed,open,,2026-08-26,Løbende og faste puljefrister,Fodfæste i fællesskab har frist 26. august 2026; større ansøgninger løbende,2026-07-02,source_checked
+noerrebro-byens-puls-deadline,noerrebro-byens-puls,fixed,open,,2026-08-10,Genåbnet pulje,Frist 10. august 2026 ved midnat,2026-07-02,source_checked
+noerrebro-puljen-deadline,noerrebro-puljen,call,to_verify,,,To årlige runder,Næste runde skal verificeres,2026-07-02,source_checked
+frederiksberg-hurtigpuljen-deadline,frederiksberg-hurtigpuljen,rolling,open,,,Løbende,Løbende ansøgning; ingen behandling i juli,2026-07-02,source_checked
+frederiksberg-kultur-fritid-deadline,frederiksberg-kultur-fritid,fixed,open,,2026-08-02,Fem årlige runder,Næste frist 2. august 2026; derefter 15. september,2026-07-02,source_checked
+kk-snabslanten-deadline,kk-snabslanten,rolling,upcoming,2026-08-01,,Løbende med sommerlukning,Åbner igen i august; minimum 14 dage før aktivitet,2026-07-02,source_checked
+kk-udviklingspulje-boern-unge-deadline,kk-udviklingspulje-boern-unge,rolling,open,,,Løbende,Løbende ansøgning,2026-07-02,source_checked
+kk-paragraf-18-deadline,kk-paragraf-18,annual,closed,2026-01-01,2026-05-04,Årligt,2027-runden er lukket; overvåg næste årlige åbning,2026-07-02,source_checked

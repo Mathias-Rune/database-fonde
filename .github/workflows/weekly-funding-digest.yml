@@ -1,0 +1,114 @@
+name: Weekly funding digest
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub cron uses UTC. Running at both candidates and checking Copenhagen
+    # local time keeps delivery at 09:00 across daylight-saving changes.
+    - cron: "0 7 * * 1"
+    - cron: "0 8 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-funding-digest
+  cancel-in-progress: false
+
+jobs:
+  scan-and-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: Europe/Copenhagen
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      DIGEST_FROM: ${{ vars.DIGEST_FROM || 'info@sustainary.org' }}
+      DIGEST_TO: ${{ vars.DIGEST_TO || 'mpv@sustainary.org,valdemar@sustainary.org,manuela@sustainary.org' }}
+      DIGEST_MIN_RELEVANCE: ${{ vars.DIGEST_MIN_RELEVANCE || '20' }}
+      DIGEST_MAX_DISCOVERY: ${{ vars.DIGEST_MAX_DISCOVERY || '20' }}
+
+    steps:
+      - name: Check Copenhagen delivery time
+        id: clock
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date +%H)" == "09" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping duplicate UTC slot; Copenhagen time is $(date +%H:%M)."
+          fi
+
+      - name: Check out repository
+        if: steps.clock.outputs.run == 'true'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        if: steps.clock.outputs.run == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install SQLite
+        if: steps.clock.outputs.run == 'true'
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+
+      - name: Run tests
+        if: steps.clock.outputs.run == 'true'
+        run: npm test
+
+      - name: Scan relevant funding sources
+        if: steps.clock.outputs.run == 'true'
+        run: node scripts/scan_fund_calls.mjs
+
+      - name: Discover new funding sources and calls
+        if: steps.clock.outputs.run == 'true'
+        run: node scripts/discover_funding_calls.mjs
+
+      - name: Rebuild SQLite database
+        if: steps.clock.outputs.run == 'true'
+        run: sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
+
+      - name: Build or send weekly digest
+        if: steps.clock.outputs.run == 'true'
+        id: digest
+        shell: bash
+        run: |
+          if [[ -n "$RESEND_API_KEY" ]]; then
+            node scripts/weekly_digest.mjs --send --update-state
+            echo "sent=true" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/weekly_digest.mjs
+            echo "sent=false" >> "$GITHUB_OUTPUT"
+            echo "RESEND_API_KEY is not configured; generated preview only." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Add digest preview to job summary
+        if: steps.clock.outputs.run == 'true'
+        run: |
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          sed -n '1,160p' outputs/weekly-digest/latest.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload digest preview
+        if: steps.clock.outputs.run == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: weekly-funding-digest-${{ github.run_number }}
+          path: outputs/weekly-digest/
+          retention-days: 30
+
+      - name: Persist delivery state
+        if: steps.clock.outputs.run == 'true' && steps.digest.outputs.sent == 'true'
+        shell: bash
+        run: |
+          if git diff --quiet -- data/weekly_digest_state.json; then
+            exit 0
+          fi
+          git config user.name "sustainary-funding-monitor[bot]"
+          git config user.email "sustainary-funding-monitor[bot]@users.noreply.github.com"
+          git add data/weekly_digest_state.json
+          git commit -m "Update weekly digest delivery state"
+          git push
