@@ -135,6 +135,15 @@ function deadlineLabel(deadline) {
   return deadline.summary || "Skal tjekkes";
 }
 
+function applicationActionLabel(program) {
+  const status = String(program.application_status || "").toLocaleLowerCase("da");
+  if (status.includes("dialog")) return "Kom i dialog";
+  if (status.includes("forespørg")) return "Start forespørgsel";
+  if (status.includes("invitation")) return "Læs om processen";
+  if (status.includes("opslag") || status.includes("call")) return "Se aktuelle opslag";
+  return "Ansøgning";
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -402,14 +411,19 @@ function renderRows() {
     const deadlineClass = deadline?.status === "open" ? "open" : "to_verify";
 
     tr.innerHTML = `
-      <td class="name-cell">
-        <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
-        <span><strong>${escapeHtml(program.program_name)}</strong><span>${escapeHtml(foundation.name)} · ${escapeHtml(program.geography || foundation.city || "Danmark")}</span></span>
+      <td class="opportunity-cell" data-label="Mulighed">
+        <div class="name-cell">
+          <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
+          <span class="opportunity-name">
+            <strong>${escapeHtml(program.program_name)}</strong>
+            <span>${escapeHtml(foundation.name)} · ${escapeHtml(program.geography || foundation.city || "Danmark")}</span>
+          </span>
+        </div>
       </td>
-      <td><div class="pill-list">${areas}</div></td>
-      <td><div class="pill-list">${applicants}</div></td>
-      <td><span class="deadline ${deadlineClass}">${escapeHtml(deadlineLabel(deadline))}</span></td>
-      <td><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></td>
+      <td data-label="Støtteområder"><div class="pill-list">${areas}</div></td>
+      <td data-label="Ansøgere"><div class="pill-list">${applicants}</div></td>
+      <td data-label="Frist"><span class="deadline ${deadlineClass}">${escapeHtml(deadlineLabel(deadline))}</span></td>
+      <td data-label="Status"><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></td>
     `;
 
     els.rows.append(tr);
@@ -465,7 +479,7 @@ function renderDetail() {
       <p>${escapeHtml(program.notes || foundation.notes || "-")}</p>
     </div>
     <div class="detail-links">
-      <a class="button-link" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer">Ansøgning</a>
+      <a class="button-link" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer">${escapeHtml(applicationActionLabel(program))}</a>
       <a class="button-link secondary" href="${escapeHtml(linkOrHash(foundation.website))}" target="_blank" rel="noreferrer">Website</a>
       <a class="button-link secondary" href="${escapeHtml(linkOrHash(program.source_url || foundation.source_url))}" target="_blank" rel="noreferrer">Kilde</a>
     </div>

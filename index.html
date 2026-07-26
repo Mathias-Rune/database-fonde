@@ -4,14 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
-    <link rel="stylesheet" href="frontend/styles.css?v=6" />
+    <meta name="theme-color" content="#102b27" />
+    <link rel="stylesheet" href="frontend/styles.css?v=8" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Dansk Fondsdatabase</p>
-        <h1>Fonde i Danmark</h1>
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" role="img">
+            <path d="M16 4.5c-5.9 0-10.7 4.8-10.7 10.7 0 7.1 6.8 11.5 10.7 12.3 3.9-.8 10.7-5.2 10.7-12.3C26.7 9.3 21.9 4.5 16 4.5Z" />
+            <path d="M10.6 18.8c3.7-.2 7.3-2.3 9.8-6.3M15.8 23V16" />
+          </svg>
+        </span>
+        <div>
+          <p class="eyebrow">Dansk Fondsdatabase</p>
+          <h1>Fonde i Danmark</h1>
+          <p class="header-subtitle">Find, vurder og følg de rette støttemuligheder.</p>
+        </div>
       </div>
       <div class="top-actions" aria-label="Datahandlinger">
         <button id="updateButton" class="icon-link action-button" type="button">Opdater kilder</button>
@@ -127,26 +137,15 @@
           </label>
         </section>
 
-        <section class="content-grid">
-          <aside class="insights" aria-label="Datavisualisering">
-            <div class="section-heading">
-              <h2>Fordeling</h2>
-              <span id="visibleCount">0 vist</span>
-            </div>
-            <div id="areaChart" class="bar-chart" aria-label="Top støtteområder"></div>
-            <div class="status-strip" aria-label="Verifikationsstatus">
-              <div>
-                <span>Kilde-tjekket</span>
-                <meter id="checkedMeter" min="0" max="100" value="0"></meter>
-              </div>
-              <div>
-                <span>Skal verificeres</span>
-                <meter id="verifyMeter" min="0" max="100" value="0"></meter>
-              </div>
-            </div>
-          </aside>
-
+        <section class="content-grid funds-workspace">
           <section class="results-panel" aria-label="Fondsliste">
+            <div class="results-heading">
+              <div>
+                <p class="section-kicker">Fondsdatabase</p>
+                <h2>Støttemuligheder</h2>
+              </div>
+              <span id="visibleCount">0 muligheder</span>
+            </div>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -164,10 +163,35 @@
           </section>
 
           <aside class="detail-panel" aria-label="Detaljer">
+            <div class="detail-panel-heading">
+              <p class="section-kicker">Detaljer</p>
+              <span>Valgt mulighed</span>
+            </div>
             <div id="detailEmpty" class="empty-state">Vælg en mulighed i listen</div>
             <article id="detailContent" class="detail-content" hidden></article>
           </aside>
         </section>
+
+        <aside class="insights results-insights" aria-label="Overblik over filtrerede muligheder">
+          <div class="section-heading insights-heading">
+            <div>
+              <p class="section-kicker">Aktuelle resultater</p>
+              <h2>Fordeling</h2>
+            </div>
+            <span>Topområder og datastatus</span>
+          </div>
+          <div id="areaChart" class="bar-chart" aria-label="Top støtteområder"></div>
+          <div class="status-strip" aria-label="Verifikationsstatus">
+            <div>
+              <span>Kilde-tjekket</span>
+              <meter id="checkedMeter" min="0" max="100" value="0"></meter>
+            </div>
+            <div>
+              <span>Skal verificeres</span>
+              <meter id="verifyMeter" min="0" max="100" value="0"></meter>
+            </div>
+          </div>
+        </aside>
       </section>
 
       <section id="panel-favoritter" class="tab-panel" data-panel="favoritter" hidden>
@@ -255,6 +279,6 @@
       </section>
     </main>
 
-    <script src="frontend/app.js?v=6" defer></script>
+    <script src="frontend/app.js?v=8" defer></script>
   </body>
 </html>
