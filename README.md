@@ -36,6 +36,8 @@ Discovery-scanneren besøger hvert kandidatlink og scorer konkrete puljesignaler
 sqlite3 outputs/fonds_database.sqlite < database/import_seed.sql
 ```
 
+Den fremtidige kanoniske Postgres-model og den kontrollerede overgang fra CSV/SQLite er beskrevet i [`docs/CANONICAL_DATABASE.md`](docs/CANONICAL_DATABASE.md).
+
 ## Start frontend
 
 Kun paa din egen computer:
