@@ -1,0 +1,74 @@
+scan_result_id,review_status,review_note,reviewed_at
+ab29ff2e2cf13385,reviewed,"Direkte ansøgningsportal til Initiativstøtten.",2026-07-27
+e16d05428d24251b,reviewed,"Officiel puljeside med aktuelle ansøgningsfrister for 2026 og 2027.",2026-07-27
+7eacee33d04cdf01,ignored,"Generel oversigt over DUFs puljer; ikke et særskilt fund for Initiativstøtten.",2026-07-27
+2ed9f7d1057b0348,ignored,"Dublet af den generelle puljeoversigt og ikke et konkret opslag.",2026-07-27
+c2bef78eb9f2acfd,ignored,"Linket peger på Folkeoplysningspuljen og ikke Hurtigpuljen.",2026-07-27
+53d79478f031be15,ignored,"Internt hovedindholdsanker; teknisk navigationslink uden selvstændigt indhold.",2026-07-27
+eefb2162f07bbe2b,reviewed,"Officiel side for Hurtigpuljen.",2026-07-27
+33c8fac65ad3e57b,ignored,"Linket peger på en anden pulje om gavlmalerier.",2026-07-27
+c76bdbb8e253283f,ignored,"Generel puljeoversigt; ikke et særskilt opslag for Hurtigpuljen.",2026-07-27
+be095de8717a3ef9,ignored,"Linket peger på Folkeoplysningspuljen og ikke Kultur- og fritidspuljen.",2026-07-27
+0661728b9f9c0337,ignored,"Internt hovedindholdsanker; teknisk navigationslink uden selvstændigt indhold.",2026-07-27
+e71dc05a441b66c5,ignored,"Linket peger på Hurtigpuljen og ikke Kultur- og fritidspuljen.",2026-07-27
+12e6250db80a4014,ignored,"Linket peger på en anden pulje om gavlmalerier.",2026-07-27
+7f656670b07bb537,ignored,"Generel puljeoversigt; ikke et særskilt opslag for Kultur- og fritidspuljen.",2026-07-27
+3ad09ea444f34812,reviewed,"Direkte officiel ansøgningsside for Snabslanten.",2026-07-27
+5a7a6d985513c175,reviewed,"Officiel og relevant vejledning til ansøgningen.",2026-07-27
+89b439dcc728a8ae,reviewed,"Officiel programside med retningslinjer og aktuel åbningsstatus.",2026-07-27
+5746e69230b13c84,ignored,"Internt hovedindholdsanker; teknisk navigationslink uden selvstændigt indhold.",2026-07-27
+d229ca25fc9ed233,ignored,"Historisk afrapporteringsdokument og ikke en ansøgningsmulighed.",2026-07-27
+878bda5f10a67fa3,reviewed,"Officiel puljeside med løbende ansøgning og kriterier.",2026-07-27
+6f7e6c1eb2a5fbe8,reviewed,"Direkte digital ansøgningsblanket til Udviklingspuljen.",2026-07-27
+4a65c5fc416631f9,ignored,"Generel kommunal puljeoversigt; ikke et konkret opslag.",2026-07-27
+87304312195c2e97,ignored,"Linket peger på julestøtte og ikke §18-puljen.",2026-07-27
+d2cecda49d8ad6c9,reviewed,"Officiel §18-side med verificeret status om lukket 2027-runde.",2026-07-27
+659e3e2c0df1608c,reviewed,"Officiel indgang til LB Foreningens nationale og regionale støtte.",2026-07-27
+779b2fdc34317472,reviewed,"Sideindholdet beskriver aktuelle nationale og regionale uddelinger.",2026-07-27
+92d510d30d462f20,reviewed,"Officiel ansøgningsside med kommende frister og kriterier.",2026-07-27
+625a2cd2a883d294,ignored,"Generel uddelingsside; ikke et aktuelt opslag eller en ansøgningsindgang.",2026-07-27
+07e4e3822de57d93,ignored,"Projekt- og bevillingsoversigt over tidligere uddelinger.",2026-07-27
+bf3f221aeba86dad,reviewed,"Officiel vejledning til udarbejdelse af ansøgning.",2026-07-27
+88ea55adf4ceeaf6,reviewed,"Aktuel Medborgerpulje med målgruppe og ansøgningsproces.",2026-07-27
+89087612f27172a1,ignored,"Generel beskrivelse af sagsbehandling; ikke en ansøgningsmulighed.",2026-07-27
+3763f026e5d10d4e,reviewed,"Officiel hovedindgang til at søge støtte hos Nordea-fonden.",2026-07-27
+d68d2cca25e5d10e,ignored,"Historisk uddelings- og økonomioversigt; ikke et aktuelt opslag.",2026-07-27
+506e608e18667cd0,reviewed,"Direkte officiel side til ansøgning hos Nordjyllandsfonden.",2026-07-27
+e7be2c9539fd7a55,reviewed,"Officiel programside med kriterier og aktuel ansøgningsinformation.",2026-07-27
+78f316acc1a1daec,reviewed,"Officiel side beskriver Byens Puls og aktuelle puljevilkår.",2026-07-27
+0c4c9fe9e4fe7f42,reviewed,"Officiel side beskriver Nørrebro Puljen og dens ansøgningsrunder.",2026-07-27
+e043428a9a6c49d6,reviewed,"Officiel beskrivelse af ansøgningsprocessen hos Ole Kirk's Fond.",2026-07-27
+4765d5a80582f625,reviewed,"Aktuel Hjertepulje med beløbsgrænse og ansøgningsmålgruppe.",2026-07-27
+cd520878694ab377,reviewed,"Direkte ansøgningsportal hos Ole Kirk's Fond.",2026-07-27
+4f6f739927191a38,reviewed,"Officiel side med ansøgningsfrister og forløb.",2026-07-27
+20b5bbab75c08f9c,reviewed,"Relevant officiel kravside for forskningsansøgninger.",2026-07-27
+60978f99be35162d,reviewed,"Direkte login til TrygFondens ansøgningssystem.",2026-07-27
+382be87eb21ed74f,reviewed,"Officiel og relevant vejledning til ansøgere.",2026-07-27
+0c2dc2db3ab2b28d,reviewed,"Officiel oversigt over aktuelle og tidligere særpuljer.",2026-07-27
+df7633bdee3f5c95,reviewed,"Crawlerfundet matcher den officielle frist- og forløbsside.",2026-07-27
+40972caa748c9aec,ignored,"TrygFonden-projekt om digitalt civilsamfund; ikke et åbent opslag.",2026-07-27
+0e57a821676e8268,reviewed,"Officiel hovedindgang til at søge støtte hos TrygFonden.",2026-07-27
+bfbb1894f5f64a55,ignored,"Projekt- og donationsarkiv med tidligere bevillinger; ikke særpuljens ansøgningsside.",2026-07-27
+38be0f9b266fa6f8,reviewed,"Direkte ansøgningsportal til Tuborgfondet.",2026-07-27
+b40b2357adc59e23,reviewed,"Aktuel Drømmepulje med løbende ansøgning og beløbsgrænse.",2026-07-27
+bd7a232a1cf21eaa,ignored,"Generisk navigationslink til forsiden og dublet af sidefundet.",2026-07-27
+090d59bf98aac310,reviewed,"Forsiden beskriver aktiv støtte til unge og giver adgang til ansøgning.",2026-07-27
+0543a9511aa1c9a2,reviewed,"Officiel oversigt over VELUX FONDENs aktuelle opslag.",2026-07-27
+84362e38ea9df0fb,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+6141d5fe00c0612b,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+a9bd45f3825b48e7,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+46a0b5fd56051c92,reviewed,"Officiel oversigt over VILLUM FONDENs aktuelle opslag.",2026-07-27
+c4fca593bc5b79aa,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+37f15590bdf787d3,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+d903847aed92e01d,ignored,"Uddelingsstrategi og ikke en ansøgningsmulighed.",2026-07-27
+940bda0bc84dc532,ignored,"Generisk uddelingsområde; ikke et konkret aktuelt opslag.",2026-07-27
+7b841bd1028a1507,reviewed,"Direkte link til Velliv Foreningens ansøgningssystem.",2026-07-27
+7108cb6694157236,ignored,"Dublet af samme ansøgningsportal med ekstra URL-fragment.",2026-07-27
+238dfa7d9519ac8f,reviewed,"Officiel støtteindgang med aktuelle programmer og frister.",2026-07-27
+c03db61e0871b0b7,ignored,"Beskrivelse af uddelingsudvalg; ikke et opslag eller en ansøgningsindgang.",2026-07-27
+81ea51a106dcab18,reviewed,"Sideindholdet beskriver aktuel ansøgningsbehandling og frister.",2026-07-27
+300481b7e2f7ea52,ignored,"Oversigt over allerede bevilgede indsatser.",2026-07-27
+d4dbe17c97246827,reviewed,"Officielt programområde med forandringsmissioner og adgang til støtte.",2026-07-27
+d4c116b004ce7918,reviewed,"Officiel indgang til ansøgning og puljekriterier.",2026-07-27
+bdbac59b8f5fa3b0,ignored,"Generel uddelingsstrategi; ikke et selvstændigt opslag.",2026-07-27
+5414970b641be7ab,reviewed,"Officiel oversigt over åbne uddelingspuljer og kriterier.",2026-07-27
