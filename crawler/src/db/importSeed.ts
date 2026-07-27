@@ -37,13 +37,13 @@ try {
 }
 
 async function importFoundations(client: PoolClient, records: Record<string, string>[]) {
-  const result = await client.query(`
+  await client.query(`
     update foundations f
     set foundation_key = seed.foundation_id, updated_at = now()
     from jsonb_to_recordset($1::jsonb) as seed(foundation_id text, website text)
     where f.website = seed.website and f.foundation_key <> seed.foundation_id
   `, [JSON.stringify(records)]);
-  await client.query(`
+  const result = await client.query(`
     insert into foundations (
       foundation_key, name, legal_type, regulator, country, city, website, application_url,
       support_areas, applicant_types, deadline_model, notes, source_url, last_checked, verification_status
