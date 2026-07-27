@@ -151,7 +151,7 @@ async function importCallScans(client: PoolClient, records: Record<string, strin
       discovered_title = excluded.discovered_title, discovered_url = excluded.discovered_url,
       excerpt = excluded.excerpt, contact_name = excluded.contact_name, contact_email = excluded.contact_email,
       contact_phone = excluded.contact_phone, contact_source_url = excluded.contact_source_url,
-      scanned_at = excluded.scanned_at, review_status = excluded.review_status
+      scanned_at = excluded.scanned_at
   `, [JSON.stringify(records)]);
   assertImported("call_scan_results", result.rowCount, records.length);
 }

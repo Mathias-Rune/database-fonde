@@ -1,0 +1,50 @@
+name: Scan review status
+
+on:
+  pull_request:
+    paths:
+      - "database/postgres/**"
+      - "scripts/review_repository*"
+      - "server.mjs"
+      - "frontend/app.js"
+      - ".github/workflows/scan-review-status.yml"
+  push:
+    branches:
+      - "codex/persist-scan-review-status"
+
+jobs:
+  review-persistence:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: foundation_intelligence
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d foundation_intelligence"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/foundation_intelligence
+      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/foundation_intelligence
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci
+        working-directory: crawler
+      - run: npm run db:migrate
+        working-directory: crawler
+      - run: npm run db:import-seed
+        working-directory: crawler
+      - run: npm test
+      - run: npm run typecheck
+        working-directory: crawler

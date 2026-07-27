@@ -12,5 +12,8 @@
     "discover": "node scripts/discover_funding_calls.mjs",
     "digest": "node scripts/weekly_digest.mjs",
     "test": "node --test scripts/*.test.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.22.0"
   }
 }
