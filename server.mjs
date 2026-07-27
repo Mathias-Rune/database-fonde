@@ -4,10 +4,17 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSqliteFile, runSqlite, sqlString } from "./scripts/sqlite_utils.mjs";
+import { createReviewRepository, validateReviewInput } from "./scripts/review_repository.mjs";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8000);
 const host = process.env.HOST || "127.0.0.1";
+const reviewRepository = createReviewRepository({
+  sqlitePath: process.env.REVIEW_SQLITE_PATH
+    ? path.resolve(process.env.REVIEW_SQLITE_PATH)
+    : path.join(rootDir, "outputs", "fonds_database.sqlite"),
+  cwd: rootDir,
+});
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -383,6 +390,38 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "GET" && requestUrl.pathname === "/api/call-reviews") {
+    try {
+      sendJson(response, 200, {
+        ok: true,
+        backend: reviewRepository.backend,
+        reviews: await reviewRepository.list(),
+      });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/call-reviews") {
+    try {
+      const input = validateReviewInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      const review = await reviewRepository.update(input);
+      sendJson(
+        response,
+        review ? 200 : 404,
+        review ? { ok: true, backend: reviewRepository.backend, review } : { ok: false, message: "Scannerfundet blev ikke fundet" },
+      );
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405);
     response.end("Method not allowed");
@@ -394,4 +433,8 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(port, host, () => {
   console.log(`Database fonde running at http://${host}:${port}/`);
+});
+
+server.on("close", () => {
+  void reviewRepository.close();
 });

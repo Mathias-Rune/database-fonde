@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts",
     "lint": "eslint . --ext .ts",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:import-seed": "tsx src/db/importSeed.ts",
+    "db:verify": "tsx src/db/verifyCanonical.ts",
     "sample": "tsx src/cli/index.ts crawl --seeds https://www.tuborgfondet.dk,https://www.tryghed.dk --max-pages 18 --out data/outputs/sample",
     "mvp": "tsx src/cli/index.ts crawl --seeds https://www.tuborgfondet.dk,https://www.tryghed.dk --max-pages 4 --out data/outputs/mvp"
   },

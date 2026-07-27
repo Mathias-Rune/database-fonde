@@ -686,7 +686,7 @@ function renderDataHealth() {
     <article>
       <span>Review</span>
       <strong>${reviewedScans}/${ignoredScans}</strong>
-      <p>Lokalt markeret som reviewed/ignoreret i denne browser.</p>
+      <p>Reviewed/ignoreret og gemt centralt i databasen.</p>
     </article>
     <article>
       <span>Downloads</span>
@@ -735,13 +735,47 @@ function toggleFavorite(foundationId) {
 }
 
 function updateScanReview(scanResultId, status) {
-  state.scanReviewOverrides[scanResultId] = status;
-  saveJson("fondsdb.scanReviewOverrides", state.scanReviewOverrides);
+  return persistScanReview(scanResultId, status).catch((error) => {
+    showActionToast(`Review kunne ikke gemmes: ${error.message}`, true);
+  });
+}
+
+async function persistScanReview(scanResultId, status, { silent = false } = {}) {
+  if (isFilePreview()) throw new Error("Start appen via LocalHost for at gemme review");
+  const response = await fetch("/api/call-reviews", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ scan_result_id: scanResultId, review_status: status }),
+  });
+  const payload = await response.json();
+  if (!response.ok || !payload.ok) throw new Error(payload.message || "Review kunne ikke gemmes");
+  state.scanReviewOverrides[scanResultId] = payload.review.review_status;
   buildAlerts();
   renderAlerts();
   renderReview();
   renderFavoriteList();
   renderDataHealth();
+  if (!silent) showActionToast("Review er gemt i databasen.");
+}
+
+async function loadScanReviews() {
+  if (isFilePreview()) return;
+  const legacyOverrides = loadJson("fondsdb.scanReviewOverrides", {});
+  const knownScanIds = new Set(state.callScanResults.map((scan) => scan.scan_result_id));
+  const legacyEntries = Object.entries(legacyOverrides).filter(([scanResultId]) => knownScanIds.has(scanResultId));
+  if (legacyEntries.length > 0) {
+    for (const [scanResultId, status] of legacyEntries) {
+      await persistScanReview(scanResultId, status, { silent: true });
+    }
+    localStorage.removeItem("fondsdb.scanReviewOverrides");
+  }
+
+  const response = await fetch("/api/call-reviews");
+  const payload = await response.json();
+  if (!response.ok || !payload.ok) throw new Error(payload.message || "Reviewstatus kunne ikke hentes");
+  state.scanReviewOverrides = Object.fromEntries(
+    payload.reviews.map((review) => [review.scan_result_id, review.review_status]),
+  );
 }
 
 function openEmailDigest() {
@@ -953,7 +987,6 @@ async function decideScrapeChange(row, button) {
 async function init() {
   state.activeTab = loadJson("fondsdb.activeTab", "fund");
   state.favorites = new Set(loadJson("fondsdb.favorites", []));
-  state.scanReviewOverrides = loadJson("fondsdb.scanReviewOverrides", {});
   state.alertSettings = {
     ...state.alertSettings,
     ...loadJson("fondsdb.alertSettings", {}),
@@ -970,6 +1003,10 @@ async function init() {
   state.programs = csvToObjects(await programResponse.text());
   state.deadlines = csvToObjects(await deadlineResponse.text());
   state.callScanResults = scanResponse.ok ? csvToObjects(await scanResponse.text()) : [];
+  await loadScanReviews().catch((error) => {
+    console.warn(error);
+    showActionToast("Reviewstatus kunne ikke hentes fra databasen.", true);
+  });
   rebuildOpportunities();
   state.selectedId = state.opportunities[0]?.program.program_id || null;
 
@@ -1005,7 +1042,7 @@ async function init() {
   els.reviewList.addEventListener("click", (event) => {
     const button = event.target.closest("[data-review-id]");
     if (!button) return;
-    updateScanReview(button.dataset.reviewId, button.dataset.reviewStatus);
+    void updateScanReview(button.dataset.reviewId, button.dataset.reviewStatus);
   });
 
   els.favoriteList.addEventListener("click", (event) => {

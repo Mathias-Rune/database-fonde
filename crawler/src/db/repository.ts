@@ -34,20 +34,21 @@ export class PostgresFoundationRepository implements FoundationRepository {
     const client = await this.pool.connect();
     try {
       await client.query("begin");
+      const foundationKey = canonicalFoundationKey(profile.website);
       const foundation = await client.query<{ id: string }>(
         `insert into foundations (
-          name, website, country, language, normalized_focus_areas, raw_focus_area_labels,
+          foundation_key, name, website, country, language, normalized_focus_areas, raw_focus_area_labels,
           target_groups, geography, support_types, application_process_summary,
           typical_grant_min, typical_grant_max, typical_grant_median, typical_grant_mean,
           typical_grant_currency, typical_grant_sample_size, typical_grant_observed_year_min,
           typical_grant_observed_year_max, open_call_status, open_call_summary, latest_deadline,
           last_crawled_at, profile_confidence, notes
         ) values (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
         )
         on conflict (website) do update set
-          name = excluded.name,
-          country = excluded.country,
+          name = coalesce(foundations.name, excluded.name),
+          country = coalesce(foundations.country, excluded.country),
           language = excluded.language,
           normalized_focus_areas = excluded.normalized_focus_areas,
           raw_focus_area_labels = excluded.raw_focus_area_labels,
@@ -72,9 +73,10 @@ export class PostgresFoundationRepository implements FoundationRepository {
           updated_at = now()
         returning id`,
         [
-          profile.name,
+          foundationKey,
+          profile.name ?? foundationKey,
           profile.website,
-          profile.country,
+          profile.country ?? "Danmark",
           profile.language,
           profile.normalizedFocusAreas,
           profile.rawFocusAreaLabels,
@@ -210,6 +212,11 @@ export class PostgresFoundationRepository implements FoundationRepository {
       client.release();
     }
   }
+}
+
+export function canonicalFoundationKey(website: string): string {
+  const hostname = new URL(website).hostname.replace(/^www\./, "");
+  return slugify(hostname);
 }
 
 function slugify(value: string): string {
