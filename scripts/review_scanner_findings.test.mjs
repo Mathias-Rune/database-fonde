@@ -30,7 +30,7 @@ test("review decisions cover exactly all 73 new findings", async () => {
   assert.equal(decisions.some((decision) => decision.scan_result_id === errorScan.scan_result_id), false);
 });
 
-test("review decisions are idempotent and create an audit trail", async (t) => {
+test("review decisions use SQLite explicitly and create an idempotent audit trail", async (t) => {
   const temporaryDir = await fs.mkdtemp(path.join(os.tmpdir(), "fonds-review-decisions-"));
   const sqlitePath = path.join(temporaryDir, "fonds.sqlite");
   await fs.copyFile(path.join(rootDir, "outputs", "fonds_database.sqlite"), sqlitePath);
@@ -41,8 +41,9 @@ test("review decisions are idempotent and create an audit trail", async (t) => {
   t.after(() => fs.rm(temporaryDir, { recursive: true, force: true }));
 
   const { decisions } = await loadReviewData();
-  const first = await applyReviewDecisions(decisions, { sqlitePath, actor: "automated_test", cwd: rootDir });
-  const second = await applyReviewDecisions(decisions, { sqlitePath, actor: "automated_test", cwd: rootDir });
+  const repositoryOptions = { databaseUrl: "", sqlitePath, actor: "automated_test", cwd: rootDir };
+  const first = await applyReviewDecisions(decisions, repositoryOptions);
+  const second = await applyReviewDecisions(decisions, repositoryOptions);
   assert.deepEqual(first, { applied: 73, backend: "sqlite" });
   assert.deepEqual(second, { applied: 73, backend: "sqlite" });
 
