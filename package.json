@@ -9,6 +9,8 @@
     "scrape": "node scripts/fond_scraper.mjs",
     "scan": "node scripts/scan_fund_calls.mjs",
     "scan:deep": "node scripts/deep_scan_fund_calls.mjs",
+    "review:scan-findings": "node scripts/review_scanner_findings.mjs",
+    "review:scan-findings:check": "node scripts/review_scanner_findings.mjs --dry-run",
     "discover": "node scripts/discover_funding_calls.mjs",
     "digest": "node scripts/weekly_digest.mjs",
     "test": "node --test scripts/*.test.mjs"
