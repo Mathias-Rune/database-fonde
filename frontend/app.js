@@ -2,6 +2,9 @@ const state = {
   foundations: [],
   programs: [],
   deadlines: [],
+  programEligibility: [],
+  programApplicants: [],
+  programExclusions: [],
   callScanResults: [],
   opportunities: [],
   filtered: [],
@@ -142,6 +145,36 @@ function applicationActionLabel(program) {
   if (status.includes("invitation")) return "Læs om processen";
   if (status.includes("opslag") || status.includes("call")) return "Se aktuelle opslag";
   return "Ansøgning";
+}
+
+function cvrRequirementLabel(requirement) {
+  return {
+    required: "CVR påkrævet",
+    not_required: "CVR ikke påkrævet",
+    conditional: "CVR afhænger af ansøgerformen",
+    unknown: "CVR-krav skal verificeres",
+  }[requirement] || "CVR-krav skal verificeres";
+}
+
+function structuredGeographyLabel(profile, fallback) {
+  if (!profile) return fallback || "Skal verificeres";
+  return [profile.local_area, profile.municipality, profile.region, profile.country_code]
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(" · ") || fallback || "Skal verificeres";
+}
+
+function structuredAmountLabel(profile, fallback) {
+  if (!profile) return fallback || "Varierer";
+  const format = (value) => new Intl.NumberFormat("da-DK", { maximumFractionDigits: 0 }).format(Number(value));
+  const currency = profile.amount_currency || "DKK";
+  if (profile.amount_min && profile.amount_max) return `${format(profile.amount_min)}–${format(profile.amount_max)} ${currency}`;
+  if (profile.amount_min) return `Fra ${format(profile.amount_min)} ${currency}`;
+  if (profile.amount_max) {
+    const prefix = profile.amount_model === "project_budget_cap" ? "Projektbudget under" : "Op til";
+    return `${prefix} ${format(profile.amount_max)} ${currency}`;
+  }
+  return fallback || "Varierer";
 }
 
 function escapeHtml(value) {
@@ -356,6 +389,9 @@ function renderFilterOptions() {
     splitList(program.support_areas).forEach((area) => areas.add(area));
     splitList(program.applicant_types).forEach((applicant) => applicants.add(applicant));
   });
+  state.programApplicants
+    .filter((applicant) => applicant.eligibility_status !== "ineligible")
+    .forEach((applicant) => applicants.add(applicant.label));
 
   appendOptions(els.areaFilter, [...areas].sort((a, b) => a.localeCompare(b, "da")));
   appendOptions(els.applicantFilter, [...applicants].sort((a, b) => a.localeCompare(b, "da")));
@@ -440,6 +476,9 @@ function renderDetail() {
   }
 
   const { foundation, program, deadline } = opportunity;
+  const eligibility = state.programEligibility.find((item) => item.program_id === program.program_id);
+  const applicants = state.programApplicants.filter((item) => item.program_id === program.program_id && item.eligibility_status !== "ineligible");
+  const exclusions = state.programExclusions.filter((item) => item.program_id === program.program_id);
   els.detailEmpty.hidden = true;
   els.detailContent.hidden = false;
   els.detailContent.innerHTML = `
@@ -459,17 +498,25 @@ function renderDetail() {
       <p>${escapeHtml(deadline?.summary || program.deadline_summary || "-")}</p>
     </div>
     <div class="detail-block">
-      <h3>Ansøgere</h3>
-      <p>${escapeHtml(program.applicant_types || "-")}</p>
+      <h3>Hvem kan søge?</h3>
+      <p>${escapeHtml(eligibility?.eligibility_summary || program.applicant_types || "-")}</p>
+      <div class="pill-list eligibility-list">
+        ${applicants.map((item) => `<span class="pill ${item.eligibility_status === "conditional" ? "muted-pill" : ""}" title="${escapeHtml(item.conditions || "")}">${escapeHtml(item.label)}</span>`).join("")}
+      </div>
     </div>
     <div class="detail-block">
-      <h3>Geografi og brug</h3>
-      <p>${escapeHtml(program.geography || "-")} · ${escapeHtml(program.funding_use || "-")}</p>
+      <h3>Geografi og CVR</h3>
+      <p><strong>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</strong><br>${escapeHtml(cvrRequirementLabel(eligibility?.cvr_requirement))}</p>
+      <small>${escapeHtml(eligibility?.cvr_notes || "")}</small>
     </div>
     <div class="detail-block">
       <h3>Beløb</h3>
-      <p>${escapeHtml(program.amount_range || "Varierer")}</p>
+      <p><strong>${escapeHtml(structuredAmountLabel(eligibility, program.amount_range))}</strong><br>${escapeHtml(eligibility?.amount_notes || program.amount_range || "Varierer")}</p>
     </div>
+    ${exclusions.length ? `<div class="detail-block exclusions-block">
+      <h3>Udelukkelser</h3>
+      <ul>${exclusions.map((item) => `<li>${escapeHtml(item.description)}</li>`).join("")}</ul>
+    </div>` : ""}
     <div class="detail-block">
       <h3>Datastatus</h3>
       <p>${escapeHtml(statusLabel(program.verification_status))} · tjekket ${escapeHtml(program.last_checked || "-")}</p>
@@ -798,6 +845,9 @@ function applyFilters() {
 
   state.filtered = state.opportunities.filter((opportunity) => {
     const { foundation, program, deadline } = opportunity;
+    const eligibility = state.programEligibility.find((item) => item.program_id === program.program_id);
+    const structuredApplicants = state.programApplicants.filter((item) => item.program_id === program.program_id && item.eligibility_status !== "ineligible");
+    const exclusions = state.programExclusions.filter((item) => item.program_id === program.program_id);
     const haystack = [
       foundation.name,
       foundation.city,
@@ -809,13 +859,18 @@ function applyFilters() {
       program.deadline_summary,
       foundation.notes,
       program.notes,
+      eligibility?.eligibility_summary,
+      eligibility?.cvr_notes,
+      structuredGeographyLabel(eligibility, ""),
+      structuredApplicants.map((item) => `${item.label} ${item.conditions || ""}`).join(" "),
+      exclusions.map((item) => item.description).join(" "),
     ]
       .join(" ")
       .toLocaleLowerCase("da");
 
     const matchesQuery = !query || haystack.includes(query);
     const matchesArea = !area || splitList(program.support_areas).includes(area);
-    const matchesApplicant = !applicant || splitList(program.applicant_types).includes(applicant);
+    const matchesApplicant = !applicant || structuredApplicants.some((item) => item.label === applicant) || splitList(program.applicant_types).includes(applicant);
     const matchesDeadline =
       !deadlineValue ||
       deadline?.status === deadlineValue ||
@@ -992,15 +1047,21 @@ async function init() {
     ...loadJson("fondsdb.alertSettings", {}),
   };
 
-  const [foundationResponse, programResponse, deadlineResponse, scanResponse] = await Promise.all([
+  const [foundationResponse, programResponse, eligibilityResponse, applicantResponse, exclusionResponse, deadlineResponse, scanResponse] = await Promise.all([
     fetch("data/fonde_seed.csv"),
     fetch("data/programs_seed.csv"),
+    fetch("data/program_eligibility_seed.csv"),
+    fetch("data/program_applicants_seed.csv"),
+    fetch("data/program_exclusions_seed.csv"),
     fetch("data/deadlines_seed.csv"),
     fetch("data/call_scan_results.csv"),
   ]);
 
   state.foundations = csvToObjects(await foundationResponse.text());
   state.programs = csvToObjects(await programResponse.text());
+  state.programEligibility = csvToObjects(await eligibilityResponse.text());
+  state.programApplicants = csvToObjects(await applicantResponse.text());
+  state.programExclusions = csvToObjects(await exclusionResponse.text());
   state.deadlines = csvToObjects(await deadlineResponse.text());
   state.callScanResults = scanResponse.ok ? csvToObjects(await scanResponse.text()) : [];
   await loadScanReviews().catch((error) => {

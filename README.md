@@ -26,6 +26,9 @@ Discovery-scanneren besøger hvert kandidatlink og scorer konkrete puljesignaler
 - `data/deadlines_seed.csv` - friststatus, gentagelse og fristnoter for puljerne.
 - `database/schema.sql` - SQLite-schema for databasen.
 - `database/import_seed.sql` - importscript, der bygger databasen fra CSV.
+- `data/program_eligibility_seed.csv` - struktureret eligibility, geografi, CVR-status og beløbsgrænser.
+- `data/program_applicants_seed.csv` - normaliserede ansøgerkategorier og betingelser.
+- `data/program_exclusions_seed.csv` - kildebelagte udelukkelser pr. program.
 - `outputs/fonds_database.sqlite` - genereret SQLite-database.
 - `server.mjs` - lokal server med API'er til kildekontrol og manuel scraper-review.
 - `crawler/` - den grundige TypeScript-crawler; build-output og crawlprofiler genereres lokalt.

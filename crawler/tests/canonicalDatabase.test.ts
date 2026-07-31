@@ -18,11 +18,19 @@ test("current seed data has valid canonical relationships", async () => {
   const data = await readCanonicalSeedData();
   const foundationIds = new Set(data.foundations.map((row) => row.foundation_id));
   const programIds = new Set(data.programs.map((row) => row.program_id));
+  const eligibilityProgramIds = new Set(data.programEligibility.map((row) => row.program_id));
 
   assert.ok(data.foundations.length > 0);
   assert.equal(foundationIds.size, data.foundations.length, "foundation_id must be unique");
   assert.equal(programIds.size, data.programs.length, "program_id must be unique");
+  assert.deepEqual(eligibilityProgramIds, programIds, "every program must have exactly one eligibility profile");
   assert.ok(data.programs.every((row) => foundationIds.has(row.foundation_id)), "program references unknown foundation");
+  assert.ok(data.programApplicants.every((row) => programIds.has(row.program_id)), "applicant rule references unknown program");
+  assert.ok(data.programExclusions.every((row) => programIds.has(row.program_id)), "exclusion references unknown program");
+  assert.ok(data.programs.every((row) => data.programApplicants.some((item) => item.program_id === row.program_id)), "every program needs an applicant rule");
+  assert.ok(data.programEligibility.every((row) => !row.amount_min || Number(row.amount_min) >= 0), "amount_min must be non-negative");
+  assert.ok(data.programEligibility.every((row) => !row.amount_max || Number(row.amount_max) >= 0), "amount_max must be non-negative");
+  assert.ok(data.programEligibility.every((row) => !row.amount_min || !row.amount_max || Number(row.amount_min) <= Number(row.amount_max)), "amount range is inverted");
   assert.ok(data.deadlines.every((row) => programIds.has(row.program_id)), "deadline references unknown program");
   assert.ok(data.callScanResults.every((row) => foundationIds.has(row.foundation_id)), "scan references unknown foundation");
   assert.ok(

@@ -9,6 +9,8 @@ Skemaet er opdelt efter ansvar:
 - `001_core.sql`: fonde, programmer, deadlines og søgeviews.
 - `002_intelligence.sql`: crawlerkilder, claims, bevillinger, calls og dokumentchunks.
 - `003_application.sql`: scannerfund, notifikationer og den eksisterende scraperhistorik.
+- `004_scan_review.sql`: vedvarende reviewstatus og revisionshistorik for scannerfund.
+- `005_program_eligibility.sql`: struktureret eligibility, ansøgerkategorier, geografi, CVR-krav, beløbsgrænser og udelukkelser.
 
 Postgres bruger UUID som intern nøgle. De nuværende stabile CSV-nøgler bevares som `foundation_key`, `program_key` og `deadline_key`, så links og importer ikke afhænger af databasegenererede UUID'er.
 
@@ -33,6 +35,9 @@ GitHub Actions-workflowet `Canonical database` starter Postgres 16, kører impor
 - `data/programs_seed.csv`
 - `data/deadlines_seed.csv`
 - `data/call_scan_results.csv`
+- `data/program_eligibility_seed.csv`
+- `data/program_applicants_seed.csv`
+- `data/program_exclusions_seed.csv`
 - scraperhistorik fra `outputs/fonds_database.sqlite`
 
 Importen er transaktionel og idempotent. Den opdaterer seed-ejede felter, men sletter ikke crawlerkilder, claims, bevillinger eller andre redaktionelle data. Hvis crawleren allerede har oprettet en fond med samme website, overtager seed-datasættets læsbare `foundation_key` den eksisterende UUID-post.
