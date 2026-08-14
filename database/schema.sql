@@ -5,6 +5,9 @@ DROP TABLE IF EXISTS favorite_foundations;
 DROP TABLE IF EXISTS notification_subscriptions;
 DROP TABLE IF EXISTS call_scan_results;
 DROP TABLE IF EXISTS deadlines;
+DROP TABLE IF EXISTS program_exclusions;
+DROP TABLE IF EXISTS program_applicants;
+DROP TABLE IF EXISTS program_eligibility;
 DROP TABLE IF EXISTS programs;
 DROP TABLE IF EXISTS foundations;
 
@@ -58,6 +61,67 @@ CREATE INDEX idx_programs_foundation_id ON programs(foundation_id);
 CREATE INDEX idx_programs_program_type ON programs(program_type);
 CREATE INDEX idx_programs_application_status ON programs(application_status);
 CREATE INDEX idx_programs_verification_status ON programs(verification_status);
+
+CREATE TABLE program_eligibility (
+  program_id TEXT PRIMARY KEY,
+  eligibility_summary TEXT NOT NULL,
+  cvr_requirement TEXT NOT NULL DEFAULT 'unknown',
+  cvr_notes TEXT,
+  geography_scope TEXT NOT NULL DEFAULT 'unknown',
+  country_code TEXT,
+  region TEXT,
+  municipality TEXT,
+  local_area TEXT,
+  amount_model TEXT NOT NULL DEFAULT 'unknown',
+  amount_min REAL,
+  amount_max REAL,
+  amount_currency TEXT NOT NULL DEFAULT 'DKK',
+  amount_notes TEXT,
+  source_url TEXT NOT NULL,
+  last_checked TEXT,
+  verification_status TEXT NOT NULL DEFAULT 'to_verify',
+  FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE CASCADE,
+  CHECK (cvr_requirement IN ('required', 'not_required', 'conditional', 'unknown')),
+  CHECK (geography_scope IN ('national', 'regional', 'municipal', 'local', 'international', 'mixed', 'unknown')),
+  CHECK (amount_model IN ('fixed', 'range', 'maximum', 'minimum', 'indicative_range', 'project_budget_cap', 'variable', 'unknown')),
+  CHECK (amount_min IS NULL OR amount_min >= 0),
+  CHECK (amount_max IS NULL OR amount_max >= 0),
+  CHECK (amount_min IS NULL OR amount_max IS NULL OR amount_min <= amount_max),
+  CHECK (verification_status IN ('source_checked', 'to_verify', 'needs_update'))
+);
+
+CREATE INDEX idx_program_eligibility_cvr ON program_eligibility(cvr_requirement);
+CREATE INDEX idx_program_eligibility_geography ON program_eligibility(geography_scope, municipality);
+CREATE INDEX idx_program_eligibility_amount ON program_eligibility(amount_min, amount_max);
+
+CREATE TABLE program_applicants (
+  program_id TEXT NOT NULL,
+  applicant_category TEXT NOT NULL,
+  label TEXT NOT NULL,
+  eligibility_status TEXT NOT NULL DEFAULT 'eligible',
+  conditions TEXT,
+  PRIMARY KEY (program_id, applicant_category, label),
+  FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE CASCADE,
+  CHECK (applicant_category IN ('association', 'organization', 'institution', 'ngo', 'researcher', 'artist', 'individual', 'project_group', 'workplace', 'other')),
+  CHECK (eligibility_status IN ('eligible', 'conditional', 'ineligible', 'unknown'))
+);
+
+CREATE INDEX idx_program_applicants_category ON program_applicants(applicant_category, eligibility_status);
+
+CREATE TABLE program_exclusions (
+  exclusion_id TEXT PRIMARY KEY,
+  program_id TEXT NOT NULL,
+  exclusion_type TEXT NOT NULL,
+  description TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  last_checked TEXT,
+  verification_status TEXT NOT NULL DEFAULT 'to_verify',
+  FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE CASCADE,
+  CHECK (exclusion_type IN ('applicant', 'activity', 'cost', 'geography', 'application_route', 'other')),
+  CHECK (verification_status IN ('source_checked', 'to_verify', 'needs_update'))
+);
+
+CREATE INDEX idx_program_exclusions_program ON program_exclusions(program_id, exclusion_type);
 
 CREATE TABLE deadlines (
   deadline_id TEXT PRIMARY KEY,
@@ -181,6 +245,16 @@ SELECT
   p.support_areas,
   p.applicant_types,
   p.geography,
+  e.geography_scope,
+  e.country_code,
+  e.region,
+  e.municipality,
+  e.local_area,
+  e.cvr_requirement,
+  e.amount_model,
+  e.amount_min,
+  e.amount_max,
+  e.amount_currency,
   p.application_url,
   p.verification_status,
   f.foundation_id,
@@ -192,5 +266,6 @@ SELECT
   d.summary AS deadline_detail
 FROM programs p
 JOIN foundations f ON f.foundation_id = p.foundation_id
+LEFT JOIN program_eligibility e ON e.program_id = p.program_id
 LEFT JOIN deadlines d ON d.program_id = p.program_id
 ORDER BY f.name, p.program_name;

@@ -15,6 +15,9 @@ try {
   await client.query("begin");
   await importFoundations(client, data.foundations);
   await importPrograms(client, data.programs);
+  await importProgramEligibility(client, data.programEligibility);
+  await importProgramApplicants(client, data.programApplicants);
+  await importProgramExclusions(client, data.programExclusions);
   await importDeadlines(client, data.deadlines);
   await importCallScans(client, data.callScanResults);
   await importSqliteOperationalData(client, sqliteData);
@@ -22,6 +25,9 @@ try {
   console.log(JSON.stringify({
     foundations: data.foundations.length,
     programs: data.programs.length,
+    program_eligibility: data.programEligibility.length,
+    program_applicants: data.programApplicants.length,
+    program_exclusions: data.programExclusions.length,
     deadlines: data.deadlines.length,
     call_scan_results: data.callScanResults.length,
     scrape_runs: sqliteData.scrapeRuns.length,
@@ -121,6 +127,78 @@ async function importDeadlines(client: PoolClient, records: Record<string, strin
       verification_status = excluded.verification_status, updated_at = now()
   `, [JSON.stringify(records)]);
   assertImported("deadlines", result.rowCount, records.length);
+}
+
+async function importProgramEligibility(client: PoolClient, records: Record<string, string>[]) {
+  const result = await client.query(`
+    insert into program_eligibility (
+      program_id, eligibility_summary, cvr_requirement, cvr_notes, geography_scope, country_code,
+      region, municipality, local_area, amount_model, amount_min, amount_max, amount_currency,
+      amount_notes, source_url, last_checked, verification_status
+    )
+    select p.id, seed.eligibility_summary, seed.cvr_requirement, nullif(seed.cvr_notes, ''),
+      seed.geography_scope, nullif(seed.country_code, ''), nullif(seed.region, ''),
+      nullif(seed.municipality, ''), nullif(seed.local_area, ''), seed.amount_model,
+      nullif(seed.amount_min, '')::numeric, nullif(seed.amount_max, '')::numeric,
+      coalesce(nullif(seed.amount_currency, ''), 'DKK'), nullif(seed.amount_notes, ''),
+      seed.source_url, nullif(seed.last_checked, '')::date,
+      coalesce(nullif(seed.verification_status, ''), 'to_verify')
+    from jsonb_to_recordset($1::jsonb) as seed(
+      program_id text, eligibility_summary text, cvr_requirement text, cvr_notes text,
+      geography_scope text, country_code text, region text, municipality text, local_area text,
+      amount_model text, amount_min text, amount_max text, amount_currency text, amount_notes text,
+      source_url text, last_checked text, verification_status text
+    )
+    join programs p on p.program_key = seed.program_id
+    on conflict (program_id) do update set
+      eligibility_summary = excluded.eligibility_summary, cvr_requirement = excluded.cvr_requirement,
+      cvr_notes = excluded.cvr_notes, geography_scope = excluded.geography_scope,
+      country_code = excluded.country_code, region = excluded.region,
+      municipality = excluded.municipality, local_area = excluded.local_area,
+      amount_model = excluded.amount_model, amount_min = excluded.amount_min,
+      amount_max = excluded.amount_max, amount_currency = excluded.amount_currency,
+      amount_notes = excluded.amount_notes, source_url = excluded.source_url,
+      last_checked = excluded.last_checked, verification_status = excluded.verification_status,
+      updated_at = now()
+  `, [JSON.stringify(records)]);
+  assertImported("program_eligibility", result.rowCount, records.length);
+}
+
+async function importProgramApplicants(client: PoolClient, records: Record<string, string>[]) {
+  await client.query("delete from program_applicants where program_id in (select id from programs where program_key = any($1::text[]))", [
+    [...new Set(records.map((record) => record.program_id))]
+  ]);
+  const result = await client.query(`
+    insert into program_applicants (program_id, applicant_category, label, eligibility_status, conditions)
+    select p.id, seed.applicant_category, seed.label,
+      coalesce(nullif(seed.eligibility_status, ''), 'eligible'), nullif(seed.conditions, '')
+    from jsonb_to_recordset($1::jsonb) as seed(
+      program_id text, applicant_category text, label text, eligibility_status text, conditions text
+    )
+    join programs p on p.program_key = seed.program_id
+  `, [JSON.stringify(records)]);
+  assertImported("program_applicants", result.rowCount, records.length);
+}
+
+async function importProgramExclusions(client: PoolClient, records: Record<string, string>[]) {
+  const result = await client.query(`
+    insert into program_exclusions (
+      exclusion_id, program_id, exclusion_type, description, source_url, last_checked, verification_status
+    )
+    select seed.exclusion_id, p.id, seed.exclusion_type, seed.description, seed.source_url,
+      nullif(seed.last_checked, '')::date, coalesce(nullif(seed.verification_status, ''), 'to_verify')
+    from jsonb_to_recordset($1::jsonb) as seed(
+      exclusion_id text, program_id text, exclusion_type text, description text, source_url text,
+      last_checked text, verification_status text
+    )
+    join programs p on p.program_key = seed.program_id
+    on conflict (exclusion_id) do update set
+      program_id = excluded.program_id, exclusion_type = excluded.exclusion_type,
+      description = excluded.description, source_url = excluded.source_url,
+      last_checked = excluded.last_checked, verification_status = excluded.verification_status,
+      updated_at = now()
+  `, [JSON.stringify(records)]);
+  assertImported("program_exclusions", result.rowCount, records.length);
 }
 
 async function importCallScans(client: PoolClient, records: Record<string, string>[]) {
