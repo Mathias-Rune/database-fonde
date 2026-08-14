@@ -3,8 +3,9 @@ import fs from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSqliteFile, runSqlite, sqlString } from "./scripts/sqlite_utils.mjs";
+import { runSqlite, sqlString } from "./scripts/sqlite_utils.mjs";
 import { createReviewRepository, validateReviewInput } from "./scripts/review_repository.mjs";
+import { createScrapeReviewRepository, validateScrapeDecision } from "./scripts/scrape_review_repository.mjs";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8000);
@@ -13,6 +14,13 @@ const reviewRepository = createReviewRepository({
   sqlitePath: process.env.REVIEW_SQLITE_PATH
     ? path.resolve(process.env.REVIEW_SQLITE_PATH)
     : path.join(rootDir, "outputs", "fonds_database.sqlite"),
+  cwd: rootDir,
+});
+const scraperSqlitePath = process.env.SCRAPER_SQLITE_PATH
+  ? path.resolve(process.env.SCRAPER_SQLITE_PATH)
+  : path.join(rootDir, "outputs", "fonds_database.sqlite");
+const scrapeReviewRepository = createScrapeReviewRepository({
+  sqlitePath: scraperSqlitePath,
   cwd: rootDir,
 });
 
@@ -117,14 +125,6 @@ async function readJsonBody(request) {
   return raw ? JSON.parse(raw) : {};
 }
 
-async function ensureScrapingSchema() {
-  await execSqliteFile(
-    path.join(rootDir, "outputs", "fonds_database.sqlite"),
-    path.join(rootDir, "database", "scraping_schema.sql"),
-    { cwd: rootDir },
-  );
-}
-
 async function runSourceUpdate({ dryRun = false } = {}) {
   const sourceCheckArgs = [path.join(rootDir, "scripts", "check_foundation_sources.mjs")];
   sourceCheckArgs.push(dryRun ? "--dry-run" : "--update-csv");
@@ -169,41 +169,11 @@ async function runScraper({ dryRun = false, limit = 0 } = {}) {
 }
 
 async function listScrapeChanges() {
-  await ensureScrapingSchema();
-  const dbPath = path.join(rootDir, "outputs", "fonds_database.sqlite");
-  return runSqlite(
-    dbPath,
-    `SELECT
-       c.change_id,
-       c.foundation_id,
-       f.name AS foundation_name,
-       c.field_name,
-       c.old_value,
-       c.new_value,
-       c.source_url,
-       c.confidence,
-       c.significance,
-       c.validation_status,
-       c.detected_at
-     FROM foundation_field_changes c
-     JOIN foundations f ON f.foundation_id = c.foundation_id
-     WHERE c.validation_status = 'manual_review'
-     ORDER BY c.detected_at DESC, c.change_id DESC
-     LIMIT 100;`,
-    { cwd: rootDir },
-  );
+  return scrapeReviewRepository.listPending();
 }
 
 async function listFoundationExtractedFields() {
-  await ensureScrapingSchema();
-  const dbPath = path.join(rootDir, "outputs", "fonds_database.sqlite");
-  return runSqlite(
-    dbPath,
-    `SELECT foundation_id, field_name, field_value, source_url, confidence, updated_at
-     FROM foundation_extracted_fields
-     ORDER BY foundation_id, field_name;`,
-    { cwd: rootDir },
-  );
+  return scrapeReviewRepository.listApprovedFields();
 }
 
 async function updateFoundationVerification(foundationId, status) {
@@ -238,46 +208,11 @@ async function updateFoundationVerification(foundationId, status) {
 }
 
 async function decideScrapeChange(changeId, decision, note = "") {
-  await ensureScrapingSchema();
-  const dbPath = path.join(rootDir, "outputs", "fonds_database.sqlite");
-  const [change] = await runSqlite(
-    dbPath,
-    `SELECT * FROM foundation_field_changes WHERE change_id = ${Number(changeId)};`,
-    { cwd: rootDir },
-  );
-
-  if (!change) {
-    return { ok: false, message: "Change not found" };
-  }
-
-  if (decision === "approve") {
-    const decisionNote = note || "Approved in local admin UI";
-    await runSqlite(
-      dbPath,
-      `INSERT INTO foundation_extracted_fields (foundation_id, field_name, field_value, source_url, confidence, updated_at)
-       VALUES (${sqlString(change.foundation_id)}, ${sqlString(change.field_name)}, ${sqlString(change.new_value)}, ${sqlString(change.source_url)}, ${change.confidence}, ${sqlString(new Date().toISOString())})
-       ON CONFLICT(foundation_id, field_name) DO UPDATE SET
-         field_value = excluded.field_value,
-         source_url = excluded.source_url,
-         confidence = excluded.confidence,
-         updated_at = excluded.updated_at;`,
-      { cwd: rootDir },
-    );
-    await runSqlite(
-      dbPath,
-      `UPDATE foundation_field_changes SET validation_status = 'approved_manual', decided_at = ${sqlString(new Date().toISOString())}, decision_note = ${sqlString(decisionNote)} WHERE change_id = ${Number(changeId)};`,
-      { cwd: rootDir },
-    );
-    return { ok: true, status: "approved_manual" };
-  }
-
-  const decisionNote = note || "Rejected in local admin UI";
-  await runSqlite(
-    dbPath,
-    `UPDATE foundation_field_changes SET validation_status = 'rejected', decided_at = ${sqlString(new Date().toISOString())}, decision_note = ${sqlString(decisionNote)} WHERE change_id = ${Number(changeId)};`,
-    { cwd: rootDir },
-  );
-  return { ok: true, status: "rejected" };
+  const input = validateScrapeDecision(changeId, decision, note);
+  if (!input.ok) return input;
+  const change = await scrapeReviewRepository.decide(input);
+  if (!change) return { ok: false, statusCode: 409, message: "Ændringen er allerede behandlet eller findes ikke" };
+  return { ok: true, status: change.validation_status, change };
 }
 
 async function serveStatic(request, response) {
@@ -383,7 +318,7 @@ const server = http.createServer(async (request, response) => {
     try {
       const body = await readJsonBody(request);
       const result = await decideScrapeChange(body.change_id, body.decision, body.note);
-      sendJson(response, result.ok ? 200 : 404, result);
+      sendJson(response, result.ok ? 200 : (result.statusCode || 404), result);
     } catch (error) {
       sendJson(response, 500, { ok: false, message: error.message });
     }

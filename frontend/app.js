@@ -18,6 +18,7 @@ const state = {
   scanReviewOverrides: {},
   activeTab: "fund",
   loading: false,
+  approvedScrapeFields: [],
 };
 
 const els = {
@@ -62,6 +63,8 @@ const els = {
   scrapeTestButton: document.querySelector("#scrapeTestButton"),
   scrapeStatus: document.querySelector("#scrapeStatus"),
   scrapeChangeRows: document.querySelector("#scrapeChangeRows"),
+  scrapeApprovedRows: document.querySelector("#scrapeApprovedRows"),
+  scrapeApprovedCount: document.querySelector("#scrapeApprovedCount"),
   actionToast: document.querySelector("#actionToast"),
 };
 
@@ -905,6 +908,40 @@ async function loadScrapeChanges() {
   });
 }
 
+async function loadApprovedScrapeFields() {
+  if (isFilePreview()) {
+    els.scrapeApprovedRows.innerHTML = `<tr><td colspan="5">Start appen via LocalHost for at se gemte scraperfelter.</td></tr>`;
+    return;
+  }
+
+  const response = await fetch("/api/foundations/extracted-fields");
+  const payload = await response.json();
+  if (!response.ok || !payload.ok) throw new Error(payload.message || "Kunne ikke hente godkendte felter");
+
+  state.approvedScrapeFields = payload.fields;
+  els.scrapeApprovedCount.textContent = `${payload.fields.length} gemte felter`;
+  els.scrapeApprovedRows.replaceChildren();
+  if (!payload.fields.length) {
+    els.scrapeApprovedRows.innerHTML = `<tr><td colspan="5">Ingen godkendte scraperfelter endnu.</td></tr>`;
+    return;
+  }
+
+  payload.fields.forEach((field) => {
+    const row = document.createElement("tr");
+    const approvalLabel = field.validation_status === "approved_manual" ? "Manuelt godkendt" : "Auto-godkendt";
+    const source = /^https?:\/\//i.test(field.source_url || "")
+      ? `<a href="${escapeHtml(field.source_url)}" target="_blank" rel="noreferrer">Åbn kilde</a>`
+      : "Ingen kilde";
+    row.innerHTML = `
+      <td><strong>${escapeHtml(field.foundation_name)}</strong><br><small>${escapeHtml(field.foundation_id)}</small></td>
+      <td>${escapeHtml(fieldLabel(field.field_name))}</td>
+      <td><div class="value-preview">${displayScrapedText(field.field_value)}</div></td>
+      <td><span class="status source_checked">${approvalLabel} · ${Math.round(field.confidence * 100)}%</span><br><small>${escapeHtml(field.decision_note || "")}</small></td>
+      <td>${source}<br><small>${escapeHtml(field.decided_at || field.updated_at)}</small></td>`;
+    els.scrapeApprovedRows.append(row);
+  });
+}
+
 async function runScraper({ limit = 0 } = {}) {
   if (isFilePreview()) {
     window.location.href = "http://127.0.0.1:8010/";
@@ -926,7 +963,7 @@ async function runScraper({ limit = 0 } = {}) {
     if (!response.ok || !payload.ok) throw new Error(payload.message || "Scraper-kørsel fejlede");
     const report = payload.report;
     setScrapeStatus(`Scraper færdig. ${report.targets_checked} fonde tjekket, ${report.changes_detected} mulige ændringer, ${report.manual_review} kræver gennemgang.`);
-    await loadScrapeChanges();
+    await Promise.all([loadScrapeChanges(), loadApprovedScrapeFields()]);
     renderDataHealth();
   } catch (error) {
     setScrapeStatus(`Scraper fejlede: ${error.message}`, true);
@@ -974,8 +1011,10 @@ async function decideScrapeChange(row, button) {
     });
     const payload = await response.json();
     if (!response.ok || !payload.ok) throw new Error(payload.message || "Beslutning fejlede");
-    await loadScrapeChanges();
-    setScrapeStatus(button.dataset.action === "approve" ? "Ændringen blev godkendt." : "Ændringen blev afvist.");
+    await Promise.all([loadScrapeChanges(), loadApprovedScrapeFields()]);
+    setScrapeStatus(button.dataset.action === "approve"
+      ? "Ændringen blev godkendt og gemt som et kildebelagt scraperfelt."
+      : "Ændringen blev afvist.");
   } catch (error) {
     setScrapeStatus(`Beslutning fejlede: ${error.message}`, true);
     button.disabled = false;
@@ -1111,6 +1150,9 @@ async function init() {
   }
   loadScrapeChanges().catch(() => {
     els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;
+  });
+  loadApprovedScrapeFields().catch(() => {
+    els.scrapeApprovedRows.innerHTML = `<tr><td colspan="5">Godkendte scraperfelter kunne ikke indlæses.</td></tr>`;
   });
 }
 

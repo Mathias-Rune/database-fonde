@@ -1091,6 +1091,34 @@ tbody tr.active {
   vertical-align: top;
 }
 
+.approved-scrape-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.approved-scrape-header h3,
+.approved-scrape-header p {
+  margin: 0;
+}
+
+.approved-scrape-header p,
+.approved-scrape-header span {
+  color: var(--muted);
+}
+
+.approved-scrape-header p {
+  margin-top: 0.35rem;
+}
+
+.approved-scrape-table {
+  margin-top: 0.75rem;
+}
+
 .compare-values {
   display: grid;
   gap: 0.5rem;

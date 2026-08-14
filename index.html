@@ -253,7 +253,7 @@
           <div class="scrape-header">
             <div>
               <h2>Overvågning og manuel godkendelse</h2>
-              <p>Den eksisterende scraper sammenligner fondenes kilder og sender usikre ændringer til review.</p>
+              <p>Scraperen sammenligner fondenes kilder. Godkendte ændringer gemmes som kildebelagte felter med historik.</p>
             </div>
             <div class="scrape-actions">
               <button id="scrapeTestButton" class="button-link" type="button">Test 5 fonde</button>
@@ -275,10 +275,31 @@
               <tbody id="scrapeChangeRows"></tbody>
             </table>
           </div>
+          <div class="approved-scrape-header">
+            <div>
+              <h3>Godkendte scraperfelter</h3>
+              <p>Dette er de værdier, scraperen bruger som næste sammenligningsgrundlag. Strukturering til programmer og deadlines sker i næste trin.</p>
+            </div>
+            <span id="scrapeApprovedCount">Indlæser…</span>
+          </div>
+          <div class="scrape-table-wrap">
+            <table class="scrape-table approved-scrape-table">
+              <thead>
+                <tr>
+                  <th>Fond</th>
+                  <th>Felt</th>
+                  <th>Gemt værdi</th>
+                  <th>Status</th>
+                  <th>Kilde</th>
+                </tr>
+              </thead>
+              <tbody id="scrapeApprovedRows"></tbody>
+            </table>
+          </div>
         </section>
       </section>
     </main>
 
-    <script src="frontend/app.js?v=8" defer></script>
+    <script src="frontend/app.js?v=9" defer></script>
   </body>
 </html>
