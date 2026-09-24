@@ -1,4 +1,4 @@
-create table project_folders (
+create table if not exists project_folders (
   id uuid primary key default gen_random_uuid(), folder_key text not null unique, name text not null,
   parent_folder_id uuid references project_folders(id) on delete set null,
   color text not null default 'gray', sort_order integer not null default 0,
@@ -6,12 +6,12 @@ create table project_folders (
   check (parent_folder_id is null or parent_folder_id <> id)
 );
 
-create table project_folder_assignments (
+create table if not exists project_folder_assignments (
   project_id uuid primary key references projects(id) on delete cascade,
   folder_id uuid not null references project_folders(id) on delete cascade
 );
 
-create table workflow_statuses (
+create table if not exists workflow_statuses (
   id uuid primary key default gen_random_uuid(), status_key text not null unique,
   entity_type text not null check (entity_type in ('project', 'application', 'task')),
   label text not null, color text not null default 'gray', base_status text not null,
@@ -19,21 +19,21 @@ create table workflow_statuses (
   is_active boolean not null default true, created_at timestamptz not null default now()
 );
 
-create table project_status_assignments (
+create table if not exists project_status_assignments (
   project_id uuid primary key references projects(id) on delete cascade,
   status_id uuid not null references workflow_statuses(id) on delete restrict
 );
-create table application_status_assignments (
+create table if not exists application_status_assignments (
   application_id uuid primary key references applications(id) on delete cascade,
   status_id uuid not null references workflow_statuses(id) on delete restrict
 );
-create table task_status_assignments (
+create table if not exists task_status_assignments (
   task_id uuid primary key references project_tasks(id) on delete cascade,
   status_id uuid not null references workflow_statuses(id) on delete restrict
 );
 
-create index project_folders_parent_idx on project_folders(parent_folder_id, sort_order);
-create index workflow_statuses_entity_idx on workflow_statuses(entity_type, sort_order);
+create index if not exists project_folders_parent_idx on project_folders(parent_folder_id, sort_order);
+create index if not exists workflow_statuses_entity_idx on workflow_statuses(entity_type, sort_order);
 
 insert into workflow_statuses (status_key, entity_type, label, color, base_status, sort_order, is_system) values
  ('project-idea','project','Idé','gray','idea',10,true), ('project-planning','project','Planlægning','blue','planning',20,true),
@@ -47,7 +47,10 @@ insert into workflow_statuses (status_key, entity_type, label, color, base_statu
  ('task-blocked','task','Blokeret','red','blocked',30,true), ('task-done','task','Færdig','green','done',40,true)
 on conflict (status_key) do nothing;
 
-create or replace view project_overview as
+drop view if exists project_overview;
+drop view if exists application_pipeline;
+
+create view project_overview as
 select p.id, p.project_key, p.name, p.description, p.status, p.owner_member_id, p.starts_on, p.ends_on,
  p.estimated_budget, p.currency, p.updated_at, owner.display_name as owner_name,
  pf.id as folder_id, pf.name as folder_name, ws.id as workflow_status_id,
@@ -61,7 +64,7 @@ from projects p left join team_members owner on owner.id=p.owner_member_id
 left join project_folder_assignments pfa on pfa.project_id=p.id left join project_folders pf on pf.id=pfa.folder_id
 left join project_status_assignments psa on psa.project_id=p.id left join workflow_statuses ws on ws.id=psa.status_id;
 
-create or replace view application_pipeline as
+create view application_pipeline as
 select a.id, a.application_key, a.project_id, p.name as project_name, a.status, a.requested_amount,
  a.awarded_amount, a.currency, a.submitted_on, a.decision_expected_on, a.updated_at,
  pr.id as program_id, pr.program_name, f.id as foundation_id, f.name as foundation_name,
