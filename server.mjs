@@ -1,11 +1,27 @@
+import { randomUUID } from "node:crypto";
 import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runSqlite, sqlString } from "./scripts/sqlite_utils.mjs";
+import { createAuthRepository, validateAccountInput, verifyPassword } from "./scripts/auth_repository.mjs";
 import { createReviewRepository, validateReviewInput } from "./scripts/review_repository.mjs";
 import { createScrapeReviewRepository, validateScrapeDecision } from "./scripts/scrape_review_repository.mjs";
+import {
+  createProjectRepository,
+  validateCommentInput,
+  validateDocumentInput,
+  validateFolderInput,
+  validateApplicationInput,
+  validateApplicationUpdate,
+  validateProjectInput,
+  validateProjectMemberInput,
+  validateTaskInput,
+  validateTaskAssigneeInput,
+  validateTeamMemberInput,
+  validateWorkflowStatusInput,
+} from "./scripts/project_repository.mjs";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8000);
@@ -23,6 +39,9 @@ const scrapeReviewRepository = createScrapeReviewRepository({
   sqlitePath: scraperSqlitePath,
   cwd: rootDir,
 });
+const projectRepository = createProjectRepository({ sqlitePath: scraperSqlitePath, cwd: rootDir });
+const authRepository = createAuthRepository({ sqlitePath: scraperSqlitePath, cwd: rootDir });
+const sessions = new Map();
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -96,6 +115,28 @@ function csvToObjects(text) {
       Object.fromEntries(headers.map((header, index) => [header, row[index] || ""])),
     ),
   };
+}
+
+function parseCookies(request) {
+  return Object.fromEntries((request.headers.cookie || "").split(";").filter(Boolean).map((part) => { const [key, ...value] = part.trim().split("="); return [key, decodeURIComponent(value.join("="))]; }));
+}
+
+async function currentAccount(request) {
+  const sessionId = parseCookies(request).session_id;
+  const accountId = sessionId ? sessions.get(sessionId) : null;
+  return accountId ? authRepository.getPublic(accountId) : null;
+}
+
+function setSession(response, accountId) {
+  const sessionId = randomUUID();
+  sessions.set(sessionId, accountId);
+  response.setHeader("set-cookie", `session_id=${encodeURIComponent(sessionId)}; HttpOnly; SameSite=Lax; Path=/`);
+}
+
+async function requireAuth(request, response) {
+  const account = await currentAccount(request);
+  if (!account) { sendJson(response, 401, { ok: false, message: "Log ind for at bruge projektstyringen", authenticated: false }); return null; }
+  return account;
 }
 
 function sendJson(response, statusCode, payload) {
@@ -242,6 +283,259 @@ async function serveStatic(request, response) {
 
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/auth/status") {
+    const account = await currentAccount(request);
+    sendJson(response, 200, { ok: true, authenticated: !!account, user: account, setupRequired: (await authRepository.countAccounts()) === 0 });
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/auth/setup") {
+    try {
+      if ((await authRepository.countAccounts()) > 0) { sendJson(response, 409, { ok: false, message: "Første konto er allerede oprettet" }); return; }
+      const input = validateAccountInput(await readJsonBody(request));
+      if (!input.ok) { sendJson(response, input.statusCode, input); return; }
+      const account = await authRepository.createAccount(input); setSession(response, account.account_id);
+      sendJson(response, 201, { ok: true, user: account });
+    } catch (error) { sendJson(response, 400, { ok: false, message: error.message }); }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/auth/login") {
+    try {
+      const body = await readJsonBody(request); const account = await authRepository.findByEmail(body.email);
+      if (!account || !(await verifyPassword(String(body.password || ""), account.password_hash))) { sendJson(response, 401, { ok: false, message: "Email eller adgangskode er forkert" }); return; }
+      setSession(response, account.account_id); sendJson(response, 200, { ok: true, user: await authRepository.getPublic(account.account_id) });
+    } catch (error) { sendJson(response, 400, { ok: false, message: error.message }); }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/auth/logout") {
+    const sessionId = parseCookies(request).session_id; if (sessionId) sessions.delete(sessionId);
+    response.setHeader("set-cookie", "session_id=; Max-Age=0; HttpOnly; SameSite=Lax; Path=/"); sendJson(response, 200, { ok: true }); return;
+  }
+
+  if (requestUrl.pathname.startsWith("/api/projects") || requestUrl.pathname.startsWith("/api/project-") || requestUrl.pathname.startsWith("/api/team-members") || requestUrl.pathname.startsWith("/api/tasks") || requestUrl.pathname.startsWith("/api/applications") || requestUrl.pathname.startsWith("/api/workflow-statuses")) {
+    const account = await requireAuth(request, response);
+    if (!account) return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/projects") {
+    try {
+      sendJson(response, 200, { ok: true, projects: await projectRepository.listProjects() });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/team-members") {
+    try {
+      sendJson(response, 200, { ok: true, members: await projectRepository.listTeamMembers() });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/api/project-config") {
+    try {
+      sendJson(response, 200, { ok: true, ...(await projectRepository.getProjectConfig()) });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/project-folders") {
+    try {
+      const input = validateFolderInput(await readJsonBody(request));
+      if (!input.ok) return sendJson(response, input.statusCode, input);
+      sendJson(response, 201, { ok: true, folder: await projectRepository.createFolder(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/workflow-statuses") {
+    try {
+      const input = validateWorkflowStatusInput(await readJsonBody(request));
+      if (!input.ok) return sendJson(response, input.statusCode, input);
+      sendJson(response, 201, { ok: true, status: await projectRepository.createWorkflowStatus(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/team-members") {
+    try {
+      const input = validateTeamMemberInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, member: await projectRepository.createTeamMember(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && requestUrl.pathname.startsWith("/api/projects/")) {
+    try {
+      const projectId = decodeURIComponent(requestUrl.pathname.slice("/api/projects/".length));
+      const project = await projectRepository.getProject(projectId);
+      sendJson(response, project ? 200 : 404, project ? { ok: true, project } : { ok: false, message: "Projektet blev ikke fundet" });
+    } catch (error) {
+      sendJson(response, 500, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/projects") {
+    try {
+      const input = validateProjectInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, project: await projectRepository.createProject(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/projects\/[^/]+$/.test(requestUrl.pathname)) {
+    try {
+      const projectId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const input = validateProjectInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      const project = await projectRepository.updateProject(projectId, input);
+      sendJson(response, project ? 200 : 404, project ? { ok: true, project } : { ok: false, message: "Projektet blev ikke fundet" });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && /^\/api\/projects\/[^/]+\/members$/.test(requestUrl.pathname)) {
+    try {
+      const projectId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const input = validateProjectMemberInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      const project = await projectRepository.addProjectMember(projectId, input);
+      sendJson(response, project ? 200 : 404, project ? { ok: true, project } : { ok: false, message: "Projektet blev ikke fundet" });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/applications") {
+    try {
+      const input = validateApplicationInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, application: await projectRepository.createApplication(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/applications\/[^/]+$/.test(requestUrl.pathname)) {
+    try {
+      const applicationId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const input = validateApplicationUpdate(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      const application = await projectRepository.updateApplication(applicationId, input);
+      sendJson(response, application ? 200 : 404, application ? { ok: true, application } : { ok: false, message: "Ansøgningen blev ikke fundet" });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/tasks") {
+    try {
+      const input = validateTaskInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, task: await projectRepository.createTask(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/tasks\/[^/]+\/assignee$/.test(requestUrl.pathname)) {
+    try {
+      const taskId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const input = validateTaskAssigneeInput(await readJsonBody(request));
+      const task = await projectRepository.updateTaskAssignee(taskId, input.assigned_to);
+      sendJson(response, task ? 200 : 404, task ? { ok: true, task } : { ok: false, message: "Opgaven blev ikke fundet" });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/project-comments") {
+    try {
+      const input = validateCommentInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, comment: await projectRepository.createComment(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && requestUrl.pathname === "/api/project-documents") {
+    try {
+      const input = validateDocumentInput(await readJsonBody(request));
+      if (!input.ok) {
+        sendJson(response, input.statusCode, input);
+        return;
+      }
+      sendJson(response, 201, { ok: true, document: await projectRepository.createDocument(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/tasks\/[^/]+\/status$/.test(requestUrl.pathname)) {
+    try {
+      const taskId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const body = await readJsonBody(request);
+      const task = await projectRepository.updateTaskStatus(taskId, body.status, body.workflow_status_id);
+      sendJson(response, task ? 200 : 400, task ? { ok: true, task } : { ok: false, message: "Ugyldig opgave eller status" });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
   if (request.method === "POST" && request.url === "/api/update-sources") {
     try {
       sendJson(response, 200, await runSourceUpdate());
@@ -365,6 +659,8 @@ const server = http.createServer(async (request, response) => {
 
   await serveStatic(request, response);
 });
+
+await projectRepository.initialize();
 
 server.listen(port, host, () => {
   console.log(`Database fonde running at http://${host}:${port}/`);
