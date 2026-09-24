@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
     <meta name="theme-color" content="#102b27" />
-    <link rel="stylesheet" href="frontend/styles.css?v=8" />
+    <link rel="stylesheet" href="frontend/styles.css?v=10" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
@@ -35,6 +35,7 @@
     </header>
 
     <main class="app-shell">
+      <section id="projectAuthPanel" class="project-auth-panel global-auth-panel" hidden></section>
       <section class="summary-band" aria-label="Overblik">
         <div class="metric">
           <span class="metric-label">Fonde</span>
@@ -56,6 +57,7 @@
 
       <nav class="work-tabs" aria-label="Arbejdsområder">
         <button class="tab-button active" type="button" data-tab="fund">Fund</button>
+        <button class="tab-button" type="button" data-tab="projekter">Projekter</button>
         <button class="tab-button" type="button" data-tab="fonde">Fonde</button>
         <button class="tab-button" type="button" data-tab="favoritter">Favoritter</button>
         <button class="tab-button" type="button" data-tab="alerts">Alerts</button>
@@ -96,6 +98,62 @@
             </label>
           </div>
           <div id="reviewList" class="review-list"></div>
+        </section>
+      </section>
+
+      <section id="panel-projekter" class="tab-panel" data-panel="projekter" hidden>
+        <aside id="projectServerNotice" class="project-server-notice" hidden>
+          <div>
+            <strong>Projektstyring kræver den lokale database</strong>
+            <p>Denne filvisning kan vise fondsdata, men kan ikke gemme projekter. Dobbeltklik på <code>Start fondsdatabase.command</code> og brug siden, der åbner automatisk.</p>
+          </div>
+          <a class="button-link" href="http://127.0.0.1:8000/">Åbn lokal app</a>
+        </aside>
+        <section class="projects-header">
+          <div>
+            <p class="section-kicker">Projektstyring</p>
+            <h2>Projekter og fondsansøgninger</h2>
+            <p>Planlæg arbejdet og forbind hvert projekt med verificerede puljer og frister.</p>
+          </div>
+          <form id="projectCreateForm" class="project-create-form">
+            <label><span>Projektnavn</span><input name="name" required maxlength="160" placeholder="Nyt projekt" /></label>
+            <label><span>Status</span><select name="workflow_status_id"></select></label>
+            <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option></select></label>
+            <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" placeholder="250000" /></label>
+            <label><span>Start</span><input name="starts_on" type="date" /></label>
+            <label><span>Slut</span><input name="ends_on" type="date" /></label>
+            <label class="project-description-field"><span>Kort beskrivelse</span><input name="description" maxlength="5000" placeholder="Formål og forventet resultat" /></label>
+            <button class="button-link" type="submit">Opret projekt</button>
+          </form>
+        </section>
+        <details class="project-config-panel">
+          <summary>Tilpas mapper og statusser</summary>
+          <p class="project-config-help"><strong>Mapper</strong> samler projekter i kategorier, fx Klima eller Kommunikation. <strong>Statusser</strong> viser hvor et projekt, en ansøgning eller en opgave er i processen, fx Planlægning, Aktiv eller Afsluttet. Brug kun denne sektion, hvis standardvalgene ikke passer til jeres arbejdsgang.</p>
+          <div class="project-config-forms">
+            <form data-config-form="folder">
+              <strong>Ny mappe</strong>
+              <input name="name" required maxlength="120" placeholder="Fx Klimaindsatser" />
+              <select name="color"><option value="gray">Grå</option><option value="blue">Blå</option><option value="green">Grøn</option><option value="yellow">Gul</option><option value="red">Rød</option><option value="purple">Lilla</option></select>
+              <button class="mini-button" type="submit">Tilføj mappe</button>
+            </form>
+            <form data-config-form="status">
+              <strong>Ny status</strong>
+              <select name="entity_type"><option value="project">Projekt</option><option value="application">Ansøgning</option><option value="task">Opgave</option></select>
+              <input name="label" required maxlength="80" placeholder="Fx Afventer partner" />
+              <select name="base_status"><option value="planning">Planlægning</option><option value="active">Aktiv</option><option value="completed">Afsluttet</option></select>
+              <select name="color"><option value="gray">Grå</option><option value="blue">Blå</option><option value="green">Grøn</option><option value="yellow">Gul</option><option value="red">Rød</option><option value="purple">Lilla</option></select>
+              <button class="mini-button" type="submit">Tilføj status</button>
+            </form>
+          </div>
+        </details>
+        <section class="projects-workspace">
+          <aside class="project-list-panel">
+            <div class="section-heading"><h2>Projektportefølje</h2><span id="projectCount">0 projekter</span></div>
+            <div id="projectList" class="project-list"></div>
+          </aside>
+          <section id="projectDetail" class="project-detail-panel">
+            <div class="empty-state">Opret eller vælg et projekt</div>
+          </section>
         </section>
       </section>
 
@@ -300,6 +358,6 @@
       </section>
     </main>
 
-    <script src="frontend/app.js?v=9" defer></script>
+    <script src="frontend/app.js?v=12" defer></script>
   </body>
 </html>

@@ -122,6 +122,28 @@ Hvis Nodemailer ikke er installeret, skriver scriptet stadig digest-filen og for
 
 Frontenden har også et `Review fund`-panel. Det beregner en lokal kvalitetsscore for hvert scanresultat, prioriterer crawler-fund og fund med frist/dato, og lader brugeren markere fund som `reviewed` eller `ignored`. Reviewvalg gemmes lokalt i browseren indtil en backend/adminservice findes.
 
+## Projektstyring
+
+Fanen `Projekter` er et første relationelt projektmodul. Den kan:
+
+- oprette interne projekter med status, periode og budget
+- redigere projektdata og vælge en ansvarlig
+- oprette mapper og organisere projekter i mappe-dropdowns
+- oprette egne farvekodede statusser for projekter, ansøgninger og opgaver
+- oprette teammedlemmer og tildele projektroller
+- koble et projekt til en eksisterende pulje som en fondsansøgning
+- vælge en konkret deadline fra den valgte pulje
+- følge og opdatere ansøgninger i en pipeline med statushistorik
+- oprette og færdigmelde projektopgaver
+
+Projektdata gemmes i SQLite-tabellerne `projects`, `applications`, `project_tasks`,
+`team_members`, `project_members` og `application_status_history`. De bevares, når
+seed-data om fonde, puljer og frister genimporteres. Den tilsvarende kanoniske
+Postgres-migration ligger i `database/postgres/005_project_management.sql`.
+
+Scannerfund kobles ikke direkte til projekter. Et fund skal først være et verificeret
+program og eventuelt en frist, før det bruges i en ansøgning.
+
 ## Scan fondenes sider for nye calls
 
 Kør den hurtige scanner manuelt:

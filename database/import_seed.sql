@@ -4,6 +4,7 @@
 .import --skip 1 data/programs_seed.csv programs
 .import --skip 1 data/deadlines_seed.csv deadlines
 .import --skip 1 data/call_scan_results.csv call_scan_results
+.read database/project_management_schema.sql
 
 -- Bevar scraperhistorik for aktive fonde, men fjern rækker der er blevet
 -- forældreløse, når den kuraterede fondsliste ændres.
