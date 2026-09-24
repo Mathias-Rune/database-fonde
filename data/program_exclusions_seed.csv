@@ -1,0 +1,20 @@
+exclusion_id,program_id,exclusion_type,description,source_url,last_checked,verification_status
+trygfonden-no-individuals,trygfonden-safety,applicant,Privatpersoner kan ikke søge,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-commercial,trygfonden-safety,activity,Kommercielt funderede projekter støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-political,trygfonden-safety,activity,Politisk funderede projekter støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-religious,trygfonden-safety,activity,Religiøst funderede projekter støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-sports-equipment,trygfonden-safety,cost,Indkøb af sportsredskaber støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-sponsorships,trygfonden-safety,cost,Sportssponsorater støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+trygfonden-no-study-trips,trygfonden-safety,cost,Studierejser støttes ikke,https://tryghed.dk/sog-stotte,2026-06-08,source_checked
+bikuben-no-unsolicited,bikuben-art-social,application_route,Uopfordrede ansøgninger modtages ikke,https://www.bikubenfonden.dk/kom-i-dialog,2026-07-26,source_checked
+bikuben-no-standalone,bikuben-art-social,activity,Enkeltstående indsatser støttes ikke,https://www.bikubenfonden.dk/kom-i-dialog,2026-07-26,source_checked
+kr-no-unsolicited,kr-climate,application_route,Uopfordrede ansøgninger modtages ikke,https://krfnd.org/how-we-work/,2026-07-26,source_checked
+noerrebro-byens-puls-location,noerrebro-byens-puls,geography,Aktiviteten skal foregå på eller tydeligt gavne Nørrebro,https://noerrebrolokaludvalg.kk.dk/soeg-penge/,2026-07-02,source_checked
+noerrebro-puljen-location,noerrebro-puljen,geography,Projektet skal foregå på eller tydeligt gavne Nørrebro,https://noerrebrolokaludvalg.kk.dk/soeg-penge/,2026-07-02,source_checked
+frederiksberg-hurtig-location,frederiksberg-hurtigpuljen,geography,Projektet skal normalt finde sted på Frederiksberg,https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/hurtigpuljen,2026-07-02,source_checked
+frederiksberg-hurtig-profit,frederiksberg-hurtigpuljen,activity,Kommercielle projekter er ikke omfattet af den beskrevne non-profit støtte,https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/hurtigpuljen,2026-07-02,source_checked
+frederiksberg-kultur-location,frederiksberg-kultur-fritid,geography,Projektet skal have tydelig tilknytning til Frederiksberg,https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/kultur-og-fritidspuljen,2026-07-02,source_checked
+kk-snabslanten-age,kk-snabslanten,applicant,Ansøgere uden for alderen 13 til 30 år er ikke omfattet,https://snabslanten.kk.dk/retningslinjer,2026-07-02,source_checked
+kk-snabslanten-location,kk-snabslanten,geography,Ansøgeren skal være bosat i Københavns Kommune,https://snabslanten.kk.dk/retningslinjer,2026-07-02,source_checked
+kk-development-association,kk-udviklingspulje-boern-unge,applicant,Ansøgere der ikke er eller bliver godkendt som folkeoplysende forening er ikke omfattet,https://www.kk.dk/brug-byen/foreninger-og-fritidsliv/tilskud-og-puljer-for-foreninger-og-aftenskoler/soeg-udviklingspuljen-for-boern-og-unge,2026-07-02,source_checked
+kk-paragraf18-purpose,kk-paragraf-18,activity,Projekter uden frivilligt socialt arbejde for kommunens målgrupper er ikke omfattet,https://www.kk.dk/brug-byen/kultur-og-projektstoette/stoette-til-socialt-arbejde/stoette-til-frivilligt-socialt-arbejde-ss18,2026-07-02,source_checked

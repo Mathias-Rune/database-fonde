@@ -822,6 +822,25 @@ tbody tr.active {
   text-transform: uppercase;
 }
 
+.detail-block small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.eligibility-list {
+  margin-top: 0.35rem;
+}
+
+.exclusions-block ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.exclusions-block li + li {
+  margin-top: 0.35rem;
+}
+
 .detail-links {
   display: flex;
   flex-wrap: wrap;

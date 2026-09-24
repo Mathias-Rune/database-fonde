@@ -1,0 +1,62 @@
+program_id,applicant_category,label,eligibility_status,conditions
+nordea-fonden-good-lives,association,Foreninger,eligible,
+nordea-fonden-good-lives,organization,Organisationer,eligible,
+nordea-fonden-good-lives,institution,Institutioner,eligible,
+nordea-fonden-good-lives,project_group,Lokale projekter,conditional,Kontrollér kravene i den konkrete pulje
+trygfonden-safety,organization,Organisationer,eligible,
+trygfonden-safety,institution,Institutioner,eligible,
+trygfonden-safety,ngo,NGOer,eligible,
+trygfonden-safety,researcher,Forskere,eligible,
+villum-research-calls,researcher,Forskere,conditional,Skal matche et konkret opslag
+villum-research-calls,institution,Institutioner,conditional,Skal matche et konkret opslag
+villum-research-calls,organization,Organisationer,conditional,Skal matche et konkret opslag
+velux-humanities-calls,researcher,Forskere,conditional,Skal matche et konkret opslag
+velux-humanities-calls,institution,Institutioner,conditional,Skal matche et konkret opslag
+velux-humanities-calls,organization,Organisationer,conditional,Skal matche et konkret opslag
+bikuben-art-social,artist,Kunstnere,conditional,Nye samarbejder starter med dialog
+bikuben-art-social,institution,Kulturinstitutioner,conditional,Nye samarbejder starter med dialog
+bikuben-art-social,organization,Sociale organisationer,conditional,Nye samarbejder starter med dialog
+tuborg-youth,individual,Unge,conditional,Projektet og målgruppen skal passe til den valgte støtteform
+tuborg-youth,association,Foreninger,eligible,
+tuborg-youth,organization,Organisationer,eligible,
+egmont-children,organization,Organisationer,conditional,Start med en kort digital forespørgsel
+egmont-children,institution,Institutioner,conditional,Start med en kort digital forespørgsel
+lauritzen-general,organization,Organisationer,eligible,
+lauritzen-general,institution,Institutioner,eligible,
+lauritzen-general,project_group,Projekter,conditional,Ansøgerform skal verificeres
+ole-kirks-children,organization,Organisationer,eligible,
+ole-kirks-children,institution,Institutioner,eligible,
+ole-kirks-children,project_group,Projekter,conditional,Ansøgerform skal verificeres
+kr-climate,organization,Organisationer,conditional,Kun efter invitation
+kr-climate,ngo,NGOer,conditional,Kun efter invitation
+kr-climate,other,Internationale partnerskaber,conditional,Kun efter invitation
+duf-initiativstoetten,association,Foreninger,eligible,
+duf-initiativstoetten,project_group,Projektgrupper,eligible,Projektet skal være frivilligdrevet
+duf-initiativstoetten,individual,Privatpersoner,eligible,Projektet skal være af for og med børn og unge
+oestifterne-pools,association,Foreninger,conditional,Skal vælge relevant pulje
+oestifterne-pools,organization,Organisationer,conditional,Skal vælge relevant pulje
+oestifterne-pools,project_group,Almennyttige initiativer,conditional,Skal vælge relevant pulje
+lb-national-grants,association,Foreninger,conditional,Skal matche den konkrete uddeling
+lb-national-grants,organization,Organisationer,conditional,Skal matche den konkrete uddeling
+nordjyllandsfonden-community,association,Foreninger,eligible,
+nordjyllandsfonden-community,organization,Organisationer,eligible,
+velliv-youth-mental-health,ngo,Civilsamfundsorganisationer,eligible,
+velliv-youth-mental-health,workplace,Arbejdspladser,eligible,
+velliv-youth-mental-health,organization,Organisationer,eligible,
+noerrebro-byens-puls,association,Foreninger,eligible,
+noerrebro-byens-puls,project_group,Projektgrupper og lokale aktører,eligible,
+noerrebro-byens-puls,individual,Borgere,eligible,
+noerrebro-puljen,association,Foreninger,eligible,
+noerrebro-puljen,project_group,Projektgrupper og lokale aktører,eligible,
+noerrebro-puljen,individual,Borgere,eligible,
+frederiksberg-hurtigpuljen,association,Foreninger,eligible,
+frederiksberg-hurtigpuljen,organization,Organisationer,eligible,
+frederiksberg-hurtigpuljen,project_group,Projektgrupper,eligible,
+frederiksberg-hurtigpuljen,individual,Borgere,eligible,
+frederiksberg-kultur-fritid,association,Foreninger,eligible,
+frederiksberg-kultur-fritid,organization,Organisationer,eligible,
+frederiksberg-kultur-fritid,project_group,Projektgrupper,eligible,
+kk-snabslanten,individual,Unge mellem 13 og 30 år,eligible,Skal være bosat i Københavns Kommune
+kk-udviklingspulje-boern-unge,association,Godkendte folkeoplysende foreninger,eligible,
+kk-udviklingspulje-boern-unge,project_group,Initiativer,conditional,Skal blive godkendt som folkeoplysende forening
+kk-paragraf-18,association,Foreninger,conditional,Skal udføre frivilligt socialt arbejde for københavnere

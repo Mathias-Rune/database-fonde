@@ -12,6 +12,9 @@ try {
   const expected = new Map<string, number>([
     ["foundations", seed.foundations.length],
     ["programs", seed.programs.length],
+    ["program_eligibility", seed.programEligibility.length],
+    ["program_applicants", seed.programApplicants.length],
+    ["program_exclusions", seed.programExclusions.length],
     ["deadlines", seed.deadlines.length],
     ["call_scan_results", seed.callScanResults.length],
     ["scrape_runs", sqlite.scrapeRuns.length],
@@ -33,7 +36,7 @@ try {
   if (duplicateWebsites.rowCount) throw new Error("Duplicate foundation websites found");
 
   const migrations = await pool.query<{ count: string }>("select count(*)::text as count from schema_migrations");
-  if (Number(migrations.rows[0].count) < 3) throw new Error("Not all canonical migrations were applied");
+  if (Number(migrations.rows[0].count) < 5) throw new Error("Not all canonical migrations were applied");
 
   console.log(JSON.stringify({ ok: true, tables: results }, null, 2));
 } finally {
