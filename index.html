@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
     <meta name="theme-color" content="#102b27" />
-    <link rel="stylesheet" href="frontend/styles.css?v=10" />
+    <link rel="stylesheet" href="frontend/styles.css?v=18" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
@@ -103,11 +103,14 @@
 
       <section id="panel-projekter" class="tab-panel" data-panel="projekter" hidden>
         <aside id="projectServerNotice" class="project-server-notice" hidden>
-          <div>
-            <strong>Projektstyring kræver den lokale database</strong>
-            <p>Denne filvisning kan vise fondsdata, men kan ikke gemme projekter. Dobbeltklik på <code>Start fondsdatabase.command</code> og brug siden, der åbner automatisk.</p>
+          <div class="project-server-notice-copy">
+            <strong>Åbn projektstyringen i appen</strong>
+            <p>Du har åbnet en lokal filvisning. Projekter gemmes i databasen, så åbn den kørende app for at arbejde videre.</p>
           </div>
-          <a class="button-link" href="http://127.0.0.1:8000/">Åbn lokal app</a>
+          <div class="project-server-notice-actions">
+            <a class="button-link" href="http://127.0.0.1:8000/" target="_blank" rel="noopener">Åbn appen</a>
+            <span id="projectServerNoticeHelp" role="status" aria-live="polite">Hvis siden ikke åbner, start fondsdatabase-appen først.</span>
+          </div>
         </aside>
         <section class="projects-header">
           <div>
@@ -115,6 +118,8 @@
             <h2>Projekter og fondsansøgninger</h2>
             <p>Planlæg arbejdet og forbind hvert projekt med verificerede puljer og frister.</p>
           </div>
+          <details class="project-disclosure project-create-disclosure">
+          <summary>+ Nyt projekt</summary>
           <form id="projectCreateForm" class="project-create-form">
             <label><span>Projektnavn</span><input name="name" required maxlength="160" placeholder="Nyt projekt" /></label>
             <label><span>Status</span><select name="workflow_status_id"></select></label>
@@ -125,6 +130,7 @@
             <label class="project-description-field"><span>Kort beskrivelse</span><input name="description" maxlength="5000" placeholder="Formål og forventet resultat" /></label>
             <button class="button-link" type="submit">Opret projekt</button>
           </form>
+          </details>
         </section>
         <details class="project-config-panel">
           <summary>Tilpas mapper og statusser</summary>
@@ -146,7 +152,8 @@
             </form>
           </div>
         </details>
-        <section class="projects-workspace">
+        <section id="projectDashboard" class="project-dashboard" aria-label="Projektdashboard"></section>
+        <section class="projects-workspace" hidden>
           <aside class="project-list-panel">
             <div class="section-heading"><h2>Projektportefølje</h2><span id="projectCount">0 projekter</span></div>
             <div id="projectList" class="project-list"></div>
@@ -358,6 +365,6 @@
       </section>
     </main>
 
-    <script src="frontend/app.js?v=12" defer></script>
+    <script src="frontend/app.js?v=20" defer></script>
   </body>
 </html>

@@ -258,10 +258,18 @@ async function decideScrapeChange(changeId, decision, note = "") {
 
 async function serveStatic(request, response) {
   const url = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
-  const requestedPath = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
-  const filePath = path.normalize(path.join(rootDir, requestedPath));
+  let requestedPath;
+  try {
+    requestedPath = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
+  } catch {
+    response.writeHead(400);
+    response.end("Bad request");
+    return;
+  }
+  const filePath = path.resolve(rootDir, `.${requestedPath}`);
+  const relativePath = path.relative(rootDir, filePath);
 
-  if (!filePath.startsWith(rootDir)) {
+  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
     response.writeHead(403);
     response.end("Forbidden");
     return;
@@ -274,7 +282,7 @@ async function serveStatic(request, response) {
       "content-type": mimeTypes[ext] || "application/octet-stream",
       "cache-control": "no-store",
     });
-    response.end(file);
+    response.end(request.method === "HEAD" ? undefined : file);
   } catch (error) {
     response.writeHead(error.code === "ENOENT" ? 404 : 500);
     response.end(error.code === "ENOENT" ? "Not found" : "Server error");
