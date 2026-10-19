@@ -45,7 +45,13 @@ Den fremtidige kanoniske Postgres-model og den kontrollerede overgang fra CSV/SQ
 
 Kun paa din egen computer:
 
-Nemmest på Mac: dobbeltklik på `Start fondsdatabase.command`.
+Nemmest på Mac: dobbeltklik på `Start fondsdatabase.command`. Startfilen åbner
+browseren, når serveren er klar. Hvis appen allerede kører, åbner den samme adresse
+uden at starte endnu en server. Brug dette som genvej i demoarbejdet.
+
+Åbner du `index.html` som lokal fil, går den automatisk videre til den kørende
+app på `http://127.0.0.1:8000/`. Hvis serveren er stoppet, viser filvisningen,
+hvordan den startes. En browser kan ikke selv starte den lokale Node-server.
 
 ```bash
 node server.mjs
@@ -143,6 +149,13 @@ Projektdata gemmes i SQLite-tabellerne `projects`, `applications`, `project_task
 `team_members`, `project_members` og `application_status_history`. De bevares, når
 seed-data om fonde, puljer og frister genimporteres. Den tilsvarende kanoniske
 Postgres-migration ligger i `database/postgres/005_project_management.sql`.
+Indsatsområde tilføjes i `database/postgres/010_project_focus_area.sql`.
+
+Ved oprettelse af et projekt kan man vælge indsatsområde og ansvarlig samt valgfrit
+tilføje den første fondsansøgning med pulje, status, frist, ansøgt og bevilget beløb
+og indsendelsesdato. Oplysningerne gemmes på henholdsvis projektet og ansøgningen.
+Demo-dashboardet i `dashboard/` er fortsat et fast, fiktivt datasæt og opdateres
+ikke af projektformularen.
 
 Scannerfund kobles ikke direkte til projekter. Et fund skal først være et verificeret
 program og eventuelt en frist, før det bruges i en ansøgning.
@@ -277,3 +290,16 @@ Nyttige overordnede kilder:
 - Civilstyrelsen: fondsmyndighed for ikke-erhvervsdrivende fonde.
 - Erhvervsstyrelsen: fondstilsyn for erhvervsdrivende fonde.
 - Legatbogen, Fonde.dk, LegatNet og Fondsmatch kan bruges som inspirations- og krydstjekskilder, men data boer ikke kopieres ukritisk fra kommercielle databaser.
+
+### Enkel NGO-projektvisning
+
+Projektets arbejdsrum har tre faner: Opgaver, Om projektet og Opdateringer. Status,
+ansvarlig, budget, periode, tidsbudget i timer og fonde vises sammen med projektet.
+Opgaver har status direkte i listen, kan beskrives og redigeres, og kan opdeles i
+underopgaver. I Opdateringer finder `@` projektets teammedlemmer; brug musen eller
+piletaster og Enter til at vælge.
+
+Projektmenuen giver adgang til redigering og sletning. Sletning flytter projektet
+til Papirkurv på arbejdsdashboardet. Opgaver, fondsansøgninger og kommentarer
+bevares og kommer tilbage ved gendannelse. Statusnavne følger NGO-workflowet;
+eksisterende afsluttede og annullerede projekter bevarer deres status.

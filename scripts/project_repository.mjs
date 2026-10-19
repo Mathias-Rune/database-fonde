@@ -3,6 +3,7 @@ import path from "node:path";
 import { execSqliteFile, runSqlite, sqlString } from "./sqlite_utils.mjs";
 
 const PROJECT_STATUSES = new Set(["idea", "planning", "active", "completed", "cancelled"]);
+const FOCUS_AREAS = new Set(["Unge og fællesskaber", "Grøn omstilling", "Demokratisk deltagelse"]);
 const APPLICATION_STATUSES = new Set(["candidate", "planned", "drafting", "submitted", "awarded", "rejected", "withdrawn"]);
 const TASK_STATUSES = new Set(["todo", "in_progress", "blocked", "done"]);
 const TASK_PRIORITIES = new Set(["low", "medium", "high", "urgent"]);
@@ -55,23 +56,41 @@ export function validateProjectInput(body = {}) {
   const startsOn = cleanDate(body.starts_on);
   const endsOn = cleanDate(body.ends_on);
   const estimatedBudget = cleanAmount(body.estimated_budget);
+  const estimatedHours = cleanAmount(body.estimated_hours);
+  const focusArea = cleanText(body.focus_area, 120);
   if (!name) return invalid("Projektet skal have et navn");
   if (!PROJECT_STATUSES.has(status)) return invalid("Ugyldig projektstatus");
   if (startsOn === undefined || endsOn === undefined) return invalid("Datoer skal skrives som ÅÅÅÅ-MM-DD");
   if (startsOn && endsOn && endsOn < startsOn) return invalid("Slutdato må ikke ligge før startdato");
+  if (estimatedHours === undefined) return invalid("Tidsbudget skal være et positivt tal");
   if (estimatedBudget === undefined) return invalid("Budget skal være et positivt tal");
+  if (focusArea && !FOCUS_AREAS.has(focusArea)) return invalid("Ugyldigt indsatsområde");
+  let initialApplication = null;
+  if (body.initial_application && !body.initial_application.program_id &&
+      ["deadline_id", "requested_amount", "awarded_amount", "submitted_on"].some((field) =>
+        body.initial_application[field] !== "" && body.initial_application[field] != null)) {
+    return invalid("Vælg fond og pulje for at gemme ansøgningsoplysninger");
+  }
+  if (body.initial_application?.program_id) {
+    const checked = validateApplicationInput({ ...body.initial_application, project_id: "new-project" });
+    if (!checked.ok) return checked;
+    initialApplication = checked;
+  }
   return {
     ok: true,
     name,
     description: cleanText(body.description),
+    focus_area: focusArea,
     status,
     owner_member_id: cleanText(body.owner_member_id, 80),
     starts_on: startsOn,
     ends_on: endsOn,
     estimated_budget: estimatedBudget,
+    estimated_hours: estimatedHours,
     currency: cleanText(body.currency, 3)?.toUpperCase() || "DKK",
     folder_id: cleanText(body.folder_id, 80),
     workflow_status_id: cleanText(body.workflow_status_id, 80),
+    initial_application: initialApplication,
   };
 }
 
@@ -80,9 +99,13 @@ export function validateApplicationInput(body = {}) {
   const programId = cleanText(body.program_id, 120);
   const status = cleanText(body.status, 24) || "candidate";
   const requestedAmount = cleanAmount(body.requested_amount);
+  const awardedAmount = cleanAmount(body.awarded_amount);
+  const submittedOn = cleanDate(body.submitted_on);
   if (!projectId || !programId) return invalid("Projekt og pulje skal vælges");
   if (!APPLICATION_STATUSES.has(status)) return invalid("Ugyldig ansøgningsstatus");
   if (requestedAmount === undefined) return invalid("Ansøgningsbeløbet skal være et positivt tal");
+  if (awardedAmount === undefined) return invalid("Bevillingen skal være et positivt tal");
+  if (submittedOn === undefined) return invalid("Indsendelsesdatoen er ugyldig");
   return {
     ok: true,
     project_id: projectId,
@@ -90,6 +113,8 @@ export function validateApplicationInput(body = {}) {
     deadline_id: cleanText(body.deadline_id, 120),
     status,
     requested_amount: requestedAmount,
+    awarded_amount: awardedAmount,
+    submitted_on: submittedOn,
     currency: cleanText(body.currency, 3)?.toUpperCase() || "DKK",
     notes: cleanText(body.notes),
     workflow_status_id: cleanText(body.workflow_status_id, 80),
@@ -197,6 +222,14 @@ export function validateCommentInput(body = {}) {
   };
 }
 
+export function validateTaskDetailsInput(body = {}) {
+  const title = cleanText(body.title, 240);
+  const dueOn = cleanDate(body.due_on);
+  if (!title) return invalid("Opgaven skal have en titel");
+  if (dueOn === undefined) return invalid("Ugyldig frist");
+  return { ok: true, title, description: cleanText(body.description), due_on: dueOn };
+}
+
 export function validateTaskAssigneeInput(body = {}) {
   return { ok: true, assigned_to: cleanText(body.assigned_to, 80) };
 }
@@ -232,7 +265,22 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
   let ready;
 
   function initialize() {
-    ready ||= execSqliteFile(databasePath, migrationPath, { cwd });
+    ready ||= (async () => {
+      const existing = await runSqlite(databasePath, "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'projects';", { cwd });
+      if (existing.length) {
+        const columns = await runSqlite(databasePath, "PRAGMA table_info(projects);", { cwd });
+        if (!columns.some((column) => column.name === "focus_area")) {
+          await runSqlite(databasePath, "ALTER TABLE projects ADD COLUMN focus_area TEXT;", { cwd });
+        }
+      }
+      if (existing.length) {
+        const columns = await runSqlite(databasePath, "PRAGMA table_info(projects);", { cwd });
+        for (const [name, type] of [["estimated_hours", "REAL"], ["deleted_at", "TEXT"]]) {
+          if (!columns.some(column => column.name === name)) await runSqlite(databasePath, `ALTER TABLE projects ADD COLUMN ${name} ${type};`, { cwd });
+        }
+      }
+      await execSqliteFile(databasePath, migrationPath, { cwd });
+    })();
     return ready;
   }
 
@@ -245,9 +293,13 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
     initialize,
 
     async listProjects() {
-      return query(`SELECT * FROM project_overview ORDER BY
+      return query(`SELECT * FROM project_overview WHERE deleted_at IS NULL ORDER BY
         CASE status WHEN 'active' THEN 0 WHEN 'planning' THEN 1 WHEN 'idea' THEN 2 ELSE 3 END,
         updated_at DESC, name COLLATE NOCASE;`);
+    },
+
+    async listDeletedProjects() {
+      return query("SELECT project_id, name, deleted_at FROM projects WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC;");
     },
 
     async listTeamMembers() {
@@ -294,7 +346,7 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
     async getProject(projectId) {
       const id = sqlString(projectId);
       const [projects, members, applications, tasks, documents, comments, commentMentions] = await Promise.all([
-        query(`SELECT * FROM project_overview WHERE project_id = ${id};`),
+        query(`SELECT * FROM project_overview WHERE project_id = ${id} AND deleted_at IS NULL;`),
         query(`SELECT tm.member_id, tm.display_name, tm.email, pm.role
                FROM project_members pm JOIN team_members tm ON tm.member_id = pm.member_id
                WHERE pm.project_id = ${id} ORDER BY tm.display_name;`),
@@ -333,19 +385,41 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
       await initialize();
       const projectId = randomUUID();
       const projectKey = keyFrom("project", input.name);
+      const application = input.initial_application;
+      const applicationId = application ? randomUUID() : null;
+      const applicationSql = application ? `
+        INSERT INTO applications (
+          application_id, application_key, project_id, program_id, deadline_id,
+          status, requested_amount, awarded_amount, currency, submitted_on, notes
+        ) VALUES (
+          ${sqlString(applicationId)}, ${sqlString(keyFrom("application", application.program_id))},
+          ${sqlString(projectId)}, ${sqlString(application.program_id)}, ${sqlString(application.deadline_id)},
+          ${sqlString(application.status)}, ${application.requested_amount ?? "NULL"},
+          ${application.awarded_amount ?? "NULL"}, ${sqlString(application.currency)},
+          ${sqlString(application.submitted_on)}, ${sqlString(application.notes)}
+        );
+        INSERT INTO application_status_history (application_id, previous_status, new_status)
+          VALUES (${sqlString(applicationId)}, NULL, ${sqlString(application.status)});
+        INSERT INTO application_status_assignments (application_id, status_id)
+          SELECT ${sqlString(applicationId)}, status_id FROM workflow_statuses
+          WHERE status_id = ${sqlString(application.workflow_status_id)} AND entity_type = 'application';` : "";
       await query(`BEGIN; INSERT INTO projects (
-        project_id, project_key, name, description, status, owner_member_id,
-        starts_on, ends_on, estimated_budget, currency
+        project_id, project_key, name, description, focus_area, status, owner_member_id,
+        starts_on, ends_on, estimated_budget, estimated_hours, currency
       ) VALUES (
-        ${sqlString(projectId)}, ${sqlString(projectKey)}, ${sqlString(input.name)}, ${sqlString(input.description)},
+        ${sqlString(projectId)}, ${sqlString(projectKey)}, ${sqlString(input.name)}, ${sqlString(input.description)}, ${sqlString(input.focus_area)},
         ${sqlString(input.status)}, ${sqlString(input.owner_member_id)}, ${sqlString(input.starts_on)},
-        ${sqlString(input.ends_on)}, ${input.estimated_budget ?? "NULL"}, ${sqlString(input.currency)}
+        ${sqlString(input.ends_on)}, ${input.estimated_budget ?? "NULL"}, ${input.estimated_hours ?? "NULL"}, ${sqlString(input.currency)}
       );
+      INSERT INTO project_members (project_id, member_id, role)
+        SELECT ${sqlString(projectId)}, ${sqlString(input.owner_member_id)}, 'owner'
+        WHERE ${sqlString(input.owner_member_id)} IS NOT NULL;
       INSERT INTO project_folder_assignments (project_id, folder_id)
         SELECT ${sqlString(projectId)}, ${sqlString(input.folder_id)} WHERE ${sqlString(input.folder_id)} IS NOT NULL;
       INSERT INTO project_status_assignments (project_id, status_id)
         SELECT ${sqlString(projectId)}, status_id FROM workflow_statuses
         WHERE status_id = ${sqlString(input.workflow_status_id)} AND entity_type = 'project';
+      ${applicationSql}
       COMMIT;`);
       return this.getProject(projectId);
     },
@@ -353,10 +427,10 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
     async updateProject(projectId, input) {
       const id = sqlString(projectId);
       await query(`BEGIN;
-        UPDATE projects SET name = ${sqlString(input.name)}, description = ${sqlString(input.description)},
+        UPDATE projects SET name = ${sqlString(input.name)}, description = ${sqlString(input.description)}, focus_area = ${sqlString(input.focus_area)},
           status = ${sqlString(input.status)}, owner_member_id = ${sqlString(input.owner_member_id)},
           starts_on = ${sqlString(input.starts_on)}, ends_on = ${sqlString(input.ends_on)},
-          estimated_budget = ${input.estimated_budget ?? "NULL"}, currency = ${sqlString(input.currency)},
+          estimated_budget = ${input.estimated_budget ?? "NULL"}, estimated_hours = ${input.estimated_hours ?? "NULL"}, currency = ${sqlString(input.currency)},
           updated_at = CURRENT_TIMESTAMP
         WHERE project_id = ${id};
         UPDATE project_members SET role = 'contributor' WHERE project_id = ${id} AND role = 'owner';
@@ -371,6 +445,22 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
         INSERT INTO project_status_assignments (project_id, status_id)
           SELECT ${id}, status_id FROM workflow_statuses
           WHERE status_id = ${sqlString(input.workflow_status_id)} AND entity_type = 'project';
+        COMMIT;`);
+      return this.getProject(projectId);
+    },
+
+    async setProjectDeleted(projectId, deleted) {
+      const rows = await query(`UPDATE projects SET deleted_at = ${deleted ? "CURRENT_TIMESTAMP" : "NULL"}, updated_at = CURRENT_TIMESTAMP WHERE project_id = ${sqlString(projectId)} RETURNING project_id;`);
+      return rows[0] || null;
+    },
+
+    async updateProjectStatus(projectId, workflowStatusId) {
+      const statuses = await query(`SELECT * FROM workflow_statuses WHERE status_id = ${sqlString(workflowStatusId)} AND entity_type = 'project' AND is_active = 1;`);
+      if (!statuses[0]) throw new Error("Ugyldig projektstatus");
+      await query(`BEGIN;
+        UPDATE projects SET status = ${sqlString(statuses[0].base_status)}, updated_at = CURRENT_TIMESTAMP WHERE project_id = ${sqlString(projectId)} AND deleted_at IS NULL;
+        DELETE FROM project_status_assignments WHERE project_id = ${sqlString(projectId)};
+        INSERT INTO project_status_assignments (project_id, status_id) VALUES (${sqlString(projectId)}, ${sqlString(workflowStatusId)});
         COMMIT;`);
       return this.getProject(projectId);
     },
@@ -456,6 +546,11 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
           SELECT ${sqlString(taskId)}, status_id FROM workflow_statuses
           WHERE status_id = ${sqlString(workflowStatusId)} AND entity_type = 'task';
         COMMIT;`);
+      return (await query(`SELECT * FROM project_tasks WHERE task_id = ${sqlString(taskId)};`))[0] || null;
+    },
+
+    async updateTaskDetails(taskId, input) {
+      await query(`UPDATE project_tasks SET title = ${sqlString(input.title)}, description = ${sqlString(input.description)}, due_on = ${sqlString(input.due_on)}, updated_at = CURRENT_TIMESTAMP WHERE task_id = ${sqlString(taskId)};`);
       return (await query(`SELECT * FROM project_tasks WHERE task_id = ${sqlString(taskId)};`))[0] || null;
     },
 
