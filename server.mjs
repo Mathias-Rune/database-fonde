@@ -18,6 +18,7 @@ import {
   validateProjectInput,
   validateProjectMemberInput,
   validateTaskInput,
+  validateTaskDetailsInput,
   validateTaskAssigneeInput,
   validateTeamMemberInput,
   validateWorkflowStatusInput,
@@ -292,6 +293,16 @@ async function serveStatic(request, response) {
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${request.headers.host || `${host}:${port}`}`);
 
+  if (request.method === "GET" && requestUrl.pathname === "/api/health") {
+    response.writeHead(200, {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "*",
+      "cache-control": "no-store",
+    });
+    response.end(JSON.stringify({ ok: true, app: "dansk-fondsdatabase" }));
+    return;
+  }
+
   if (request.method === "GET" && requestUrl.pathname === "/api/auth/status") {
     const account = await currentAccount(request);
     sendJson(response, 200, { ok: true, authenticated: !!account, user: account, setupRequired: (await authRepository.countAccounts()) === 0 });
@@ -391,6 +402,12 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "GET" && requestUrl.pathname === "/api/projects/deleted") {
+    try { sendJson(response, 200, { ok: true, projects: await projectRepository.listDeletedProjects() }); }
+    catch(error) { sendJson(response, 400, { ok:false, message:error.message }); }
+    return;
+  }
+
   if (request.method === "GET" && requestUrl.pathname.startsWith("/api/projects/")) {
     try {
       const projectId = decodeURIComponent(requestUrl.pathname.slice("/api/projects/".length));
@@ -413,6 +430,24 @@ const server = http.createServer(async (request, response) => {
     } catch (error) {
       sendJson(response, 400, { ok: false, message: error.message });
     }
+    return;
+  }
+
+  if ((request.method === "DELETE" && /^\/api\/projects\/[^/]+$/.test(requestUrl.pathname)) ||
+      (request.method === "POST" && /^\/api\/projects\/[^/]+\/restore$/.test(requestUrl.pathname))) {
+    try {
+      const result = await projectRepository.setProjectDeleted(decodeURIComponent(requestUrl.pathname.split("/")[3]), request.method === "DELETE");
+      sendJson(response, result ? 200 : 404, { ok: !!result, message: result ? "Projektet er opdateret" : "Projektet blev ikke fundet" });
+    } catch (error) { sendJson(response, 400, { ok: false, message: error.message }); }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/projects\/[^/]+\/status$/.test(requestUrl.pathname)) {
+    try {
+      const body = await readJsonBody(request);
+      const project = await projectRepository.updateProjectStatus(decodeURIComponent(requestUrl.pathname.split("/")[3]), body.workflow_status_id);
+      sendJson(response, project ? 200 : 404, { ok: !!project, project });
+    } catch (error) { sendJson(response, 400, { ok: false, message: error.message }); }
     return;
   }
 
@@ -489,6 +524,16 @@ const server = http.createServer(async (request, response) => {
     } catch (error) {
       sendJson(response, 400, { ok: false, message: error.message });
     }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/tasks\/[^/]+$/.test(requestUrl.pathname)) {
+    try {
+      const input = validateTaskDetailsInput(await readJsonBody(request));
+      if (!input.ok) { sendJson(response, input.statusCode, input); return; }
+      const task = await projectRepository.updateTaskDetails(decodeURIComponent(requestUrl.pathname.split("/")[3]), input);
+      sendJson(response, task ? 200 : 404, { ok: !!task, task });
+    } catch (error) { sendJson(response, 400, { ok: false, message: error.message }); }
     return;
   }
 

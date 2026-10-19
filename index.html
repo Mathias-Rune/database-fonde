@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
     <meta name="theme-color" content="#102b27" />
-    <link rel="stylesheet" href="frontend/styles.css?v=18" />
+    <link rel="stylesheet" href="frontend/styles.css?v=23" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
@@ -24,6 +24,7 @@
         </div>
       </div>
       <div class="top-actions" aria-label="Datahandlinger">
+        <a class="icon-link" href="dashboard/index.html">Dashboard · demo</a>
         <button id="updateButton" class="icon-link action-button" type="button">Opdater kilder</button>
         <a class="icon-link" href="data/fonde_seed.csv" download title="Download CSV" aria-label="Download CSV">
           <span aria-hidden="true">CSV</span>
@@ -105,11 +106,11 @@
         <aside id="projectServerNotice" class="project-server-notice" hidden>
           <div class="project-server-notice-copy">
             <strong>Åbn projektstyringen i appen</strong>
-            <p>Du har åbnet en lokal filvisning. Projekter gemmes i databasen, så åbn den kørende app for at arbejde videre.</p>
+            <p>Du har åbnet en lokal filvisning. Hvis serveren kører, åbnes appen automatisk her. Ellers start den med <strong>Start fondsdatabase.command</strong> i projektmappen.</p>
           </div>
           <div class="project-server-notice-actions">
             <a class="button-link" href="http://127.0.0.1:8000/" target="_blank" rel="noopener">Åbn appen</a>
-            <span id="projectServerNoticeHelp" role="status" aria-live="polite">Hvis siden ikke åbner, start fondsdatabase-appen først.</span>
+            <span id="projectServerNoticeHelp" role="status" aria-live="polite">Tjekker om appen kører…</span>
           </div>
         </aside>
         <section class="projects-header">
@@ -123,11 +124,28 @@
           <form id="projectCreateForm" class="project-create-form">
             <label><span>Projektnavn</span><input name="name" required maxlength="160" placeholder="Nyt projekt" /></label>
             <label><span>Status</span><select name="workflow_status_id"></select></label>
-            <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option></select></label>
+            <label><span>Ansvarlig</span><select name="owner_member_id"><option value="">Ingen ansvarlig</option></select></label>
             <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" placeholder="250000" /></label>
+            <details class="project-create-more"><summary>Datoer, team og fondsansøgning</summary><div class="project-create-more-grid">
+            <label><span>Indsatsområde</span><select name="focus_area"><option value="">Vælg område</option><option>Unge og fællesskaber</option><option>Grøn omstilling</option><option>Demokratisk deltagelse</option></select></label>
+
+            <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option></select></label>
+
+            <label><span>Tidsbudget (timer)</span><input name="estimated_hours" type="number" min="0" step="0.5" placeholder="Fx 120" /></label>
             <label><span>Start</span><input name="starts_on" type="date" /></label>
             <label><span>Slut</span><input name="ends_on" type="date" /></label>
             <label class="project-description-field"><span>Kort beskrivelse</span><input name="description" maxlength="5000" placeholder="Formål og forventet resultat" /></label>
+            <fieldset class="project-initial-application">
+              <legend>Første fondsansøgning (valgfri)</legend>
+              <p>Vælg en pulje for at gemme ansøgningsoplysninger sammen med projektet.</p>
+              <label><span>Fond og pulje</span><select name="program_id"><option value="">Tilføj senere</option></select></label>
+              <label><span>Ansøgningsstatus</span><select name="application_workflow_status_id"></select></label>
+              <label><span>Frist</span><select name="deadline_id" disabled><option value="">Vælg først pulje</option></select></label>
+              <label><span>Ansøgt beløb (DKK)</span><input name="requested_amount" type="number" min="0" step="1000" /></label>
+              <label><span>Bevilget beløb (DKK)</span><input name="awarded_amount" type="number" min="0" step="1000" /></label>
+              <label><span>Indsendt dato</span><input name="submitted_on" type="date" /></label>
+            </fieldset>
+            </div></details>
             <button class="button-link" type="submit">Opret projekt</button>
           </form>
           </details>
@@ -365,6 +383,6 @@
       </section>
     </main>
 
-    <script src="frontend/app.js?v=20" defer></script>
+    <script src="frontend/app.js?v=24" defer></script>
   </body>
 </html>
