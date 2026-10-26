@@ -3,7 +3,7 @@ import path from "node:path";
 
 export function runSqlite(dbPath, sql, { cwd = process.cwd() } = {}) {
   return new Promise((resolve, reject) => {
-    execFile("sqlite3", ["-json", dbPath, sql], { cwd, timeout: 180000 }, (error, stdout, stderr) => {
+    const child = execFile("sqlite3", ["-bail", "-json", dbPath], { cwd, timeout: 180000 }, (error, stdout, stderr) => {
       if (error) {
         reject(Object.assign(error, { stdout, stderr }));
         return;
@@ -15,6 +15,7 @@ export function runSqlite(dbPath, sql, { cwd = process.cwd() } = {}) {
         reject(Object.assign(parseError, { stdout, stderr }));
       }
     });
+    child.stdin.end(`.bail on\n${sql}\n`);
   });
 }
 

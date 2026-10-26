@@ -4,38 +4,60 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dansk Fondsdatabase</title>
-    <meta name="theme-color" content="#102b27" />
-    <link rel="stylesheet" href="frontend/styles.css?v=18" />
+    <meta name="theme-color" content="#1e1c1d" />
+    <link rel="stylesheet" href="frontend/styles.css?v=24" />
+    <link rel="stylesheet" href="frontend/workspace.css?v=1" />
+    <link rel="stylesheet" href="frontend/project-theme.css?v=1" />
+    <link rel="stylesheet" href="frontend/task-groups.css?v=1" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
-    <header class="topbar">
-      <div class="brand-lockup">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" role="img">
-            <path d="M16 4.5c-5.9 0-10.7 4.8-10.7 10.7 0 7.1 6.8 11.5 10.7 12.3 3.9-.8 10.7-5.2 10.7-12.3C26.7 9.3 21.9 4.5 16 4.5Z" />
-            <path d="M10.6 18.8c3.7-.2 7.3-2.3 9.8-6.3M15.8 23V16" />
-          </svg>
-        </span>
+    <a class="skip-link" href="#mainContent">Gå til indhold</a>
+    <aside id="appSidebar" class="app-sidebar" aria-label="Hovedmenu">
+      <a class="sidebar-brand" href="/" aria-label="Dansk Fondsdatabase — forsiden">
+        <span class="sidebar-brand-mark"><img src="frontend/icons/send.svg" alt="" /></span>
+        <span>Dansk<br />Fondsdatabase</span>
+      </a>
+      <nav class="work-tabs" aria-label="Arbejdsområder">
+        <button class="tab-button" type="button" data-tab="fund"><img src="frontend/icons/search.svg" alt="" /><span>Fund</span></button>
+        <button class="tab-button" type="button" data-tab="projekter"><img src="frontend/icons/file-text.svg" alt="" /><span>Projekter</span></button>
+        <button class="tab-button active" type="button" data-tab="fonde" aria-current="page"><img src="frontend/icons/database.svg" alt="" /><span>Fonde</span></button>
+        <button class="tab-button" type="button" data-tab="favoritter"><img src="frontend/icons/star.svg" alt="" /><span>Favoritter</span></button>
+        <button class="tab-button" type="button" data-tab="alerts"><img src="frontend/icons/bell.svg" alt="" /><span>Alerts</span></button>
+        <button class="tab-button" type="button" data-tab="data"><img src="frontend/icons/bar-chart-2.svg" alt="" /><span>Data</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="dashboard/index.html"><img src="frontend/icons/bar-chart-2.svg" alt="" /><span>Dashboard · demo</span></a>
+      </div>
+    </aside>
+    <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Luk menu" hidden></button>
+    <header class="topbar workspace-header">
+      <div class="workspace-heading">
+        <button id="menuToggle" class="menu-toggle" type="button" aria-label="Åbn menu" aria-controls="appSidebar" aria-expanded="false"><img src="frontend/icons/menu.svg" alt="" /></button>
         <div>
-          <p class="eyebrow">Dansk Fondsdatabase</p>
-          <h1>Fonde i Danmark</h1>
-          <p class="header-subtitle">Find, vurder og følg de rette støttemuligheder.</p>
+          <h1 id="workspaceTitle">Fonde i Danmark</h1>
+          <p id="workspaceSubtitle" class="header-subtitle">Find, vurder og følg de rette støttemuligheder.</p>
         </div>
       </div>
       <div class="top-actions" aria-label="Datahandlinger">
-        <button id="updateButton" class="icon-link action-button" type="button">Opdater kilder</button>
-        <a class="icon-link" href="data/fonde_seed.csv" download title="Download CSV" aria-label="Download CSV">
-          <span aria-hidden="true">CSV</span>
-        </a>
-        <a class="icon-link" href="outputs/dansk_fonds_database.xlsx" download title="Download Excel" aria-label="Download Excel">
-          <span aria-hidden="true">XLS</span>
-        </a>
+        <button id="updateButton" class="icon-link action-button" type="button"><img src="frontend/icons/refresh-cw.svg" alt="" /><span>Opdater kilder</span></button>
+        <details class="export-menu">
+          <summary class="icon-link"><img src="frontend/icons/download.svg" alt="" /><span>Eksportér</span></summary>
+          <div class="export-options">
+            <a href="data/fonde_seed.csv" download><img src="frontend/icons/file-text.svg" alt="" />Download CSV</a>
+            <a href="outputs/dansk_fonds_database.xlsx" download><img src="frontend/icons/download.svg" alt="" />Download Excel</a>
+          </div>
+        </details>
+        <button id="accountButton" class="account-button" type="button" aria-haspopup="dialog"><img src="frontend/icons/user.svg" alt="" /><span data-account-label>Log ind</span></button>
       </div>
     </header>
 
-    <main class="app-shell">
-      <section id="projectAuthPanel" class="project-auth-panel global-auth-panel" hidden></section>
+    <dialog id="accountDialog" class="account-dialog" aria-labelledby="accountDialogTitle">
+      <div class="account-dialog-heading"><h2 id="accountDialogTitle">Din konto</h2><button id="closeAccountDialog" class="dialog-close" type="button" aria-label="Luk kontovinduet"><img src="frontend/icons/x.svg" alt="" /></button></div>
+      <section id="projectAuthPanel" class="project-auth-panel" hidden></section>
+    </dialog>
+
+    <main id="mainContent" class="app-shell" tabindex="-1">
       <section class="summary-band" aria-label="Overblik">
         <div class="metric">
           <span class="metric-label">Fonde</span>
@@ -55,16 +77,9 @@
         </div>
       </section>
 
-      <nav class="work-tabs" aria-label="Arbejdsområder">
-        <button class="tab-button active" type="button" data-tab="fund">Fund</button>
-        <button class="tab-button" type="button" data-tab="projekter">Projekter</button>
-        <button class="tab-button" type="button" data-tab="fonde">Fonde</button>
-        <button class="tab-button" type="button" data-tab="favoritter">Favoritter</button>
-        <button class="tab-button" type="button" data-tab="alerts">Alerts</button>
-        <button class="tab-button" type="button" data-tab="data">Data</button>
-      </nav>
 
-      <section id="panel-fund" class="tab-panel active" data-panel="fund">
+
+      <section id="panel-fund" class="tab-panel" data-panel="fund" hidden>
         <section class="review-panel primary-workspace" aria-label="Review af fundne calls">
           <div class="review-header">
             <div>
@@ -102,14 +117,20 @@
       </section>
 
       <section id="panel-projekter" class="tab-panel" data-panel="projekter" hidden>
+        <section id="projectLoginPrompt" class="project-login-prompt">
+          <img src="frontend/icons/file-text.svg" alt="" />
+          <h2>Dit projektarbejde, samlet ét sted</h2>
+          <p>Log ind for at se projekter, fondsansøgninger og teamets opgaver.</p>
+          <button class="button-link" type="button" data-open-account>Log ind til projekter</button>
+        </section>
         <aside id="projectServerNotice" class="project-server-notice" hidden>
           <div class="project-server-notice-copy">
             <strong>Åbn projektstyringen i appen</strong>
-            <p>Du har åbnet en lokal filvisning. Projekter gemmes i databasen, så åbn den kørende app for at arbejde videre.</p>
+            <p>Du har åbnet en lokal filvisning. Hvis serveren kører, åbnes appen automatisk her. Ellers start den med <strong>Start fondsdatabase.command</strong> i projektmappen.</p>
           </div>
           <div class="project-server-notice-actions">
             <a class="button-link" href="http://127.0.0.1:8000/" target="_blank" rel="noopener">Åbn appen</a>
-            <span id="projectServerNoticeHelp" role="status" aria-live="polite">Hvis siden ikke åbner, start fondsdatabase-appen først.</span>
+            <span id="projectServerNoticeHelp" role="status" aria-live="polite">Tjekker om appen kører…</span>
           </div>
         </aside>
         <section class="projects-header">
@@ -123,11 +144,28 @@
           <form id="projectCreateForm" class="project-create-form">
             <label><span>Projektnavn</span><input name="name" required maxlength="160" placeholder="Nyt projekt" /></label>
             <label><span>Status</span><select name="workflow_status_id"></select></label>
-            <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option></select></label>
+            <label><span>Ansvarlig</span><select name="owner_member_id"><option value="">Ingen ansvarlig</option></select></label>
             <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" placeholder="250000" /></label>
+            <details class="project-create-more"><summary>Datoer, team og fondsansøgning</summary><div class="project-create-more-grid">
+            <label><span>Indsatsområde</span><select name="focus_area"><option value="">Vælg område</option><option>Unge og fællesskaber</option><option>Grøn omstilling</option><option>Demokratisk deltagelse</option></select></label>
+
+            <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option></select></label>
+
+            <label><span>Tidsbudget (timer)</span><input name="estimated_hours" type="number" min="0" step="0.5" placeholder="Fx 120" /></label>
             <label><span>Start</span><input name="starts_on" type="date" /></label>
             <label><span>Slut</span><input name="ends_on" type="date" /></label>
             <label class="project-description-field"><span>Kort beskrivelse</span><input name="description" maxlength="5000" placeholder="Formål og forventet resultat" /></label>
+            <fieldset class="project-initial-application">
+              <legend>Første fondsansøgning (valgfri)</legend>
+              <p>Vælg en pulje for at gemme ansøgningsoplysninger sammen med projektet.</p>
+              <label><span>Fond og pulje</span><select name="program_id"><option value="">Tilføj senere</option></select></label>
+              <label><span>Ansøgningsstatus</span><select name="application_workflow_status_id"></select></label>
+              <label><span>Frist</span><select name="deadline_id" disabled><option value="">Vælg først pulje</option></select></label>
+              <label><span>Ansøgt beløb (DKK)</span><input name="requested_amount" type="number" min="0" step="1000" /></label>
+              <label><span>Bevilget beløb (DKK)</span><input name="awarded_amount" type="number" min="0" step="1000" /></label>
+              <label><span>Indsendt dato</span><input name="submitted_on" type="date" /></label>
+            </fieldset>
+            </div></details>
             <button class="button-link" type="submit">Opret projekt</button>
           </form>
           </details>
@@ -162,54 +200,42 @@
             <div class="empty-state">Opret eller vælg et projekt</div>
           </section>
         </section>
+        <dialog id="portfolioEditDialog" class="portfolio-edit-dialog" aria-labelledby="portfolioEditTitle">
+          <form id="portfolioEditForm" class="portfolio-edit-form" method="dialog">
+            <header class="portfolio-edit-header"><div><p class="section-kicker">Projektportefølje</p><h2 id="portfolioEditTitle">Rediger</h2></div><button class="portfolio-edit-close" type="button" data-close-portfolio-edit aria-label="Luk">×</button></header>
+            <div class="portfolio-edit-fields" data-portfolio-edit-fields></div>
+            <p class="portfolio-edit-error" role="alert" hidden></p>
+            <footer class="portfolio-edit-footer"><button class="portfolio-open-project" type="button" data-open-project hidden>Åbn projektet</button><span></span><button class="portfolio-edit-cancel" type="button" data-close-portfolio-edit>Annuller</button><button class="mini-button approve" type="submit">Gem ændringer</button></footer>
+          </form>
+        </dialog>
       </section>
 
-      <section id="panel-fonde" class="tab-panel" data-panel="fonde" hidden>
+      <section id="panel-fonde" class="tab-panel active" data-panel="fonde">
         <section class="toolbar" aria-label="Søgning og filtre">
           <label class="search-box">
-            <span>Søg</span>
-            <input id="searchInput" type="search" placeholder="Fond, støtteområde, by eller ansøgertype" autocomplete="off" />
+            <span class="sr-only">Søg</span>
+            <img class="search-input-icon" src="frontend/icons/search.svg" alt="" />
+            <input id="searchInput" type="search" placeholder="Søg efter fond, område eller ansøger" autocomplete="off" />
           </label>
-          <label>
-            <span>Støtteområde</span>
-            <select id="areaFilter">
-              <option value="">Alle områder</option>
-            </select>
-          </label>
-          <label>
-            <span>Ansøger</span>
-            <select id="applicantFilter">
-              <option value="">Alle ansøgere</option>
-            </select>
-          </label>
-          <label>
-            <span>Frist</span>
-            <select id="deadlineFilter">
-              <option value="">Alle frister</option>
-              <option value="open">Løbende åbne</option>
-              <option value="to_verify">Skal tjekkes</option>
-              <option value="call">Opslag/calls</option>
-            </select>
-          </label>
-          <label>
-            <span>Status</span>
-            <select id="statusFilter">
-              <option value="">Alle statusser</option>
-              <option value="source_checked">Kilde-tjekket</option>
-              <option value="to_verify">Skal verificeres</option>
-              <option value="needs_update">Skal opdateres</option>
-            </select>
-          </label>
+          <label><span>Støtteområde</span><select id="areaFilter"><option value="">Alle områder</option></select></label>
+          <label><span>Frist</span><select id="deadlineFilter"><option value="">Alle frister</option><option value="open">Løbende åbne</option><option value="to_verify">Skal tjekkes</option><option value="call">Opslag/calls</option></select></label>
+          <details class="more-filters">
+            <summary><img src="frontend/icons/filter.svg" alt="" /><span id="moreFiltersLabel">Flere filtre</span></summary>
+            <div class="more-filters-panel">
+              <label><span>Ansøger</span><select id="applicantFilter"><option value="">Alle ansøgere</option></select></label>
+              <label><span>Status</span><select id="statusFilter"><option value="">Alle statusser</option><option value="source_checked">Kilde-tjekket</option><option value="to_verify">Skal verificeres</option><option value="needs_update">Skal opdateres</option></select></label>
+            </div>
+          </details>
         </section>
 
         <section class="content-grid funds-workspace">
           <section class="results-panel" aria-label="Fondsliste">
-            <div class="results-heading">
+            <div class="results-heading sr-only">
               <div>
                 <p class="section-kicker">Fondsdatabase</p>
                 <h2>Støttemuligheder</h2>
               </div>
-              <span id="visibleCount">0 muligheder</span>
+              <span id="visibleCount" aria-live="polite">0 muligheder</span>
             </div>
             <div class="table-wrap">
               <table>
@@ -217,7 +243,7 @@
                   <tr>
                     <th>Mulighed</th>
                     <th>Støtteområder</th>
-                    <th>Ansøgere</th>
+                    <th class="applicant-column">Ansøgere</th>
                     <th>Frist</th>
                     <th>Status</th>
                   </tr>
@@ -228,9 +254,10 @@
           </section>
 
           <aside class="detail-panel" aria-label="Detaljer">
+            <button id="backToFunds" class="mobile-back-to-results" type="button"><img src="frontend/icons/chevron-down.svg" alt="" />Tilbage til listen</button>
             <div class="detail-panel-heading">
               <p class="section-kicker">Detaljer</p>
-              <span>Valgt mulighed</span>
+
             </div>
             <div id="detailEmpty" class="empty-state">Vælg en mulighed i listen</div>
             <article id="detailContent" class="detail-content" hidden></article>
@@ -365,6 +392,7 @@
       </section>
     </main>
 
-    <script src="frontend/app.js?v=20" defer></script>
+    <script src="frontend/workspace-shell.js?v=1" defer></script>
+    <script src="frontend/app.js?v=30" defer></script>
   </body>
 </html>

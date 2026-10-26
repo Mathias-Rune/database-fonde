@@ -19,7 +19,7 @@ const state = {
   },
   alerts: [],
   scanReviewOverrides: {},
-  activeTab: "fund",
+  activeTab: "fonde",
   loading: false,
   approvedScrapeFields: [],
   projects: [],
@@ -31,7 +31,11 @@ const state = {
   selectedTeamMemberId: null,
   expandedTaskId: null,
   subtaskComposerTaskId: null,
+  newTaskComposerProjectId: null,
+  collapsedTaskIds: new Set(),
   projectPage: "dashboard",
+  projectLoadError: null,
+  deletedProject: null,
 };
 
 const els = {
@@ -88,6 +92,8 @@ const els = {
   projectServerNoticeHelp: document.querySelector("#projectServerNoticeHelp"),
   projectAuthPanel: document.querySelector("#projectAuthPanel"),
   projectConfigPanel: document.querySelector(".project-config-panel"),
+  portfolioEditDialog: document.querySelector("#portfolioEditDialog"),
+  portfolioEditForm: document.querySelector("#portfolioEditForm"),
 };
 
 function parseCsv(text) {
@@ -166,7 +172,7 @@ function applicationActionLabel(program) {
   if (status.includes("forespørg")) return "Start forespørgsel";
   if (status.includes("invitation")) return "Læs om processen";
   if (status.includes("opslag") || status.includes("call")) return "Se aktuelle opslag";
-  return "Ansøgning";
+  return "Se ansøgningsside";
 }
 
 function cvrRequirementLabel(requirement) {
@@ -180,7 +186,7 @@ function cvrRequirementLabel(requirement) {
 
 function structuredGeographyLabel(profile, fallback) {
   if (!profile) return fallback || "Skal verificeres";
-  return [profile.local_area, profile.municipality, profile.region, profile.country_code]
+  return [profile.local_area, profile.municipality, profile.region, profile.country_code === "DK" ? "Danmark" : profile.country_code]
     .filter(Boolean)
     .filter((value, index, values) => values.indexOf(value) === index)
     .join(" · ") || fallback || "Skal verificeres";
@@ -229,6 +235,29 @@ function fieldLabel(fieldName) {
 
 function isFilePreview() {
   return window.location.protocol === "file:";
+}
+
+function setupFilePreviewLauncher() {
+  if (!isFilePreview()) return;
+  els.projectServerNotice.hidden = false;
+  const localAppLink = els.projectServerNotice.querySelector("a[href]");
+  const localAppUrl = new URL(localAppLink.href);
+  async function openRunningApp() {
+    els.projectServerNoticeHelp.textContent = "Tjekker om appen kører…";
+    try {
+      const response = await fetch(new URL("/api/health", localAppUrl), { cache: "no-store", signal: AbortSignal.timeout(2500) });
+      const health = await response.json();
+      if (!response.ok || health.app !== "dansk-fondsdatabase") throw new Error("Forkert lokal server");
+      window.location.replace(localAppUrl.href);
+    } catch {
+      els.projectServerNoticeHelp.textContent = "Appen kører ikke. Dobbeltklik ‘Start fondsdatabase.command’ i projektmappen for at starte den.";
+    }
+  }
+  localAppLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    void openRunningApp();
+  });
+  void openRunningApp();
 }
 
 function setPageLoading(isLoading) {
@@ -377,20 +406,24 @@ function renderSummary() {
 
 function switchTab(tabName) {
   const availableTabs = [...els.tabButtons].map((button) => button.dataset.tab);
-  const nextTab = availableTabs.includes(tabName) ? tabName : "fund";
+  const nextTab = availableTabs.includes(tabName) ? tabName : "fonde";
   state.activeTab = nextTab;
+  document.body.classList.toggle("is-project-workspace", nextTab === "projekter");
   if (nextTab === "projekter" && els.projectDashboard) {
     state.projectPage = "dashboard";
-    els.projectDashboard.hidden = false;
+    els.projectDashboard.hidden = !state.auth.authenticated;
     document.querySelector(".projects-workspace").hidden = true;
-    if (state.auth.authenticated) void renderProjectDashboard();
+    if (state.auth.authenticated) {
+      if (state.projectLoadError) renderProjectLoadError(state.projectLoadError, { notify: false });
+      else void renderProjectDashboard();
+    }
   }
   saveJson("fondsdb.activeTab", nextTab);
 
   els.tabButtons.forEach((button) => {
     const isActive = button.dataset.tab === nextTab;
     button.classList.toggle("active", isActive);
-    button.setAttribute("aria-selected", String(isActive));
+    button.removeAttribute("aria-selected");
   });
 
   els.tabPanels.forEach((panel) => {
@@ -398,6 +431,7 @@ function switchTab(tabName) {
     panel.classList.toggle("active", isActive);
     panel.hidden = !isActive;
   });
+  window.WorkspaceShell?.syncTab(nextTab);
 }
 
 function appendOptions(select, values) {
@@ -456,6 +490,10 @@ function renderChart() {
 
 function renderRows() {
   els.rows.replaceChildren();
+  if (!state.filtered.length) {
+    els.rows.innerHTML = `<tr class="empty-results-row"><td colspan="5"><div class="empty-state">Ingen muligheder matcher dine filtre. Prøv et andet søgeord eller færre filtre.</div></td></tr>`;
+    return;
+  }
 
   state.filtered.forEach((opportunity) => {
     const { foundation, program, deadline } = opportunity;
@@ -477,7 +515,7 @@ function renderRows() {
     tr.innerHTML = `
       <td class="opportunity-cell" data-label="Mulighed">
         <div class="name-cell">
-          <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
+          <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}" aria-pressed="${isFavorite(foundation.foundation_id)}"><img src="frontend/icons/star.svg" alt="" /></button>
           <span class="opportunity-name">
             <strong>${escapeHtml(program.program_name)}</strong>
             <span>${escapeHtml(foundation.name)} · ${escapeHtml(program.geography || foundation.city || "Danmark")}</span>
@@ -485,7 +523,7 @@ function renderRows() {
         </div>
       </td>
       <td data-label="Støtteområder"><div class="pill-list">${areas}</div></td>
-      <td data-label="Ansøgere"><div class="pill-list">${applicants}</div></td>
+      <td class="applicant-column" data-label="Ansøgere"><div class="pill-list">${applicants}</div></td>
       <td data-label="Frist"><span class="deadline ${deadlineClass}">${escapeHtml(deadlineLabel(deadline))}</span></td>
       <td data-label="Status"><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></td>
     `;
@@ -505,7 +543,7 @@ function renderDetail() {
 
   const { foundation, program, deadline } = opportunity;
   const foundationSummary = foundation.support_areas
-    ? `${foundation.name} støtter overordnet initiativer inden for ${foundation.support_areas}.`
+    ? `${foundation.name} støtter initiativer inden for ${splitList(foundation.support_areas).join(", ")}.`
     : `${foundation.name} er en ${foundation.legal_type || "fond"}, der støtter almennyttige formål.`;
   const foundationSelfDescription = foundation.notes || "";
   const eligibility = state.programEligibility.find((item) => item.program_id === program.program_id);
@@ -515,65 +553,58 @@ function renderDetail() {
   els.detailContent.hidden = false;
   els.detailContent.innerHTML = `
     <div class="detail-title">
-      <div class="detail-title-row">
-        <h2>${escapeHtml(program.program_name)}</h2>
-        <button class="favorite-button detail-favorite ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
+      <div class="detail-favorite-toolbar">
+        <button class="favorite-button detail-favorite ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}" aria-pressed="${isFavorite(foundation.foundation_id)}"><img src="frontend/icons/star.svg" alt="" /><span>${isFavorite(foundation.foundation_id) ? "Gemt som favorit" : "Gem som favorit"}</span></button>
       </div>
+      <h2>${escapeHtml(program.program_name)}</h2>
       <p>${escapeHtml(foundation.name)} · ${escapeHtml(program.program_type || foundation.legal_type || "Fond")}</p>
     </div>
-    <div class="pill-list">
-      ${splitList(program.support_areas).map((area) => `<span class="pill">${escapeHtml(area)}</span>`).join("")}
-    </div>
-    <div class="detail-block foundation-overview">
-      <h3>Om fonden</h3>
-      <div class="foundation-overview-part">
-        <strong>Overordnet</strong>
-        <p>${escapeHtml(foundationSummary)}</p>
-      </div>
-      ${foundationSelfDescription ? `<div class="foundation-overview-part foundation-self-description">
-        <strong>Fondens egen beskrivelse</strong>
-        <p>${escapeHtml(foundationSelfDescription)}</p>
-      </div>` : ""}
-      <small>${escapeHtml(foundation.country || "Danmark")}${foundation.city ? ` · ${escapeHtml(foundation.city)}` : ""}</small>
-    </div>
-    <div class="deadline-card ${deadline?.status === "open" ? "open" : ""}">
-      <span>Friststatus</span>
-      <strong>${escapeHtml(deadlineLabel(deadline))}</strong>
-      <p>${escapeHtml(deadline?.summary || program.deadline_summary || "-")}</p>
-    </div>
-    <div class="detail-block">
-      <h3>Hvem kan søge?</h3>
-      <p>${escapeHtml(eligibility?.eligibility_summary || program.applicant_types || "-")}</p>
-      <div class="pill-list eligibility-list">
-        ${applicants.map((item) => `<span class="pill ${item.eligibility_status === "conditional" ? "muted-pill" : ""}" title="${escapeHtml(item.conditions || "")}">${escapeHtml(item.label)}</span>`).join("")}
-      </div>
-    </div>
-    <div class="detail-block">
-      <h3>Geografi og CVR</h3>
-      <p><strong>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</strong><br>${escapeHtml(cvrRequirementLabel(eligibility?.cvr_requirement))}</p>
-      <small>${escapeHtml(eligibility?.cvr_notes || "")}</small>
-    </div>
-    <div class="detail-block">
-      <h3>Beløb</h3>
-      <p><strong>${escapeHtml(structuredAmountLabel(eligibility, program.amount_range))}</strong><br>${escapeHtml(eligibility?.amount_notes || program.amount_range || "Varierer")}</p>
-    </div>
-    ${exclusions.length ? `<div class="detail-block exclusions-block">
-      <h3>Udelukkelser</h3>
-      <ul>${exclusions.map((item) => `<li>${escapeHtml(item.description)}</li>`).join("")}</ul>
-    </div>` : ""}
-    <div class="detail-block">
-      <h3>Datastatus</h3>
-      <p>${escapeHtml(statusLabel(program.verification_status))} · tjekket ${escapeHtml(program.last_checked || "-")}</p>
-    </div>
-    <div class="detail-block">
-      <h3>Note</h3>
-      <p>${escapeHtml(program.notes || "-")}</p>
-    </div>
+    <p class="detail-summary">${escapeHtml(foundationSummary)}</p>
+    <dl class="detail-facts">
+      <div><dt>Status</dt><dd><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></dd></div>
+      <div><dt>Støtteområder</dt><dd>${escapeHtml(splitList(program.support_areas).join(" · ") || "Skal verificeres")}</dd></div>
+      <div><dt>Ansøgere</dt><dd>${escapeHtml(splitList(program.applicant_types).join(" · ") || "Se vilkår")}</dd></div>
+      <div><dt>Frist</dt><dd><span class="deadline ${deadline?.status === "open" ? "open" : "to_verify"}">${escapeHtml(deadlineLabel(deadline))}</span></dd></div>
+      <div><dt>Geografi</dt><dd>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</dd></div>
+    </dl>
     <div class="detail-links">
-      <a class="button-link" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer">${escapeHtml(applicationActionLabel(program))}</a>
-      <a class="button-link secondary" href="${escapeHtml(linkOrHash(foundation.website))}" target="_blank" rel="noreferrer">Website</a>
-      <a class="button-link secondary" href="${escapeHtml(linkOrHash(program.source_url || foundation.source_url))}" target="_blank" rel="noreferrer">Kilde</a>
+      <a class="button-link detail-primary-action" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer"><img src="frontend/icons/external-link.svg" alt="" />${escapeHtml(applicationActionLabel(program))}</a>
+      <a class="detail-source-link" href="${escapeHtml(linkOrHash(program.source_url || foundation.source_url))}" target="_blank" rel="noreferrer"><img src="frontend/icons/link.svg" alt="" />Kilde</a>
     </div>
+    <details class="detail-more">
+      <summary>Vilkår og flere oplysninger</summary>
+      <div class="detail-more-content">
+        <div class="detail-block foundation-overview">
+          <h3>Om fonden</h3>
+          <p>${escapeHtml(foundationSummary)}</p>
+          ${foundationSelfDescription ? `<div class="foundation-overview-part foundation-self-description"><strong>Fondens egen beskrivelse</strong><p>${escapeHtml(foundationSelfDescription)}</p></div>` : ""}
+          <small>${escapeHtml(foundation.country || "Danmark")}${foundation.city ? ` · ${escapeHtml(foundation.city)}` : ""}</small>
+          <a href="${escapeHtml(linkOrHash(foundation.website))}" target="_blank" rel="noreferrer">Besøg fondens website</a>
+        </div>
+        <div class="detail-block">
+          <h3>Frist og ansøgningsproces</h3>
+          <p><strong>${escapeHtml(deadlineLabel(deadline))}</strong></p>
+          <p>${escapeHtml(deadline?.summary || program.deadline_summary || "Fristen skal verificeres hos fonden.")}</p>
+        </div>
+        <div class="detail-block">
+          <h3>Hvem kan søge?</h3>
+          <p>${escapeHtml(eligibility?.eligibility_summary || program.applicant_types || "-")}</p>
+          <div class="pill-list eligibility-list">${applicants.map((item) => `<span class="pill ${item.eligibility_status === "conditional" ? "muted-pill" : ""}" title="${escapeHtml(item.conditions || "")}">${escapeHtml(item.label)}</span>`).join("")}</div>
+        </div>
+        <div class="detail-block">
+          <h3>Geografi og CVR</h3>
+          <p><strong>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</strong><br>${escapeHtml(cvrRequirementLabel(eligibility?.cvr_requirement))}</p>
+          <small>${escapeHtml(eligibility?.cvr_notes || "")}</small>
+        </div>
+        <div class="detail-block">
+          <h3>Beløb</h3>
+          <p><strong>${escapeHtml(structuredAmountLabel(eligibility, program.amount_range))}</strong><br>${escapeHtml(eligibility?.amount_notes || program.amount_range || "Varierer")}</p>
+        </div>
+        ${exclusions.length ? `<div class="detail-block exclusions-block"><h3>Udelukkelser</h3><ul>${exclusions.map((item) => `<li>${escapeHtml(item.description)}</li>`).join("")}</ul></div>` : ""}
+        <div class="detail-block"><h3>Datastatus</h3><p>${escapeHtml(statusLabel(program.verification_status))} · tjekket ${escapeHtml(program.last_checked || "-")}</p></div>
+        <div class="detail-block"><h3>Note</h3><p>${escapeHtml(program.notes || "-")}</p></div>
+      </div>
+    </details>
   `;
 }
 
@@ -748,7 +779,7 @@ function renderFavoriteList() {
       </div>
       <div class="favorite-actions">
         <button class="button-link secondary" type="button" data-open-program-id="${escapeHtml(program.program_id)}">Åbn</button>
-        <button class="favorite-button active" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Fjern favorit ${escapeHtml(foundation.name)}">★</button>
+        <button class="favorite-button active" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Fjern favorit ${escapeHtml(foundation.name)}" aria-pressed="true"><img src="frontend/icons/star.svg" alt="" /></button>
       </div>
     `;
     els.favoriteList.append(item);
@@ -930,12 +961,14 @@ function applyFilters() {
   renderChart();
   renderRows();
   renderDetail();
+  window.WorkspaceShell?.syncFilters();
 }
 
 function selectProgram(id) {
   state.selectedId = id;
   renderRows();
   renderDetail();
+  window.WorkspaceShell?.showFundDetail();
 }
 
 function rebuildOpportunities() {
@@ -1097,9 +1130,9 @@ async function updateSources() {
 
 function projectStatusLabel(status) {
   return ({
-    idea: "Idé",
-    planning: "Planlægning",
-    active: "Aktivt",
+    idea: "Idea",
+    planning: "Ansøgningsfase",
+    active: "Development",
     completed: "Afsluttet",
     cancelled: "Annulleret",
   })[status] || status;
@@ -1126,7 +1159,7 @@ function applicationStatusLabel(status) {
 }
 
 function taskStatusLabel(status) {
-  return ({ todo: "Ikke startet", in_progress: "I gang", blocked: "Blokeret", done: "Færdig" })[status] || status;
+  return ({ todo: "Started", in_progress: "In progress", blocked: "Stuck", done: "Done" })[status] || status;
 }
 
 function formatAmount(value, currency = "DKK") {
@@ -1135,13 +1168,18 @@ function formatAmount(value, currency = "DKK") {
 }
 
 function statusesFor(entityType) {
-  return state.workflowStatuses.filter((status) => status.entity_type === entityType);
+  const defaultProjectIds = new Set(["project-status-idea","project-status-planning","project-status-active","project-status-submitted"]);
+  return state.workflowStatuses.filter(status => status.entity_type === entityType &&
+    (entityType !== "project" || !Number(status.is_system) || defaultProjectIds.has(status.status_id)));
 }
 
 function workflowStatusOptions(entityType, selectedId, fallbackBase) {
-  return statusesFor(entityType).map((status) =>
-    `<option value="${escapeHtml(status.status_id)}" ${status.status_id === selectedId || (!selectedId && status.base_status === fallbackBase) ? "selected" : ""}>${escapeHtml(status.label)}</option>`,
-  ).join("");
+  const statuses = statusesFor(entityType);
+  const legacy = state.workflowStatuses.find(status => status.entity_type === entityType &&
+    (status.status_id === selectedId || (!selectedId && status.base_status === fallbackBase)));
+  if (legacy && !statuses.some(status=>status.status_id===legacy.status_id)) statuses.push(legacy);
+  const chosen = selectedId || statuses.find(status => status.base_status === fallbackBase)?.status_id;
+  return statuses.map(status => `<option value="${escapeHtml(status.status_id)}" ${status.status_id === chosen ? "selected" : ""}>${escapeHtml(status.label)}</option>`).join("");
 }
 
 function applyWorkflowStatus(values, entityType) {
@@ -1153,8 +1191,17 @@ function applyWorkflowStatus(values, entityType) {
 function populateProjectCreateOptions() {
   const statusSelect = els.projectCreateForm.elements.workflow_status_id;
   const folderSelect = els.projectCreateForm.elements.folder_id;
+  const ownerSelect = els.projectCreateForm.elements.owner_member_id;
+  const programSelect = els.projectCreateForm.elements.program_id;
   statusSelect.innerHTML = workflowStatusOptions("project", null, "idea");
   folderSelect.innerHTML = `<option value="">Ingen mappe</option>${state.projectFolders.map((folder) => `<option value="${escapeHtml(folder.folder_id)}">${escapeHtml(folder.name)}</option>`).join("")}`;
+  ownerSelect.innerHTML = `<option value="">Ingen ansvarlig</option>${state.teamMembers.map((member) => `<option value="${escapeHtml(member.member_id)}">${escapeHtml(member.display_name)}</option>`).join("")}`;
+  programSelect.innerHTML = `<option value="">Tilføj senere</option>${[...state.programs].sort((a,b)=>a.program_name.localeCompare(b.program_name,"da")).map((program)=>{
+    const foundation = state.foundations.find((item)=>item.foundation_id===program.foundation_id);
+    return `<option value="${escapeHtml(program.program_id)}">${escapeHtml(foundation?.name || program.foundation_id)} — ${escapeHtml(program.program_name)}</option>`;
+  }).join("")}`;
+  els.projectCreateForm.elements.application_workflow_status_id.innerHTML = workflowStatusOptions("application", null, "candidate");
+  updateApplicationDeadlineOptions(els.projectCreateForm);
 }
 
 function updateStatusBaseOptions(form) {
@@ -1185,9 +1232,10 @@ async function projectApi(pathname, options = {}) {
 }
 
 function renderAuthPanel() {
+  window.WorkspaceShell?.syncAuth(state.auth);
   const setup = state.auth.setupRequired;
   els.projectAuthPanel.hidden = false;
-  els.projectAuthPanel.innerHTML = `<div class="project-auth-card"><div><p class="section-kicker">Projektstyring</p><h3>${setup ? "Opret første konto" : "Log ind"}</h3><p>${setup ? "Opret administratoren, der skal have adgang til projekter og teamdata." : "Log ind for at se projekter, opgaver og kommentarer."}</p></div><form data-auth-form="${setup ? "setup" : "login"}"><input name="email" type="email" required placeholder="Email" autocomplete="email" /><input name="display_name" type="${setup ? "text" : "hidden"}" ${setup ? "required" : ""} placeholder="Navn" autocomplete="name" /><input name="password" type="password" required minlength="10" placeholder="Adgangskode (min. 10 tegn)" autocomplete="${setup ? "new-password" : "current-password"}" /><button class="button-link" type="submit">${setup ? "Opret konto" : "Log ind"}</button></form><p class="project-auth-error" data-auth-error hidden></p></div>`;
+  els.projectAuthPanel.innerHTML = `<div class="project-auth-card"><div><p class="section-kicker">Projektstyring</p><h3>${setup ? "Opret første konto" : "Log ind"}</h3><p>${setup ? "Opret administratoren, der skal have adgang til projekter og teamdata." : "Log ind for at se projekter, opgaver og kommentarer."}</p></div><form data-auth-form="${setup ? "setup" : "login"}"><input name="email" type="email" required placeholder="E-mail" aria-label="E-mail" autocomplete="email" /><input name="display_name" type="${setup ? "text" : "hidden"}" ${setup ? "required" : ""} placeholder="Navn" aria-label="Navn" autocomplete="name" /><input name="password" type="password" required minlength="10" placeholder="Adgangskode (min. 10 tegn)" aria-label="Adgangskode (min. 10 tegn)" autocomplete="${setup ? "new-password" : "current-password"}" /><button class="button-link" type="submit">${setup ? "Opret konto" : "Log ind"}</button></form><p class="project-auth-error" data-auth-error hidden></p></div>`;
 }
 
 async function loadAuthStatus() {
@@ -1195,6 +1243,7 @@ async function loadAuthStatus() {
   const payload = await response.json();
   state.auth = { authenticated: payload.authenticated, setupRequired: payload.setupRequired, user: payload.user || null };
   if (!state.auth.authenticated) { renderAuthPanel(); return false; }
+  window.WorkspaceShell?.syncAuth(state.auth);
   els.projectAuthPanel.hidden = false;
   els.projectAuthPanel.innerHTML = `<div class="project-auth-user"><span>Logget ind som <strong>${escapeHtml(state.auth.user?.display_name || state.auth.user?.email || "bruger")}</strong></span><button class="mini-button" type="button" data-auth-logout>Log ud</button></div>`;
   return true;
@@ -1205,12 +1254,13 @@ async function loadProjects({ selectNewest = false } = {}) {
     els.projectList.innerHTML = `<div class="empty-state">Start appen med <strong>Start fondsdatabase.command</strong> for at bruge projektstyring.</div>`;
     return;
   }
-  if (!(await loadAuthStatus())) { els.projectList.innerHTML = `<div class="empty-state">Log ind ovenfor for at se projektporteføljen.</div>`; return; }
+  if (!(await loadAuthStatus())) { els.projectList.innerHTML = `<div class="empty-state">Log ind for at se projektporteføljen.</div>`; return; }
   const [payload, teamPayload, configPayload] = await Promise.all([
     projectApi("/api/projects"),
     projectApi("/api/team-members"),
     projectApi("/api/project-config"),
   ]);
+  state.projectLoadError = null;
   state.projects = payload.projects;
   state.teamMembers = teamPayload.members;
   state.projectFolders = configPayload.folders;
@@ -1228,11 +1278,63 @@ async function loadProjects({ selectNewest = false } = {}) {
   } else if (state.selectedProjectId) await selectProject(state.selectedProjectId);
 }
 
+function renderProjectLoadError(error, { notify = true } = {}) {
+  state.projectLoadError = error?.message || String(error || "Projektdata kunne ikke indlæses.");
+  state.projectPage = "dashboard";
+  document.querySelector(".projects-header").hidden = true;
+  els.projectConfigPanel.hidden = true;
+  document.querySelector(".projects-workspace").hidden = true;
+  els.projectDashboard.hidden = false;
+  els.projectDashboard.innerHTML = `<section class="project-dashboard-loading" role="alert"><h3>Projektdata kunne ikke indlæses</h3><p>Du er stadig logget ind. Prøv at hente projekterne igen.</p><p>${escapeHtml(state.projectLoadError)}</p><button class="button-link" type="button" data-retry-projects>Prøv igen</button></section>`;
+  els.projectDashboard.querySelector("[data-retry-projects]").addEventListener("click", async (event) => {
+    event.currentTarget.disabled = true;
+    event.currentTarget.textContent = "Indlæser…";
+    try {
+      await loadProjects();
+    } catch (loadError) {
+      renderProjectLoadError(loadError);
+    }
+  });
+  if (notify) showActionToast("Projektdata kunne ikke indlæses. Du er stadig logget ind. Prøv igen under Projekter.", true);
+}
+
 async function renderProjectDashboard() {
+  document.querySelector(".projects-header").hidden = false;
+  els.projectConfigPanel.hidden = false;
   const dashboard = els.projectDashboard;
   if (!dashboard) return;
+  const restoreNotice = state.deletedProject ? `<div class="project-restore-notice" role="status"><span>“${escapeHtml(state.deletedProject.name)}” er slettet fra oversigten.</span><button type="button" class="mini-button" data-restore-project>Fortryd</button></div>` : "";
+  const trashMarkup = `<details class="project-trash"><summary>Papirkurv</summary><div data-trash-list>Indlæser…</div></details>`;
+  const bindTrash = () => {
+    const trash = dashboard.querySelector(".project-trash");
+    trash?.addEventListener("toggle", async () => {
+      if (!trash.open) return;
+      const list = trash.querySelector("[data-trash-list]");
+      try {
+        const { projects } = await projectApi("/api/projects/deleted");
+        list.innerHTML = projects.length ? projects.map(project=>`<div class="trash-row"><span>${escapeHtml(project.name)}</span><button class="mini-button" type="button" data-restore-id="${escapeHtml(project.project_id)}">Gendan</button></div>`).join("") : "Papirkurven er tom.";
+        list.querySelectorAll("[data-restore-id]").forEach(button=>button.addEventListener("click",async()=>{
+          button.disabled = true;
+          try { await projectApi(`/api/projects/${encodeURIComponent(button.dataset.restoreId)}/restore`,{method:"POST"}); state.deletedProject=null; await loadProjects(); }
+          catch(error) { button.disabled=false; showActionToast(error.message,true); }
+        }));
+      } catch(error) { list.textContent=error.message; }
+    });
+  };
+  const bindRestore = () => dashboard.querySelector("[data-restore-project]")?.addEventListener("click", async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      await projectApi(`/api/projects/${encodeURIComponent(state.deletedProject.project_id)}/restore`,{method:"POST"});
+      state.deletedProject = null;
+      await loadProjects();
+    } catch(error) { button.disabled = false; showActionToast(error.message,true); }
+  });
   if (!state.projects.length) {
-    dashboard.innerHTML = `<section class="project-dashboard-welcome"><p class="section-kicker">Projektstyring</p><h2>Få overblik over arbejdet</h2><p>Opret et projekt for at følge opgaver, ansøgninger og teamets arbejdsbyrde.</p></section>`;
+    dashboard.innerHTML = restoreNotice + `<section class="project-dashboard-welcome"><p class="section-kicker">Projektstyring</p><h2>Få overblik over arbejdet</h2><p>Opret et projekt for at følge opgaver, ansøgninger og teamets arbejdsbyrde.</p></section>`;
+    dashboard.insertAdjacentHTML("beforeend",trashMarkup);
+    bindTrash();
+    bindRestore();
     return;
   }
   dashboard.innerHTML = `<div class="project-dashboard-loading">Henter projekt- og opgaveoverblik…</div>`;
@@ -1257,7 +1359,7 @@ async function renderProjectDashboard() {
   const maximumLoad = Math.max(1,...workloadRows.map(([, count])=>count));
   const projectCards = state.projects.map(project => `<button class="dashboard-project-card" type="button" data-dashboard-project="${escapeHtml(project.project_id)}">
     <span class="dashboard-project-status"><i class="status-dot color-${escapeHtml(project.workflow_status_color || "gray")}"></i>${escapeHtml(project.workflow_status_label || projectStatusLabel(project.status))}</span>
-    <strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.folder_name || "Uden mappe")}</span>
+    <strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.folder_name || project.focus_area || "Projekt")} · ${escapeHtml(project.owner_name || "Ingen ansvarlig")}</span>
     <small>${Number(project.application_count || 0)} ansøgninger · ${Number(project.open_task_count || 0)} åbne opgaver</small>
     ${project.next_task_due_on ? `<small>Næste opgavefrist ${escapeHtml(project.next_task_due_on)}</small>` : ""}</button>`).join("");
   const taskRows = deadlineTasks.length ? deadlineTasks.map(task => {
@@ -1265,11 +1367,14 @@ async function renderProjectDashboard() {
     const dueDate = new Date(`${task.due_on}T12:00:00`).toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" });
     return `<button class="dashboard-task-row${overdue ? " is-overdue" : ""}" type="button" data-dashboard-project="${escapeHtml(task.project_id)}"><span><strong>${escapeHtml(task.title)}</strong><small>${escapeHtml(task.project_name)}${task.assignee_name ? ` · ${escapeHtml(task.assignee_name)}` : " · Ikke tildelt"}</small></span><time>${overdue ? "Overskredet · " : ""}${escapeHtml(dueDate)}</time></button>`;
   }).join("") : `<p class="dashboard-muted">Ingen åbne opgaver med en frist endnu.</p>`;
-  dashboard.innerHTML = `<header class="dashboard-heading"><div><p class="section-kicker">Projektstyring</p><h2>Arbejdsdashboard</h2><p>Et samlet overblik over porteføljen og det, der kræver opmærksomhed.</p></div><button class="button-link" type="button" data-dashboard-action="new-project">+ Nyt projekt</button></header>
+  dashboard.innerHTML = restoreNotice + `<header class="dashboard-heading"><div><h2>Jeres projekter</h2><p>Fælles overblik. Mere tid til det, der gør en forskel.</p></div></header>
     <section class="dashboard-metrics" aria-label="Nøgletal"><article><span>Projekter</span><strong>${state.projects.length}</strong></article><article><span>Åbne opgaver</span><strong>${openTasks.length}</strong></article><article><span>Ansøgninger</span><strong>${state.projects.reduce((sum,p)=>sum+Number(p.application_count||0),0)}</strong></article><article><span>Uden ansvarlig</span><strong>${workload.get("Ikke tildelt")||0}</strong></article></section>
     <section class="dashboard-section"><div class="section-heading"><div><h3>Projektportefølje</h3><p>Vælg et projekt for at åbne arbejdsområdet.</p></div></div><div class="dashboard-project-grid">${projectCards}</div></section>
     <div class="dashboard-lower-grid"><section class="dashboard-section"><div class="section-heading"><div><h3>Arbejdsbyrde</h3><p>Åbne opgaver fordelt på ansvarlig.</p></div></div>${workloadRows.length ? `<div class="workload-list">${workloadRows.map(([name,count])=>`<div class="workload-row"><span>${escapeHtml(name)}</span><div class="workload-track"><i style="width:${Math.max(6,Math.round(count/maximumLoad*100))}%"></i></div><strong>${count}</strong></div>`).join("")}</div>` : `<p class="dashboard-muted">Opret opgaver og tildel dem til teamet for at se arbejdsbyrden.</p>`}</section>
     <section class="dashboard-section"><div class="section-heading"><div><h3>Frister, der kræver opmærksomhed</h3><p>Forfaldne og kommende opgaver.</p></div></div><div class="dashboard-task-list">${taskRows}</div></section></div>`;
+  dashboard.insertAdjacentHTML("beforeend",trashMarkup);
+  bindTrash();
+  bindRestore();
   dashboard.querySelectorAll("[data-dashboard-project]").forEach(button => button.addEventListener("click", () => selectProject(button.dataset.dashboardProject)));
   dashboard.querySelector("[data-dashboard-action='new-project']")?.addEventListener("click", () => {
     const disclosure = document.querySelector(".project-create-disclosure");
@@ -1288,15 +1393,15 @@ function renderProjectList() {
   }
 
   const renderProjectButton = (project) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `project-list-item${project.project_id === state.selectedProjectId ? " active" : ""}`;
-    button.dataset.projectId = project.project_id;
-    button.innerHTML = `
+    const entry = document.createElement("div");
+    entry.className = `project-list-item${project.project_id === state.selectedProjectId ? " active" : ""}`;
+    entry.innerHTML = `
+      <button type="button" class="project-list-open" data-project-id="${escapeHtml(project.project_id)}" title="Åbn ${escapeHtml(project.name)}">
       <span class="project-list-title"><strong>${escapeHtml(project.name)}</strong><span class="project-status color-${escapeHtml(project.workflow_status_color)}">${escapeHtml(project.workflow_status_id ? project.workflow_status_label : projectStatusLabel(project.status))}</span></span>
-      <span>${Number(project.application_count)} ansøgninger · ${Number(project.open_task_count)} åbne opgaver</span>
-      <small>${project.next_task_due_on ? `Næste frist ${escapeHtml(project.next_task_due_on)}` : "Ingen kommende opgavefrist"}</small>`;
-    return button;
+      <span>${escapeHtml(project.focus_area || "Intet indsatsområde")} · ${Number(project.application_count)} ansøgninger · ${Number(project.open_task_count)} åbne opgaver</span>
+      <small>${project.next_task_due_on ? `Næste frist ${escapeHtml(project.next_task_due_on)}` : "Ingen kommende opgavefrist"}</small>
+      </button><button type="button" class="project-list-edit" data-edit-project-id="${escapeHtml(project.project_id)}" title="Rediger projekt" aria-label="Rediger ${escapeHtml(project.name)}">✎</button>`;
+    return entry;
   };
 
   const projectsByFolder = new Map();
@@ -1311,7 +1416,7 @@ function renderProjectList() {
     const projects = projectsByFolder.get(folder.folder_id) || [];
     const group = document.createElement("section");
     group.className = "project-folder-group";
-    group.innerHTML = `<div class="project-folder-heading"><span>📁 ${escapeHtml(folder.name)}</span><small>${projects.length} ${projects.length === 1 ? "projekt" : "projekter"}</small></div>`;
+    group.innerHTML = `<div class="project-folder-heading"><button type="button" class="project-folder-edit" data-edit-folder-id="${escapeHtml(folder.folder_id)}" title="Rediger mappe" aria-label="Rediger mappen ${escapeHtml(folder.name)}"><i class="project-folder-color color-${escapeHtml(folder.color || "gray")}" aria-hidden="true"></i>📁 ${escapeHtml(folder.name)}</button><small>${projects.length} ${projects.length === 1 ? "projekt" : "projekter"}</small></div>`;
     const projectList = document.createElement("div");
     projectList.className = "project-folder-projects";
     if (projects.length) {
@@ -1337,10 +1442,126 @@ function renderProjectList() {
   }
 }
 
+function openPortfolioProjectEditor(projectId) {
+  const project = state.projects.find((item) => item.project_id === projectId);
+  if (!project || !els.portfolioEditDialog) return;
+  const form = els.portfolioEditForm;
+  form.dataset.editType = "project";
+  form.dataset.projectId = project.project_id;
+  form.querySelector("#portfolioEditTitle").textContent = "Rediger projekt";
+  form.querySelector("[data-open-project]").hidden = false;
+  form.querySelector("[data-portfolio-edit-fields]").innerHTML = `
+    <label><span>Projektnavn</span><input name="name" required maxlength="160" value="${escapeHtml(project.name)}" /></label>
+    <label><span>Status</span><select name="workflow_status_id">${workflowStatusOptions("project", project.workflow_status_id, project.status)}</select></label>
+    <label><span>Indsatsområde</span><select name="focus_area"><option value="">Vælg område</option>${["Unge og fællesskaber","Grøn omstilling","Demokratisk deltagelse"].map(area => `<option value="${escapeHtml(area)}" ${project.focus_area === area ? "selected" : ""}>${escapeHtml(area)}</option>`).join("")}</select></label>
+    <label><span>Mappe</span><select name="folder_id"><option value="">Uden mappe</option>${state.projectFolders.map(folder => `<option value="${escapeHtml(folder.folder_id)}" ${project.folder_id === folder.folder_id ? "selected" : ""}>${escapeHtml(folder.name)}</option>`).join("")}</select></label>
+    <label><span>Ansvarlig</span><select name="owner_member_id"><option value="">Ingen ansvarlig</option>${state.teamMembers.map(member => `<option value="${escapeHtml(member.member_id)}" ${project.owner_member_id === member.member_id ? "selected" : ""}>${escapeHtml(member.display_name)}</option>`).join("")}</select></label>
+    <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" value="${escapeHtml(project.estimated_budget ?? "")}" /></label>
+    <label><span>Tidsbudget (timer)</span><input name="estimated_hours" type="number" min="0" step="0.5" value="${escapeHtml(project.estimated_hours ?? "")}" /></label>
+    <label><span>Start</span><input name="starts_on" type="date" value="${escapeHtml(project.starts_on || "")}" /></label>
+    <label><span>Slut</span><input name="ends_on" type="date" value="${escapeHtml(project.ends_on || "")}" /></label>
+    <label class="portfolio-edit-description"><span>Beskrivelse</span><textarea name="description" maxlength="5000" rows="3">${escapeHtml(project.description || "")}</textarea></label>`;
+  form.querySelector(".portfolio-edit-error").hidden = true;
+  els.portfolioEditDialog.showModal();
+  form.elements.name.focus();
+}
+
+function openPortfolioFolderEditor(folderId) {
+  const folder = state.projectFolders.find((item) => item.folder_id === folderId);
+  if (!folder || !els.portfolioEditDialog) return;
+  const form = els.portfolioEditForm;
+  form.dataset.editType = "folder";
+  form.dataset.folderId = folder.folder_id;
+  form.querySelector("#portfolioEditTitle").textContent = "Rediger mappe";
+  form.querySelector("[data-open-project]").hidden = true;
+  form.querySelector("[data-portfolio-edit-fields]").innerHTML = `
+    <label class="portfolio-edit-full"><span>Mappenavn</span><input name="name" required maxlength="120" value="${escapeHtml(folder.name)}" /></label>
+    <input type="hidden" name="parent_folder_id" value="${escapeHtml(folder.parent_folder_id || "")}" />
+    <label><span>Farve</span><select name="color">${[["gray","Grå"],["blue","Blå"],["green","Grøn"],["yellow","Gul"],["red","Rød"],["purple","Lilla"]].map(([value,label]) => `<option value="${value}" ${folder.color === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>`;
+  form.querySelector(".portfolio-edit-error").hidden = true;
+  els.portfolioEditDialog.showModal();
+  form.elements.name.focus();
+}
+
+async function submitPortfolioEdit(form) {
+  const values = Object.fromEntries(new FormData(form));
+  const submit = form.querySelector("button[type='submit']");
+  const error = form.querySelector(".portfolio-edit-error");
+  submit.disabled = true;
+  error.hidden = true;
+  try {
+    if (form.dataset.editType === "project") {
+      applyWorkflowStatus(values, "project");
+      values.currency = state.projects.find(project => project.project_id === form.dataset.projectId)?.currency || "DKK";
+      await projectApi(`/api/projects/${encodeURIComponent(form.dataset.projectId)}`, { method: "PATCH", body: JSON.stringify(values) });
+    } else {
+      await projectApi(`/api/project-folders/${encodeURIComponent(form.dataset.folderId)}`, { method: "PATCH", body: JSON.stringify(values) });
+    }
+    els.portfolioEditDialog.close();
+    await loadProjects();
+    showActionToast(form.dataset.editType === "project" ? "Projektet blev opdateret." : "Mappen blev opdateret.");
+  } catch (submitError) {
+    error.textContent = submitError.message;
+    error.hidden = false;
+  } finally {
+    submit.disabled = false;
+  }
+}
+
+function captureProjectTaskFocus(active = document.activeElement) {
+  if (!els.projectDetail.contains(active)) return null;
+  const node = active.closest("[data-task-node]");
+  if (node) return {
+    projectId: state.selectedProjectId,
+    taskId: node.dataset.taskNode,
+    control: active.dataset.taskFocus || (active.matches("button[type='submit']") ? "submit" : null),
+    formType: active.form?.dataset.form,
+    fieldName: active.name,
+  };
+  if (active.closest(".task-create-disclosure")) return {
+    projectId: state.selectedProjectId,
+    createTask: true,
+    control: active.matches("button[type='submit']") ? "submit" : null,
+    fieldName: active.name,
+  };
+  return null;
+}
+
+function restoreProjectTaskFocus(focus) {
+  if (!focus || focus.projectId !== state.selectedProjectId) return;
+  const visible = element => {
+    if (!element || element.disabled || element.closest("[hidden]") || !element.getClientRects().length) return false;
+    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.tagName === "DETAILS" && !ancestor.open && !ancestor.querySelector(":scope > summary")?.contains(element)) return false;
+    }
+    return true;
+  };
+  if (focus.createTask) {
+    const disclosure = els.projectDetail.querySelector(".task-create-disclosure");
+    const form = disclosure?.querySelector("form");
+    const field = form?.elements.namedItem(focus.fieldName || "");
+    const submit = focus.control === "submit" ? form?.querySelector("button[type='submit']") : null;
+    [field, submit, disclosure?.querySelector("summary")].find(visible)?.focus({ preventScroll: true });
+    return;
+  }
+  const node = [...els.projectDetail.querySelectorAll("[data-task-node]")].find(item => item.dataset.taskNode === focus.taskId);
+  if (!node) return;
+  const controls = [...node.querySelectorAll("[data-task-focus]")].filter(item => item.closest("[data-task-node]") === node);
+  const form = [...node.querySelectorAll("form")].find(item => item.dataset.form === focus.formType && item.closest("[data-task-node]") === node);
+  const field = focus.fieldName ? form?.elements.namedItem(focus.fieldName) : null;
+  const submit = focus.control === "submit" ? form?.querySelector("button[type='submit']") : null;
+  const inlineAdd = focus.formType === "subtask" ? [...node.querySelectorAll(".task-inline-add")].find(item => item.dataset.addSubtask === focus.taskId) : null;
+  const target = [field, submit, controls.find(item => item.dataset.taskFocus === focus.control && visible(item)), inlineAdd, controls.find(item => item.dataset.taskFocus === "menu"), controls.find(item => item.dataset.taskFocus === "title")].find(visible);
+  target?.focus({ preventScroll: true });
+}
+
 async function selectProject(projectId) {
+  const taskFocus = state.selectedProjectId === projectId ? captureProjectTaskFocus() : null;
   if (state.selectedProjectId !== projectId) state.selectedTeamMemberId = null;
   state.selectedProjectId = projectId;
   state.projectPage = "project";
+  document.querySelector(".projects-header").hidden = true;
+  els.projectConfigPanel.hidden = true;
   els.projectDashboard.hidden = true;
   document.querySelector(".projects-workspace").hidden = false;
   renderProjectList();
@@ -1348,6 +1569,7 @@ async function selectProject(projectId) {
   try {
     const { project } = await projectApi(`/api/projects/${encodeURIComponent(projectId)}`);
     renderProjectDetail(project);
+    restoreProjectTaskFocus(taskFocus);
   } catch (error) {
     els.projectDetail.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
   }
@@ -1412,19 +1634,33 @@ function renderProjectDetail(project) {
     const completedChildren = children.filter((child) => child.status === "done").length;
     const expanded = state.expandedTaskId === task.task_id;
     const composerOpen = state.subtaskComposerTaskId === task.task_id;
-    return `<div class="project-task-node depth-${Math.min(depth, 4)}" style="--task-depth:${Math.min(depth, 4)}">
-      <article class="project-task ${task.status === "done" ? "done" : ""}">
-        <button type="button" class="task-complete-button ${task.status === "done" ? "is-complete" : ""}" data-task-status-id="${escapeHtml(task.task_id)}" data-next-status="${task.status === "done" ? "todo" : "done"}">${task.status === "done" ? "Genåbn opgave" : "Markér færdig"}</button>
-        <button class="project-task-title" type="button" data-task-toggle-id="${escapeHtml(task.task_id)}" aria-expanded="${expanded}">
-          <span class="task-title-copy"><strong>${escapeHtml(task.title)}</strong><span>${children.length ? `${completedChildren} af ${children.length} underopgaver færdige` : "Hovedopgave"} · ${escapeHtml(({low:"Lav",medium:"Mellem",high:"Høj",urgent:"Haster"})[task.priority] || task.priority)}</span></span>
-          <span class="task-details-action">${expanded ? "Skjul detaljer" : "Vis detaljer"}</span>
-        </button>
-        <small>${task.assignee_name ? escapeHtml(task.assignee_name) : "Ikke tildelt"}<br>${task.due_on ? escapeHtml(task.due_on) : "Ingen frist"}</small>
-        <button type="button" class="task-add-subtask" data-add-subtask="${escapeHtml(task.task_id)}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${escapeHtml(task.task_id)}">${composerOpen ? "Luk underopgave" : "+ Underopgave"}</button>
+    const childrenExpanded = !state.collapsedTaskIds.has(task.task_id);
+    const taskId = escapeHtml(task.task_id);
+    const taskTitle = escapeHtml(task.title);
+    const icon = name => `<img src="frontend/icons/${name}.svg" alt="" aria-hidden="true" />`;
+    return `<div class="project-task-node depth-${Math.min(depth, 4)}" data-task-node="${taskId}" style="--task-depth:${Math.min(depth, 4)}">
+      <article class="project-task status-${escapeHtml(task.status)} ${task.status === "done" ? "done" : ""}" aria-label="${depth ? "Underopgave" : "Opgave"}: ${taskTitle}">
+        <div class="task-cell task-cell-check">
+          <button type="button" class="task-complete-button ${task.status === "done" ? "is-complete" : ""}" data-task-focus="complete" data-task-status-id="${taskId}" data-next-status="${task.status === "done" ? "todo" : "done"}" aria-pressed="${task.status === "done"}" aria-label="${task.status === "done" ? "Genåbn" : "Færdigmeld"} ${taskTitle}" title="${task.status === "done" ? "Genåbn" : "Markér færdig"}"><span aria-hidden="true">${icon("check")}</span></button>
+        </div>
+        <div class="task-cell task-cell-name">
+          ${children.length ? `<button type="button" class="task-children-toggle" data-task-focus="children" data-task-children-toggle="${taskId}" aria-expanded="${childrenExpanded}" aria-controls="task-children-${taskId}" aria-label="${childrenExpanded ? "Skjul" : "Vis"} underopgaver til ${taskTitle}">${icon("chevron-right")}</button>` : `<span class="task-toggle-spacer" aria-hidden="true"></span>`}
+          <button class="project-task-title" type="button" data-task-focus="title" data-task-toggle-id="${taskId}" aria-expanded="${expanded}" aria-controls="task-details-${taskId}" title="Åbn og rediger opgaven">
+            <span class="task-title-copy"><strong>${taskTitle}</strong>${children.length ? `<span class="task-progress-summary"><progress value="${completedChildren}" max="${children.length}" aria-label="Færdige underopgaver til ${taskTitle}"></progress><span class="task-subcount">${completedChildren} af ${children.length} færdige</span></span>` : ""}</span>
+          </button>
+        </div>
+        <div class="task-cell task-cell-person"><span class="task-mobile-label">Ansvarlig</span><span class="task-avatar ${task.assignee_name ? "" : "is-unassigned"}" aria-hidden="true">${task.assignee_name ? escapeHtml(task.assignee_name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase()) : "—"}</span><select class="task-person-select" data-task-focus="assignee" data-task-assignee-id="${taskId}" aria-label="Ansvarlig for ${taskTitle}">${assigneeOptions(task.assigned_to)}</select></div>
+        <div class="task-cell task-cell-status"><span class="task-mobile-label">Status</span><select class="task-status-select status-${escapeHtml(task.status)}" data-task-focus="status" data-task-workflow-id="${taskId}" aria-label="Status for ${taskTitle}">${workflowStatusOptions("task", task.workflow_status_id, task.status)}</select></div>
+        <div class="task-cell task-cell-date"><span class="task-mobile-label">Frist</span><button type="button" class="task-date-button" data-task-focus="date" data-task-edit-date="${taskId}" aria-label="Rediger frist for ${taskTitle}" title="${escapeHtml(task.due_on || "Tilføj frist")}">${icon("calendar")}<span class="task-due-label">${task.due_on ? escapeHtml(new Date(task.due_on + "T12:00:00").toLocaleDateString("da-DK",{day:"numeric",month:"short"})) : "Ingen frist"}</span></button></div>
+        <div class="task-cell task-cell-actions"><details class="task-row-menu"><summary data-task-focus="menu" aria-label="Flere handlinger for ${taskTitle}" title="Flere handlinger">${icon("more-vertical")}</summary><div class="task-row-menu-items"><button type="button" data-task-toggle-id="${taskId}" aria-controls="task-details-${taskId}" aria-expanded="${expanded}">Rediger opgave</button><button type="button" data-add-subtask="${taskId}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${taskId}">Tilføj underopgave</button></div></details></div>
       </article>
-      <div class="task-details ${expanded ? "is-open" : ""}" aria-hidden="${!expanded}">
-        <label><span>Status</span><select data-task-workflow-id="${escapeHtml(task.task_id)}">${workflowStatusOptions("task", task.workflow_status_id, task.status)}</select></label>
-        <label><span>Ansvarlig</span><select data-task-assignee-id="${escapeHtml(task.task_id)}">${assigneeOptions(task.assigned_to)}</select></label>
+      <div id="task-details-${escapeHtml(task.task_id)}" class="task-details ${expanded ? "is-open" : ""}" ${expanded ? "" : "hidden"}>
+        <form data-form="task-edit" data-task-id="${escapeHtml(task.task_id)}" class="task-edit-form">
+          <label>Opgave<input name="title" required maxlength="240" value="${escapeHtml(task.title)}" /></label>
+          <label>Beskrivelse<textarea name="description" maxlength="5000" rows="3" placeholder="Hvad skal laves?">${escapeHtml(task.description || "")}</textarea></label>
+          <label>Frist<input name="due_on" type="date" value="${escapeHtml(task.due_on || "")}" /></label>
+          <button class="mini-button approve" type="submit">Gem opgave</button>
+        </form>
       </div>
       <div id="task-subtask-${escapeHtml(task.task_id)}" class="task-subtask-composer" ${composerOpen ? "" : "hidden"}>
         <form class="subtask-form" data-form="subtask">
@@ -1435,42 +1671,60 @@ function renderProjectDetail(project) {
             <select name="assigned_to" aria-label="Ansvarlig for underopgaven">${assigneeOptions("")}</select>
             <button class="mini-button approve" type="submit">Tilføj underopgave</button>
           </div>
-          <details class="task-extra-options" open><summary>Flere valg</summary><div>
+          <details class="task-extra-options"><summary>Beskrivelse og flere valg</summary><div><label class="task-description-input">Beskrivelse<textarea name="description" maxlength="5000" rows="2" placeholder="Hvad skal laves?"></textarea></label>
             <select name="workflow_status_id" aria-label="Underopgavens status">${workflowStatusOptions("task", null, "todo")}</select>
             <select name="priority" aria-label="Underopgavens prioritet"><option value="medium">Mellem prioritet</option><option value="high">Høj prioritet</option><option value="urgent">Haster</option><option value="low">Lav prioritet</option></select>
             <label><span>Frist</span><input name="due_on" type="date" /></label>
           </div></details>
         </form>
       </div>
-      ${children.map((child) => renderTask(child, depth + 1)).join("")}
+      ${children.length ? `<div class="task-children" id="task-children-${taskId}" ${childrenExpanded ? "" : "hidden"}>${children.map(child=>renderTask(child,depth+1)).join("")}<button type="button" class="task-inline-add" data-add-subtask="${taskId}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${taskId}">${icon("plus")}<span>Tilføj underopgave</span></button></div>` : ""}
     </div>`;
 
   };
   const tasks = project.tasks.length
     ? (tasksByParent.get("root") || []).map((task) => renderTask(task)).join("")
-    : `<p class="task-empty-hint">Ingen hovedopgaver endnu. Tilføj den første nedenfor.</p>`;
+    : `<p class="task-empty-hint">Ingen opgaver endnu. Opret den første med “Ny opgave”.</p>`;
   const documents = project.documents?.length
     ? project.documents.map((document) => `<a class="project-document" href="${escapeHtml(document.document_url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(documentTypeLabel(document.document_type))}</span><strong>${escapeHtml(document.title)}</strong><small>Åbn dokument ↗</small></a>`).join("")
     : `<div class="empty-state compact">Ingen dokumentlinks endnu.</div>`;
   const mentionMembers = project.members.map((member) => `<button type="button" data-mention-member="${escapeHtml(member.member_id)}" data-mention-name="${escapeHtml(member.display_name)}">@${escapeHtml(member.display_name)}</button>`).join("");
   const comments = project.comments?.length
-    ? project.comments.map((comment) => `<article class="project-comment"><div class="project-comment-meta"><strong>${escapeHtml(comment.author_name || "Ukendt afsender")}</strong><time>${escapeHtml(comment.created_at || "")}</time></div><p>${escapeHtml(comment.body).replace(/\n/g, "<br>")}</p>${comment.mentions?.length ? `<small>Nævnt: ${comment.mentions.map((mention) => "@" + escapeHtml(mention.display_name)).join(", ")}</small>` : ""}</article>`).join("")
+    ? project.comments.map((comment) => `<article class="project-comment"><div class="project-comment-meta"><strong>${escapeHtml(comment.author_name || "Ukendt afsender")}</strong><time>${comment.created_at ? escapeHtml(new Date(comment.created_at.replace(" ","T") + "Z").toLocaleString("da-DK",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Copenhagen"})) : ""}</time></div><p>${escapeHtml(comment.body).replace(/\n/g, "<br>")}</p>${comment.mentions?.length ? `<small>Nævnt: ${comment.mentions.map((mention) => "@" + escapeHtml(mention.display_name)).join(", ")}</small>` : ""}</article>`).join("")
     : `<div class="empty-state compact">Ingen kommentarer endnu.</div>`;
 
+  const doneCount = project.tasks.filter(task => task.status === "done").length;
+  const progress = project.tasks.length ? Math.round(doneCount / project.tasks.length * 100) : 0;
+  const dateLabel = value => value ? new Date(value + "T12:00:00").toLocaleDateString("da-DK", { day:"numeric", month:"short", year:"numeric" }) : "Ikke angivet";
+  const fundNames = [...new Set(project.applications.map(application => application.foundation_name))];
   els.projectDetail.innerHTML = `
-    <button type="button" class="project-back-link" data-project-dashboard-back>← Til dashboardet</button>
+    <div class="project-detail-topline"><button type="button" class="project-back-link" data-project-dashboard-back>← Alle projekter</button><span class="project-workspace-label">Jeres fælles arbejdsrum</span></div>
     <header class="project-detail-header">
-      <div><p class="section-kicker">${escapeHtml(project.workflow_status_id ? project.workflow_status_label : projectStatusLabel(project.status))}${project.folder_name ? ` · ${escapeHtml(project.folder_name)}` : ""}</p><h2>${escapeHtml(project.name)}</h2><p>${escapeHtml(project.description || "Ingen beskrivelse endnu.")}</p></div>
-      <div class="project-budget"><span>Budget</span><strong>${formatAmount(project.estimated_budget, project.currency)}</strong><small>${escapeHtml(project.starts_on || "?")} – ${escapeHtml(project.ends_on || "?")}</small></div>
+      <div class="project-title-group" data-project-initial="${escapeHtml(project.name.slice(0,1).toUpperCase())}"><p class="section-kicker">${escapeHtml(project.focus_area || "Projekt")}</p><h2>${escapeHtml(project.name)}</h2>${project.description ? `<p>${escapeHtml(project.description)}</p>` : ""}</div>
+      <div class="project-header-actions">
+        <select data-project-workflow-id="${escapeHtml(project.project_id)}" aria-label="Projektstatus">${workflowStatusOptions("project",project.workflow_status_id,project.status)}</select>
+        <button class="button-link" type="button" data-project-open-section="comments">+ Opdatering</button>
+        <details class="project-actions-menu"><summary aria-label="Flere projekthandlinger">•••</summary><div><button type="button" aria-label="Rediger projekt" data-project-edit>Rediger projekt</button><button type="button" aria-label="Slet projekt" data-project-delete>Slet projekt</button></div></details>
+      </div>
     </header>
+    <div class="project-facts">
+      <div><span>Periode</span><strong>${project.starts_on || project.ends_on ? `${escapeHtml(dateLabel(project.starts_on))} – ${escapeHtml(dateLabel(project.ends_on))}` : "Ikke planlagt"}</strong></div>
+      <div><span>Budget</span><strong>${formatAmount(project.estimated_budget, project.currency)}${project.estimated_hours != null ? ` <small>· ${Number(project.estimated_hours)} timer</small>` : ""}</strong></div>
+      <div><span>Team · ${project.members.length}</span><strong>${escapeHtml(project.members.map(member=>member.display_name).join(", ") || project.owner_name || "Tilføj team")}</strong></div>
+      <div><span>Fond</span><strong>${escapeHtml(fundNames.join(", ") || "Vælg fond")}</strong></div>
+    </div>
+    <div class="project-progress"><progress value="${doneCount}" max="${project.tasks.length || 1}" aria-label="Færdige opgaver"></progress><span>${doneCount} af ${project.tasks.length} opgaver færdige · ${progress}%</span></div>
+    <div class="project-delete-confirm" hidden><strong>Slet dette projekt?</strong><p>Projektet fjernes fra oversigten. Du kan gendanne det via “Fortryd”.</p><button class="mini-button" type="button" data-project-delete-cancel>Annuller</button><button class="mini-button danger-button" type="button" data-project-delete-confirm>Slet projekt</button></div>
     <form class="project-settings-form" data-form="project-settings">
       <label><span>Navn</span><input name="name" required maxlength="160" value="${escapeHtml(project.name)}" /></label>
       <label><span>Status</span><select name="workflow_status_id">
         ${workflowStatusOptions("project", project.workflow_status_id, project.status)}
       </select></label>
+      <label><span>Indsatsområde</span><select name="focus_area"><option value="">Vælg område</option>${["Unge og fællesskaber","Grøn omstilling","Demokratisk deltagelse"].map(area=>`<option value="${escapeHtml(area)}" ${project.focus_area===area?"selected":""}>${escapeHtml(area)}</option>`).join("")}</select></label>
       <label><span>Mappe</span><select name="folder_id"><option value="">Ingen mappe</option>${folderOptions}</select></label>
       <label><span>Ansvarlig</span><select name="owner_member_id"><option value="">Ingen ansvarlig</option>${ownerOptions}</select></label>
-      <label><span>Budget</span><input name="estimated_budget" type="number" min="0" step="1000" value="${escapeHtml(project.estimated_budget ?? "")}" /></label>
+      <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" value="${escapeHtml(project.estimated_budget ?? "")}" /></label>
+      <label><span>Tidsbudget (timer)</span><input name="estimated_hours" type="number" min="0" step="0.5" value="${escapeHtml(project.estimated_hours ?? "")}" /></label>
       <label><span>Start</span><input name="starts_on" type="date" value="${escapeHtml(project.starts_on || "")}" /></label>
       <label><span>Slut</span><input name="ends_on" type="date" value="${escapeHtml(project.ends_on || "")}" /></label>
       <label class="project-settings-description"><span>Beskrivelse</span><input name="description" maxlength="5000" value="${escapeHtml(project.description || "")}" /></label>
@@ -1505,16 +1759,18 @@ function renderProjectDetail(project) {
         </form>
       </section>
       <section>
-        <div class="section-heading"><div><h3>Opgaver</h3><p class="task-list-hint">Hovedopgaver samler arbejdet. Tilføj underopgaver direkte fra den opgave, de hører til.</p></div><span>${project.tasks.filter((task) => task.status !== "done").length} åbne</span></div>
-        <div class="project-task-list">${tasks}</div>
+        <div class="section-heading task-section-heading"><div><h3>Opgaver</h3><p class="task-list-hint">Et klart overblik over hvem, hvad og hvornår.</p></div><div class="task-section-actions"><span>${project.tasks.filter((task) => task.status !== "done").length} åbne</span></div></div>
+        <div class="task-board task-groups" role="region" aria-label="Projektets opgaver" tabindex="0">
+          <div class="project-task-list">${tasks}</div>
+        </div>
         <form class="task-main-add-form" data-form="task">
-          <div class="task-main-add-heading"><strong>Ny hovedopgave</strong><span>Start med en titel. De øvrige valg er valgfrie.</span></div>
+          <div class="task-main-add-heading"><strong>Ny opgave</strong></div>
           <div class="task-quick-add-row">
-            <input name="title" required maxlength="240" placeholder="Hvad skal projektet have gjort?" aria-label="Navn på hovedopgave" />
+            <input name="title" required maxlength="240" placeholder="Hvad skal gøres?" aria-label="Navn på hovedopgave" />
             <select name="assigned_to" aria-label="Ansvarlig for hovedopgaven"><option value="">Ingen ansvarlig</option>${memberOptions}</select>
             <button class="mini-button approve" type="submit">Tilføj opgave</button>
           </div>
-          <details class="task-extra-options" open><summary>Flere valg</summary><div>
+          <details class="task-extra-options"><summary>Beskrivelse og flere valg</summary><div><label class="task-description-input">Beskrivelse<textarea name="description" maxlength="5000" rows="2" placeholder="Hvad skal laves?"></textarea></label>
             <select name="workflow_status_id" aria-label="Hovedopgavens status">${workflowStatusOptions("task", null, "todo")}</select>
             <select name="priority" aria-label="Hovedopgavens prioritet"><option value="medium">Mellem prioritet</option><option value="high">Høj prioritet</option><option value="urgent">Haster</option><option value="low">Lav prioritet</option></select>
             <label><span>Frist</span><input name="due_on" type="date" /></label>
@@ -1533,18 +1789,23 @@ function renderProjectDetail(project) {
       </form>
     </section>
     <section class="project-comments-panel">
-      <div class="section-heading"><h3>Kommentarer</h3><span>${project.comments?.length || 0}</span></div>
+      <div class="section-heading"><h3>Opdateringer</h3><span>${project.comments?.length || 0}</span></div>
       <div class="project-comment-list">${comments}</div>
       <form class="project-comment-form" data-form="comment">
-        <textarea name="body" data-mention-input required maxlength="4000" rows="3" placeholder="Skriv en opdatering til projektet…"></textarea>
+        <textarea name="body" data-mention-input required maxlength="4000" rows="3" aria-label="Opdatering til teamet" placeholder="Del nyt med teamet. Skriv @ for at nævne en person…"></textarea>
         <div class="project-comment-form-row">
           <select name="author_member_id" required><option value="">Vælg afsender</option>${memberOptions}</select>
-          <button class="mini-button approve" type="submit">Tilføj kommentar</button>
+          <button class="mini-button approve" type="submit">Del opdatering</button>
         </div>
         <div class="mention-suggestions" data-mention-suggestions hidden>${mentionMembers}</div>
         <small>Skriv @ for at nævne en person fra projektets team.</small>
       </form>
     </section>`;
+  const sender = state.teamMembers.find(member => member.email && member.email.toLowerCase() === state.auth.user?.email?.toLowerCase());
+  if (sender) {
+    const author = els.projectDetail.querySelector('[name="author_member_id"]');
+    author.value = sender.member_id;
+  }
   simplifyProjectWorkspace(project);
 }
 
@@ -1561,29 +1822,22 @@ function simplifyProjectWorkspace(project) {
   };
   const settings = root.querySelector(".project-settings-form");
   const overview = document.createElement("section");
-  overview.innerHTML = `<div class="section-heading"><h3>Overblik</h3></div>
-    <div class="project-overview-stats">
-      <div><strong>${project.tasks.filter(task => task.status !== "done").length}</strong><span>Åbne opgaver</span></div>
-      <div><strong>${project.applications.length}</strong><span>Fondsansøgninger</span></div>
-      <div><strong>${project.members.length}</strong><span>Teammedlemmer</span></div>
-    </div><p class="project-overview-hint">Vælg en fane for at arbejde videre med projektet.</p>`;
+  overview.innerHTML = `<div class="section-heading"><h3>Om projektet</h3><span>Detaljer, finansiering og team</span></div>`;
   overview.append(settings);
   wrapForm(settings, "Rediger projektoplysninger");
   const columns = root.querySelector(".project-columns");
+  overview.append(columns.children[0], root.querySelector(".project-team-panel"), root.querySelector(".project-documents-panel"));
   const sections = [
-    ["overview", "Overblik", overview],
-    ["tasks", "Opgaver", columns.children[1]],
-    ["applications", "Ansøgninger", columns.children[0]],
-    ["team", "Team", root.querySelector(".project-team-panel")],
-    ["documents", "Dokumenter", root.querySelector(".project-documents-panel")],
-    ["comments", "Kommentarer", root.querySelector(".project-comments-panel")],
+    ["tasks", "Opgaver", columns.children[0]],
+    ["overview", "Om projektet", overview],
+    ["comments", "Opdateringer", root.querySelector(".project-comments-panel")],
   ];
   const nav = document.createElement("div");
   nav.className = "project-section-tabs";
   nav.setAttribute("role", "tablist");
   nav.setAttribute("aria-label", "Projektets sektioner");
-  root.querySelector(".project-detail-header").after(nav);
-  const activeKey = state.projectSectionProjectId === project.project_id ? state.projectSection || "overview" : "overview";
+  root.querySelector(".project-progress").after(nav);
+  const activeKey = state.projectSectionProjectId === project.project_id ? state.projectSection || "tasks" : "tasks";
   const activate = (key) => {
     state.projectSection = key;
     state.projectSectionProjectId = project.project_id;
@@ -1632,11 +1886,51 @@ function simplifyProjectWorkspace(project) {
     hint.textContent = "Se og rediger ansøgning";
     summary.append(hint);
   });
-  activate(activeKey);
+  root.querySelectorAll("[data-project-open-section]").forEach(button => button.addEventListener("click", () => {
+    activate(button.dataset.projectOpenSection);
+    root.querySelector("[data-mention-input]")?.focus();
+  }));
+  root.querySelector("[data-project-edit]").addEventListener("click", () => {
+    activate("overview");
+    settings.parentElement.open = true;
+    settings.elements.name.focus();
+  });
+  const taskForm = root.querySelector(".task-main-add-form");
+  const taskCreate = document.createElement("details");
+  taskCreate.className = "task-create-disclosure";
+  taskCreate.open = state.newTaskComposerProjectId === project.project_id;
+  taskCreate.innerHTML = `<summary><img src="frontend/icons/plus.svg" alt="" aria-hidden="true" /><span>Ny opgave</span></summary>`;
+  root.querySelector(".task-section-actions").append(taskCreate);
+  taskCreate.append(taskForm);
+  taskCreate.addEventListener("toggle", () => {
+    if (taskCreate.open) state.newTaskComposerProjectId = project.project_id;
+    else if (state.newTaskComposerProjectId === project.project_id) state.newTaskComposerProjectId = null;
+  });
+  taskCreate.querySelector("summary").addEventListener("click", () => {
+    requestAnimationFrame(() => {
+      if (taskCreate.open) taskForm.elements.title.focus();
+    });
+  });
+  activate(sections.some(([id]) => id === activeKey) ? activeKey : "tasks");
 }
 
 async function submitProjectForm(form) {
   const values = applyWorkflowStatus(Object.fromEntries(new FormData(form)), "project");
+  const application = {
+    program_id: values.program_id,
+    deadline_id: values.deadline_id,
+    workflow_status_id: values.application_workflow_status_id,
+    requested_amount: values.requested_amount,
+    awarded_amount: values.awarded_amount,
+    submitted_on: values.submitted_on,
+  };
+  if (application.program_id) {
+    applyWorkflowStatus(application, "application");
+    values.initial_application = application;
+  } else if (application.requested_amount || application.awarded_amount || application.submitted_on) {
+    throw new Error("Vælg fond og pulje for at gemme ansøgningsoplysninger.");
+  }
+  for (const field of ["program_id","deadline_id","application_workflow_status_id","requested_amount","awarded_amount","submitted_on"]) delete values[field];
   const payload = await projectApi("/api/projects", { method: "POST", body: JSON.stringify(values) });
   form.reset();
   state.selectedProjectId = payload.project.project_id;
@@ -1650,7 +1944,10 @@ async function submitProjectDetailForm(form) {
   values.project_id = state.selectedProjectId;
   const formType = form.dataset.form;
   let message = "Ændringerne blev gemt.";
-  if (formType === "project-settings") {
+  if (formType === "task-edit") {
+    await projectApi(`/api/tasks/${encodeURIComponent(form.dataset.taskId)}`, { method: "PATCH", body: JSON.stringify(values) });
+    message = "Opgaven blev gemt.";
+  } else if (formType === "project-settings") {
     applyWorkflowStatus(values, "project");
     await projectApi(`/api/projects/${encodeURIComponent(state.selectedProjectId)}`, { method: "PATCH", body: JSON.stringify(values) });
     message = "Projektet blev opdateret.";
@@ -1687,7 +1984,8 @@ async function submitProjectDetailForm(form) {
   } else {
     applyWorkflowStatus(values, "task");
     await projectApi("/api/tasks", { method: "POST", body: JSON.stringify(values) });
-    if (formType === "subtask") state.subtaskComposerTaskId = null;
+    if (formType === "subtask") { state.subtaskComposerTaskId = null; state.collapsedTaskIds.delete(values.parent_task_id); }
+    else if (formType === "task") state.newTaskComposerProjectId = null;
     message = formType === "subtask" ? "Underopgaven blev tilføjet." : "Hovedopgaven blev tilføjet.";
   }
   await loadProjects();
@@ -1733,7 +2031,9 @@ async function decideScrapeChange(row, button) {
 }
 
 async function init() {
-  state.activeTab = loadJson("fondsdb.activeTab", "fund");
+  window.WorkspaceShell?.init(state.auth);
+  setupFilePreviewLauncher();
+  state.activeTab = loadJson("fondsdb.activeTab", "fonde");
   state.favorites = new Set(loadJson("fondsdb.favorites", []));
   state.alertSettings = {
     ...state.alertSettings,
@@ -1763,7 +2063,11 @@ async function init() {
   });
   await loadProjects().catch((error) => {
     console.warn(error);
-    els.projectList.innerHTML = `<div class="empty-state">Projektmodulet kunne ikke indlæses.</div>`;
+    if (state.auth.authenticated) renderProjectLoadError(error);
+    else {
+      renderAuthPanel();
+      els.projectList.innerHTML = `<div class="empty-state">Projektmodulet kunne ikke indlæses.</div>`;
+    }
   });
   rebuildOpportunities();
   state.selectedId = state.opportunities[0]?.program.program_id || null;
@@ -1802,7 +2106,7 @@ async function init() {
     await fetch("/api/auth/logout", { method: "POST" });
     state.auth = { authenticated: false, setupRequired: false, user: null };
     renderAuthPanel();
-    els.projectList.innerHTML = `<div class="empty-state">Log ind ovenfor for at se projektporteføljen.</div>`;
+    els.projectList.innerHTML = `<div class="empty-state">Log ind for at se projektporteføljen.</div>`;
   });
 
   els.projectAuthPanel.addEventListener("submit", async (event) => {
@@ -1811,8 +2115,16 @@ async function init() {
     try {
       const response = await fetch(`/api/auth/${form.dataset.authForm}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
       const payload = await response.json(); if (!response.ok || !payload.ok) throw new Error(payload.message || "Login fejlede");
-      state.auth = { authenticated: true, setupRequired: false, user: payload.user }; await loadProjects(); showActionToast("Du er logget ind.");
-    } catch (errorValue) { error.hidden = false; error.textContent = errorValue.message; }
+      state.auth = { authenticated: true, setupRequired: false, user: payload.user };
+    } catch (errorValue) { error.hidden = false; error.textContent = errorValue.message; return; }
+    window.WorkspaceShell?.syncAuth(state.auth);
+    window.WorkspaceShell?.closeAccount();
+    try {
+      await loadProjects();
+      showActionToast("Du er logget ind.");
+    } catch (loadError) {
+      renderProjectLoadError(loadError);
+    }
   });
 
   els.projectCreateForm.addEventListener("submit", async (event) => {
@@ -1827,24 +2139,101 @@ async function init() {
       button.disabled = false;
     }
   });
+  els.projectCreateForm.elements.program_id.addEventListener("change", () => updateApplicationDeadlineOptions(els.projectCreateForm));
 
   els.projectList.addEventListener("click", (event) => {
+    const projectEditButton = event.target.closest("[data-edit-project-id]");
+    if (projectEditButton) {
+      openPortfolioProjectEditor(projectEditButton.dataset.editProjectId);
+      return;
+    }
+    const folderButton = event.target.closest("[data-edit-folder-id]");
+    if (folderButton) {
+      openPortfolioFolderEditor(folderButton.dataset.editFolderId);
+      return;
+    }
     const button = event.target.closest("[data-project-id]");
     if (button) void selectProject(button.dataset.projectId);
+  });
+
+  els.portfolioEditForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void submitPortfolioEdit(event.currentTarget);
+  });
+  els.portfolioEditForm.addEventListener("click", (event) => {
+    if (event.target.closest("[data-close-portfolio-edit]")) els.portfolioEditDialog.close();
+    if (event.target.closest("[data-open-project]")) {
+      const projectId = els.portfolioEditForm.dataset.projectId;
+      els.portfolioEditDialog.close();
+      void selectProject(projectId);
+    }
+  });
+  els.portfolioEditDialog.addEventListener("click", (event) => {
+    if (event.target === els.portfolioEditDialog) els.portfolioEditDialog.close();
   });
 
   els.projectDetail.addEventListener("submit", async (event) => {
     const form = event.target.closest("[data-form]");
     if (!form) return;
     event.preventDefault();
-    const button = form.querySelector("button[type='submit']");
+    const button = event.submitter || form.querySelector("button[type='submit']");
+    const taskFocus = captureProjectTaskFocus(button);
     button.disabled = true;
     try {
       await submitProjectDetailForm(form);
+      restoreProjectTaskFocus(taskFocus);
     } catch (error) {
       showActionToast(error.message, true);
       button.disabled = false;
+      restoreProjectTaskFocus(taskFocus);
     }
+  });
+
+  els.projectDetail.addEventListener("toggle", event => {
+    if (!event.target.matches(".task-row-menu[open]")) return;
+    els.projectDetail.querySelectorAll(".task-row-menu[open]").forEach(menu => {
+      if (menu !== event.target) menu.open = false;
+    });
+  }, true);
+
+  els.projectDetail.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      const editor = event.target.closest(".task-details:not([hidden]), .task-subtask-composer:not([hidden])");
+      if (editor) {
+        const node = editor.closest("[data-task-node]");
+        const taskId = node.dataset.taskNode;
+        const isSubtask = editor.classList.contains("task-subtask-composer");
+        editor.hidden = true;
+        editor.classList.remove("is-open");
+        if (isSubtask) state.subtaskComposerTaskId = null;
+        else state.expandedTaskId = null;
+        node.querySelectorAll(isSubtask ? "[data-add-subtask]" : "[data-task-toggle-id]").forEach(button => {
+          if ((button.dataset.addSubtask || button.dataset.taskToggleId) === taskId) button.setAttribute("aria-expanded", "false");
+        });
+        node.querySelector(isSubtask ? ".task-row-menu > summary" : ".project-task-title")?.focus();
+        event.preventDefault();
+        return;
+      }
+      const menu = event.target.closest(".task-row-menu[open], .task-create-disclosure[open]");
+      if (menu) {
+        menu.open = false;
+        menu.querySelector("summary").focus();
+        event.preventDefault();
+        return;
+      }
+    }
+    const textarea = event.target.closest("[data-mention-input]");
+    if (!textarea) return;
+    const menu = textarea.form.querySelector("[data-mention-suggestions]");
+    if (!menu || menu.hidden) return;
+    const options = [...menu.querySelectorAll("button:not([hidden])")];
+    if (event.key === "Escape") { menu.hidden = true; event.preventDefault(); return; }
+    if (!["ArrowDown","ArrowUp","Enter"].includes(event.key) || !options.length) return;
+    event.preventDefault();
+    const current = options.findIndex(button=>button.classList.contains("mention-active"));
+    if (event.key === "Enter") { (options[current] || options[0]).click(); return; }
+    const next = (current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+    options.forEach((button,index)=>button.classList.toggle("mention-active", index===next));
   });
 
   els.projectDetail.addEventListener("input", (event) => {
@@ -1879,6 +2268,10 @@ async function init() {
   });
 
   els.projectDetail.addEventListener("change", (event) => {
+    const projectStatus = event.target.closest("[data-project-workflow-id]");
+    if (projectStatus) void projectApi(`/api/projects/${encodeURIComponent(projectStatus.dataset.projectWorkflowId)}/status`, {
+      method:"PATCH", body:JSON.stringify({workflow_status_id:projectStatus.value}),
+    }).then(()=>loadProjects()).catch(error=>showActionToast(error.message,true));
     const form = event.target.closest("form[data-form='application']");
     if (form && event.target.name === "program_id") updateApplicationDeadlineOptions(form);
     const taskSelect = event.target.closest("[data-task-workflow-id]");
@@ -1920,12 +2313,38 @@ async function init() {
   });
 
   els.projectDetail.addEventListener("click", async (event) => {
+    els.projectDetail.querySelectorAll(".task-row-menu[open]").forEach(menu => {
+      if (!menu.contains(event.target)) menu.open = false;
+    });
     if (event.target.closest("[data-project-dashboard-back]")) {
       state.projectPage = "dashboard";
       document.querySelector(".projects-workspace").hidden = true;
       els.projectDashboard.hidden = false;
       await renderProjectDashboard();
       window.scrollTo({ top: document.querySelector(".projects-header").offsetTop, behavior: "smooth" });
+      return;
+    }
+    if (event.target.closest("[data-project-delete]")) {
+      els.projectDetail.querySelector(".project-delete-confirm").hidden = false;
+      els.projectDetail.querySelector(".project-actions-menu").open = false;
+      return;
+    }
+    if (event.target.closest("[data-project-delete-cancel]")) {
+      els.projectDetail.querySelector(".project-delete-confirm").hidden = true;
+      return;
+    }
+    const deleteButton = event.target.closest("[data-project-delete-confirm]");
+    if (deleteButton) {
+      deleteButton.disabled = true;
+      try {
+        const project = state.projects.find(item=>item.project_id===state.selectedProjectId);
+        await projectApi(`/api/projects/${encodeURIComponent(state.selectedProjectId)}`,{method:"DELETE"});
+        state.deletedProject = project;
+        state.selectedProjectId = null;
+        state.projectPage = "dashboard";
+        await loadProjects();
+        showActionToast("Projektet er slettet fra oversigten.");
+      } catch(error) { deleteButton.disabled = false; showActionToast(error.message,true); }
       return;
     }
     const memberCard = event.target.closest("[data-team-member-id]");
@@ -1939,25 +2358,55 @@ async function init() {
       }
       return;
     }
-    const toggle = event.target.closest("[data-task-toggle-id]");
+    const childrenToggle = event.target.closest("[data-task-children-toggle]");
+    if (childrenToggle) {
+      const taskId = childrenToggle.dataset.taskChildrenToggle;
+      const collapsed = !state.collapsedTaskIds.has(taskId);
+      if (collapsed) state.collapsedTaskIds.add(taskId); else state.collapsedTaskIds.delete(taskId);
+      childrenToggle.setAttribute("aria-expanded", String(!collapsed));
+      const title = childrenToggle.closest("[data-task-node]").querySelector(".project-task-title strong").textContent;
+      childrenToggle.setAttribute("aria-label", `${collapsed ? "Vis" : "Skjul"} underopgaver til ${title}`);
+      document.getElementById(`task-children-${taskId}`).hidden = collapsed;
+      return;
+    }
+    const toggle = event.target.closest("[data-task-toggle-id], [data-task-edit-date]");
     if (toggle) {
-      state.expandedTaskId = state.expandedTaskId === toggle.dataset.taskToggleId ? null : toggle.dataset.taskToggleId;
-      await selectProject(state.selectedProjectId);
+      const taskId = toggle.dataset.taskToggleId || toggle.dataset.taskEditDate;
+      const opening = toggle.hasAttribute("data-task-edit-date") || state.expandedTaskId !== taskId;
+      state.expandedTaskId = opening ? taskId : null;
+      els.projectDetail.querySelectorAll(".task-details").forEach(panel => {
+        const open = opening && panel.id === `task-details-${taskId}`;
+        panel.hidden = !open;
+        panel.classList.toggle("is-open", open);
+      });
+      els.projectDetail.querySelectorAll("[data-task-toggle-id]").forEach(button => button.setAttribute("aria-expanded", String(opening && button.dataset.taskToggleId === taskId)));
+      toggle.closest(".task-row-menu")?.removeAttribute("open");
+      if (opening) {
+        const form = document.getElementById(`task-details-${taskId}`)?.querySelector("form");
+        form?.elements[toggle.hasAttribute("data-task-edit-date") ? "due_on" : "title"]?.focus();
+      } else {
+        toggle.closest("[data-task-node]")?.querySelector(".project-task-title")?.focus();
+      }
       return;
     }
     const addSubtask = event.target.closest("[data-add-subtask]");
     if (addSubtask) {
       const taskId = addSubtask.dataset.addSubtask;
-      state.subtaskComposerTaskId = state.subtaskComposerTaskId === taskId ? null : taskId;
-      await selectProject(state.selectedProjectId);
-      if (state.subtaskComposerTaskId === taskId) {
-        const form = [...els.projectDetail.querySelectorAll(".subtask-form")].find(candidate => candidate.elements.parent_task_id.value === taskId);
-        form?.querySelector("[data-subtask-title]")?.focus();
+      const opening = state.subtaskComposerTaskId !== taskId;
+      state.subtaskComposerTaskId = opening ? taskId : null;
+      els.projectDetail.querySelectorAll(".task-subtask-composer").forEach(panel => { panel.hidden = !opening || panel.id !== `task-subtask-${taskId}`; });
+      els.projectDetail.querySelectorAll("[data-add-subtask]").forEach(button => button.setAttribute("aria-expanded", String(opening && button.dataset.addSubtask === taskId)));
+      addSubtask.closest(".task-row-menu")?.removeAttribute("open");
+      if (opening) {
+        document.getElementById(`task-subtask-${taskId}`)?.querySelector("[data-subtask-title]")?.focus();
+      } else {
+        addSubtask.closest("[data-task-node]")?.querySelector(".task-row-menu > summary")?.focus();
       }
       return;
     }
     const button = event.target.closest("[data-task-status-id]");
     if (!button) return;
+    const taskFocus = captureProjectTaskFocus(button);
     button.disabled = true;
     try {
       await projectApi(`/api/tasks/${encodeURIComponent(button.dataset.taskStatusId)}/status`, {
@@ -1965,9 +2414,11 @@ async function init() {
         body: JSON.stringify({ status: button.dataset.nextStatus }),
       });
       await loadProjects();
+      restoreProjectTaskFocus(taskFocus);
     } catch (error) {
       showActionToast(error.message, true);
       button.disabled = false;
+      restoreProjectTaskFocus(taskFocus);
     }
   });
 
@@ -2019,6 +2470,7 @@ async function init() {
   });
 
   els.rows.addEventListener("keydown", (event) => {
+    if (event.target.closest("button, a, input, select, textarea")) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     const row = event.target.closest("tr[data-id]");
     if (row) {
@@ -2040,24 +2492,7 @@ async function init() {
     els.updateButton.textContent = "Åbn LocalHost";
     els.scrapeTestButton.textContent = "Åbn LocalHost";
     els.scrapeRunButton.disabled = true;
-    els.projectServerNotice.hidden = false;
     els.projectCreateForm.querySelector("button[type='submit']").textContent = "Start appen for at oprette";
-    const localAppLink = els.projectServerNotice.querySelector("a[href]");
-    localAppLink.addEventListener("click", async (event) => {
-      event.preventDefault();
-      els.projectServerNoticeHelp.textContent = "Tjekker om appen kører…";
-      try {
-        const response = await fetch("http://127.0.0.1:8000/", { mode: "no-cors", cache: "no-store" });
-        if (response.type === "opaque" || response.ok) {
-          window.open(localAppLink.href, "_blank", "noopener");
-          els.projectServerNoticeHelp.textContent = "Appen blev åbnet i en ny fane.";
-        } else {
-          throw new Error("Local app is unavailable");
-        }
-      } catch {
-        els.projectServerNoticeHelp.textContent = "Appen svarer ikke. Start fondsdatabase-appen, og prøv igen.";
-      }
-    });
   }
   loadScrapeChanges().catch(() => {
     els.scrapeChangeRows.innerHTML = `<tr><td colspan="5">Scraping-tabellerne er ikke initialiseret endnu.</td></tr>`;

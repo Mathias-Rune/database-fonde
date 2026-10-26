@@ -84,6 +84,45 @@ test("team members can own and participate in a project", async (t) => {
   assert.deepEqual(updated.members.map((member) => member.role).sort(), ["Marketing", "owner", "reviewer"]);
 });
 
+test("project creation stores dashboard fields and first application together", async (t) => {
+  const { tempDir, sqlitePath, repository } = await fixture();
+  t.after(() => rm(tempDir, { recursive: true, force: true }));
+  const owner = await repository.createTeamMember(validateTeamMemberInput({ display_name: "Ansvarlig" }));
+  const input = validateProjectInput({
+    name: "Grønt ungeprojekt", focus_area: "Grøn omstilling", owner_member_id: owner.member_id,
+    initial_application: {
+      program_id: "program-1", deadline_id: "deadline-1", status: "awarded",
+      requested_amount: 125000, awarded_amount: 100000, submitted_on: "2026-09-15",
+    },
+  });
+  assert.equal(input.ok, true);
+  const project = await repository.createProject(input);
+  assert.equal(project.focus_area, "Grøn omstilling");
+  assert.equal(project.owner_name, "Ansvarlig");
+  assert.equal(project.members.find((member) => member.member_id === owner.member_id)?.role, "owner");
+  assert.equal(project.applications[0].foundation_name, "Testfonden");
+  assert.equal(project.applications[0].closes_on, "2027-01-31");
+  assert.equal(project.applications[0].requested_amount, 125000);
+  assert.equal(project.applications[0].awarded_amount, 100000);
+  assert.equal(project.applications[0].submitted_on, "2026-09-15");
+  const bad = validateProjectInput({ name: "Forkert område", focus_area: "Andet" });
+  assert.equal(bad.ok, false);
+  await assert.rejects(repository.createProject(validateProjectInput({
+    name: "Ugyldig pulje", initial_application: { program_id: "ukendt" },
+  })));
+  const { stdout } = await execFileAsync("sqlite3", [sqlitePath, "SELECT count(*) FROM projects WHERE name = 'Ugyldig pulje';"]);
+  assert.equal(stdout.trim(), "0");
+});
+
+test("existing project databases gain the focus area column", async (t) => {
+  const { tempDir, sqlitePath } = await fixture();
+  t.after(() => rm(tempDir, { recursive: true, force: true }));
+  await execFileAsync("sqlite3", [sqlitePath, "DROP VIEW project_overview; ALTER TABLE projects DROP COLUMN focus_area;"]);
+  const reopened = createProjectRepository({ sqlitePath, cwd: rootDir });
+  const project = await reopened.createProject(validateProjectInput({ name: "Eksisterende database", focus_area: "Unge og fællesskaber" }));
+  assert.equal(project.focus_area, "Unge og fællesskaber");
+});
+
 test("application updates persist deadlines and append status history", async (t) => {
   const { tempDir, sqlitePath, repository } = await fixture();
   t.after(() => rm(tempDir, { recursive: true, force: true }));
@@ -169,4 +208,32 @@ test("a deadline cannot be attached to an application for another program", asyn
     program_id: "program-2",
     deadline_id: "deadline-1",
   })));
+});
+
+test("NGO project workflow supports status, time budget, editable tasks and recoverable deletion", async (t) => {
+  const { tempDir, repository } = await fixture();
+  t.after(() => rm(tempDir, { recursive: true, force: true }));
+  const project = await repository.createProject(validateProjectInput({ name: "Fælles indsats", estimated_hours: 120, estimated_budget: 250000 }));
+  assert.equal(project.estimated_hours, 120);
+  const { statuses } = await repository.getProjectConfig();
+  assert.deepEqual(statuses.filter(s=>s.entity_type==='task').map(s=>s.label), ['Started','In progress','Stuck','Done']);
+  assert.ok(statuses.some(s=>s.label==='Ansøgningsfase'));
+  const submitted = statuses.find(s=>s.label==='Applikation sendt til fond');
+  const updated = await repository.updateProjectStatus(project.project_id, submitted.status_id);
+  assert.equal(updated.workflow_status_label, 'Applikation sendt til fond');
+  assert.equal(updated.estimated_budget, 250000);
+  const task = await repository.createTask(validateTaskInput({ project_id:project.project_id, title:'Kommunikation', description:'Lav en kampagne', status:'in_progress' }));
+  const child = await repository.createTask(validateTaskInput({ project_id:project.project_id, parent_task_id:task.task_id, title:'Skriv opslag' }));
+  const edited = await repository.updateTaskDetails(task.task_id, {title:'Kommunikationsplan',description:'Målgruppe og budskaber',due_on:'2026-11-01'});
+  assert.equal(edited.description, 'Målgruppe og budskaber');
+  assert.equal(edited.status, 'in_progress');
+  await repository.setProjectDeleted(project.project_id, true);
+  assert.equal((await repository.listProjects()).length, 0);
+  assert.equal(await repository.getProject(project.project_id), null);
+  assert.equal((await repository.listDeletedProjects())[0].project_id, project.project_id);
+  await repository.setProjectDeleted(project.project_id, false);
+  const restored = await repository.getProject(project.project_id);
+  assert.equal(restored.tasks.length, 2);
+  assert.equal(restored.tasks.find(t=>t.task_id===child.task_id).parent_task_id, task.task_id);
+  assert.equal(restored.workflow_status_label, 'Applikation sendt til fond');
 });
