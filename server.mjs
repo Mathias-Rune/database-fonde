@@ -46,6 +46,8 @@ const sessions = new Map();
 
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
   ".csv": "text/csv; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -371,6 +373,19 @@ const server = http.createServer(async (request, response) => {
       const input = validateFolderInput(await readJsonBody(request));
       if (!input.ok) return sendJson(response, input.statusCode, input);
       sendJson(response, 201, { ok: true, folder: await projectRepository.createFolder(input) });
+    } catch (error) {
+      sendJson(response, 400, { ok: false, message: error.message });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && /^\/api\/project-folders\/[^/]+$/.test(requestUrl.pathname)) {
+    try {
+      const folderId = decodeURIComponent(requestUrl.pathname.split("/")[3]);
+      const input = validateFolderInput(await readJsonBody(request));
+      if (!input.ok) return sendJson(response, input.statusCode, input);
+      const folder = await projectRepository.updateFolder(folderId, input);
+      sendJson(response, folder ? 200 : 404, folder ? { ok: true, folder } : { ok: false, message: "Mappen blev ikke fundet" });
     } catch (error) {
       sendJson(response, 400, { ok: false, message: error.message });
     }

@@ -1,0 +1,368 @@
+/* Project workspace: carbon, silver and dark amaranth.
+   Keep these overrides scoped so workflow colors and other workspaces stay independent. */
+#panel-projekter {
+  --project-accent: #8a1a30;
+  --project-tint: #f7eef0;
+  --project-ink: #242226;
+  --accent: var(--project-accent);
+  --accent-hover: #701428;
+  --ink: var(--project-ink);
+  --muted: #6f6b71;
+  --line: #e4e2e3;
+  --surface: #fff;
+  --surface-strong: #f4f3f3;
+  color: var(--project-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#panel-projekter :is(h2, h3, strong) { color: var(--project-ink); }
+#panel-projekter :is(button, input, select, textarea) { font-family: inherit; }
+#panel-projekter :is(button, a, input, select, textarea, summary):focus-visible,
+#panel-projekter .project-task button:focus-visible {
+  outline: 2px solid var(--project-accent);
+  outline-offset: 3px;
+}
+#panel-projekter :is(input, select, textarea) {
+  border-color: #d6d3d5;
+  border-radius: 6px;
+  color: var(--project-ink);
+  background-color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  box-shadow: none;
+}
+#panel-projekter :is(input, select) { min-height: 42px; }
+#panel-projekter textarea { min-height: 96px; line-height: 1.6; }
+#panel-projekter :is(input, select, textarea):focus-visible { border-color: var(--project-accent); }
+#panel-projekter :is(input, textarea)::placeholder { color: #89848b; }
+#panel-projekter label { color: var(--muted); font-size: 13px; font-weight: 500; text-transform: none; }
+#panel-projekter :is(.project-create-form label span, .project-settings-form label > span, .application-edit-form label > span, .task-details label span) {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: none;
+}
+#panel-projekter :is(.button-link, .mini-button) {
+  min-height: 40px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+  transform: none;
+}
+#panel-projekter .button-link {
+  border: 1px solid var(--project-accent);
+  background: var(--project-accent);
+  color: #fff;
+}
+#panel-projekter :is(.button-link:hover, .button-link:focus-visible) {
+  border-color: #701428;
+  background: #701428;
+  transform: none;
+}
+#panel-projekter .mini-button { background: #fff; border-color: #d6d3d5; color: var(--project-ink); }
+#panel-projekter .mini-button:hover { border-color: #b8b2b6; background: #f4f3f3; }
+#panel-projekter .mini-button.approve { background: var(--project-accent); border-color: var(--project-accent); color: #fff; }
+#panel-projekter .mini-button.approve:hover { background: #701428; border-color: #701428; }
+#panel-projekter .danger-button { background: #a12f39; border-color: #a12f39; color: #fff; }
+#panel-projekter :is(.section-kicker, .text-action) { color: var(--project-accent); }
+#panel-projekter .section-heading { margin-bottom: 16px; }
+#panel-projekter .section-heading > span { color: var(--muted); font-size: 12px; }
+#panel-projekter :is(.project-section-panel h3, .dashboard-section .section-heading h3) { color: var(--project-ink); font-size: 16px; font-weight: 650; }
+
+/* Dashboard and project creation. */
+#panel-projekter .projects-header {
+  gap: 24px;
+  padding: 22px 24px;
+  border-color: var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+#panel-projekter :is(.project-config-panel, .project-auth-card, .project-auth-user) {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: none;
+}
+#panel-projekter :is(.project-config-panel summary, .project-auth-card h3, .project-auth-user strong) { color: var(--project-ink); }
+#panel-projekter .project-config-panel summary { min-height: 44px; padding: 13px 18px; font-size: 13px; font-weight: 600; }
+#panel-projekter .project-config-help { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-auth-card p { font-size: 13px; }
+#panel-projekter .project-auth-user { padding: 10px 14px; font-size: 13px; }
+#panel-projekter .project-dashboard { gap: 24px; }
+#panel-projekter .dashboard-heading {
+  padding: 4px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+#panel-projekter :is(.dashboard-heading h2, .project-dashboard-welcome h2) { font-size: 26px; letter-spacing: -.035em; }
+#panel-projekter .dashboard-heading p:last-child { color: var(--muted); font-size: 14px; }
+#panel-projekter .dashboard-metrics { gap: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; overflow: hidden; }
+#panel-projekter .dashboard-metrics article { gap: 6px; padding: 20px 24px; border: 0; border-right: 1px solid var(--line); border-radius: 0; background: transparent; }
+#panel-projekter .dashboard-metrics article:last-child { border-right: 0; }
+#panel-projekter .dashboard-metrics span { color: var(--muted); font-size: 13px; }
+#panel-projekter .dashboard-metrics strong { font-size: 28px; line-height: 1.2; font-weight: 650; letter-spacing: -.04em; }
+#panel-projekter .dashboard-section { padding: 24px; border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .dashboard-section .section-heading p { color: var(--muted); font-size: 13px; }
+#panel-projekter .dashboard-project-grid { grid-template-columns: 1fr; gap: 0; margin-top: 6px; }
+#panel-projekter .dashboard-project-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 20px;
+  padding: 18px 6px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--project-ink);
+  box-shadow: none;
+  transition: background-color .15s;
+}
+#panel-projekter .dashboard-project-card:last-child { border-bottom: 0; }
+#panel-projekter .dashboard-project-card:hover { background: #faf7f8; box-shadow: none; transform: none; }
+#panel-projekter .dashboard-project-card > strong { grid-column: 1; grid-row: 1; font-size: 15px; font-weight: 600; }
+#panel-projekter .dashboard-project-status { grid-column: 2; grid-row: 1; color: var(--muted); font-size: 12px; }
+#panel-projekter .dashboard-project-card > span:not(.dashboard-project-status) { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+#panel-projekter .dashboard-project-card small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+#panel-projekter .dashboard-project-status .status-dot:not([class*="color-"]) { background: #a7a1a6; }
+#panel-projekter .workload-track { height: 6px; background: #eeebed; }
+#panel-projekter .workload-track i { background: var(--project-accent); }
+#panel-projekter .workload-row { font-size: 13px; }
+#panel-projekter .dashboard-task-row { min-height: 64px; gap: 20px; padding: 14px 0; border-color: var(--line); }
+#panel-projekter .dashboard-task-row strong { font-size: 14px; font-weight: 600; }
+#panel-projekter :is(.dashboard-task-row small, .dashboard-task-row time, .dashboard-muted) { color: var(--muted); font-size: 12px; }
+#panel-projekter .dashboard-task-row.is-overdue time { color: #a33239; }
+#panel-projekter :is(.project-dashboard-welcome, .project-dashboard-loading) { border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter :is(.project-initial-application, .project-disclosure) { border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .project-disclosure > summary { min-height: 44px; padding: 12px 16px; color: var(--project-accent); font-size: 13px; font-weight: 600; }
+#panel-projekter .project-create-more { border-color: var(--line); }
+#panel-projekter .project-create-more > summary { color: var(--muted); font-size: 13px; }
+
+/* A quiet project list and a flat, white detail canvas. */
+#panel-projekter .projects-workspace { grid-template-columns: 224px minmax(0, 1fr); gap: 20px; }
+#panel-projekter .project-list-panel { padding: 18px 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .project-list-panel .section-heading { padding: 0 18px; }
+#panel-projekter .project-list-panel h2 { font-size: 14px; }
+#panel-projekter .project-list { gap: 0; }
+#panel-projekter .project-list-item { position: relative; min-height: 76px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+#panel-projekter .project-list-open { display: grid; width: 100%; min-height: 76px; padding: 13px 38px 13px 15px; gap: 7px; border: 0; border-left: 3px solid transparent; border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; box-shadow: none; cursor: pointer; }
+#panel-projekter .project-list-open:hover { background: #f7f5f6; }
+#panel-projekter .project-list-item.active .project-list-open { border-left-color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter .project-list-edit { position: absolute; top: 10px; right: 8px; display: grid; width: 27px; height: 27px; padding: 0; place-items: center; border: 1px solid #dedadd; border-radius: 5px; color: var(--muted); background: #fff; font-size: 17px; line-height: 1; opacity: 0; cursor: pointer; }
+#panel-projekter .project-list-item:hover .project-list-edit, #panel-projekter .project-list-item:focus-within .project-list-edit { opacity: 1; }
+#panel-projekter .project-list-edit:hover { border-color: #cbb9bf; color: var(--project-accent); }
+#panel-projekter .project-list-title { gap: 7px; font-size: 14px; }
+#panel-projekter .project-list-title strong { font-weight: 600; }
+#panel-projekter .project-list-open > span:not(.project-list-title), #panel-projekter .project-list-open small { color: var(--muted); font-size: 12px; line-height: 1.6; }
+#panel-projekter .project-status { font-size: 11px; font-weight: 600; }
+#panel-projekter .project-list-item .project-status { font-size: 10px; }
+#panel-projekter .project-folder-group { gap: 4px; }
+#panel-projekter .project-folder-group + .project-folder-group { margin-top: 12px; padding-top: 12px; border-color: var(--line); }
+#panel-projekter .project-folder-heading { padding: 3px 16px; color: var(--muted); font-size: 12px; font-weight: 600; }
+#panel-projekter .project-folder-edit { display: inline; margin: 0; padding: 0; border: 0; border-radius: 0; color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+#panel-projekter .project-folder-edit:hover { color: var(--project-accent); }
+#panel-projekter .project-folder-color { display: inline-block; width: 7px; height: 7px; margin: 0 6px 1px 0; border-radius: 50%; background: #85818a; }
+#panel-projekter .project-folder-color.color-blue { background: #4b78b6; }
+#panel-projekter .project-folder-color.color-green { background: #47836f; }
+#panel-projekter .project-folder-color.color-yellow { background: #c49536; }
+#panel-projekter .project-folder-color.color-red { background: #b4515b; }
+#panel-projekter .project-folder-color.color-purple { background: #8063a8; }
+#panel-projekter .project-folder-heading small { font-size: 11px; }
+#panel-projekter .project-folder-projects { gap: 0; padding-left: 0; border-left-color: var(--line); }
+#panel-projekter .project-detail-panel { min-width: 0; padding: 28px; border: 1px solid var(--line); border-radius: 6px; background: #fff; box-shadow: none; }
+#panel-projekter .project-detail-topline { margin-bottom: 24px; }
+#panel-projekter :is(.project-back-link, .project-workspace-label) { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-back-link { min-height: 36px; }
+#panel-projekter .project-back-link:hover { color: var(--project-accent); }
+#panel-projekter .project-title-group::before { width: 44px; height: 48px; border-radius: 6px; color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter .project-title-group h2 { margin: 5px 0 8px; font-size: 28px; color: var(--project-ink); font-weight: 650; letter-spacing: -.035em; }
+#panel-projekter .project-title-group p:last-child { color: var(--muted); font-size: 14px; line-height: 1.6; }
+#panel-projekter .project-header-actions { gap: 8px; }
+#panel-projekter .project-header-actions > select { min-height: 40px; padding: 8px 28px 8px 12px; border: 1px solid #d6d3d5; border-radius: 6px; background: #fff; color: var(--project-ink); font-size: 13px; }
+#panel-projekter .project-header-actions .button-link { min-height: 40px; padding: 9px 13px; font-size: 13px; }
+#panel-projekter .project-actions-menu > summary { min-width: 40px; min-height: 40px; text-align: center; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); }
+#panel-projekter .project-actions-menu > div { top: 44px; border-color: var(--line); border-radius: 6px; box-shadow: 0 6px 20px #24222612; }
+#panel-projekter .project-actions-menu button { min-height: 40px; font-size: 13px; }
+#panel-projekter .project-actions-menu button:hover { background: var(--project-tint); }
+#panel-projekter .project-actions-menu button[data-project-delete] { color: #a33239; }
+#panel-projekter .project-facts { gap: 20px; border-color: var(--line); padding: 20px 0; }
+#panel-projekter .project-facts span { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-facts strong { color: var(--project-ink); font-size: 13px; font-weight: 500; }
+#panel-projekter .project-facts small { color: var(--muted); }
+#panel-projekter .project-progress progress { accent-color: var(--project-accent); }
+#panel-projekter .project-progress progress::-webkit-progress-bar { background: #eeebed; }
+#panel-projekter .project-progress progress::-webkit-progress-value { background: var(--project-accent); }
+#panel-projekter .project-progress progress::-moz-progress-bar { background: var(--project-accent); }
+#panel-projekter .project-progress span { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-section-tabs { gap: 28px; border-color: var(--line); }
+#panel-projekter .project-section-tabs button { min-height: 46px; color: var(--muted); font-size: 14px; }
+#panel-projekter .project-section-tabs button[aria-selected="true"] { border-color: var(--project-accent); background: transparent; color: var(--project-accent); font-weight: 600; }
+#panel-projekter .task-list-hint { color: var(--muted); font-size: 13px; }
+#panel-projekter .project-section-panel > .project-disclosure:has(.task-main-add-form) { border: 1px solid var(--line); background: #faf9f9; }
+
+/* Preserve the task-board columns and mobile layout; remove the old purple tint. */
+#panel-projekter .task-board { border-radius: 6px; }
+#panel-projekter .task-board:focus-visible { outline-color: var(--project-accent); }
+#panel-projekter .task-board-header { min-height: 42px; margin-bottom: 0; border-color: var(--line); border-radius: 6px 6px 0 0; background: #f4f3f3; color: var(--muted); font-size: 12px; }
+#panel-projekter .task-board-header > span { border-color: var(--line); }
+#panel-projekter .task-board .project-task-list { gap: 0; margin-top: 0; margin-bottom: 0; }
+#panel-projekter .task-board .project-task-node.depth-0 { border-color: var(--line); border-top: 0; border-radius: 0; background: #fff; box-shadow: none; }
+#panel-projekter .task-board .project-task-node.depth-0:last-child { border-radius: 0 0 6px 6px; }
+#panel-projekter .task-board .project-task-node.depth-0:hover { border-color: #cfcace; }
+#panel-projekter .task-board .project-task-node.depth-0 > .project-task { border-left-color: transparent; }
+#panel-projekter .task-board .project-task { min-height: 62px; background: #fff; }
+#panel-projekter .task-board .project-task:hover { background: #faf8f9; }
+#panel-projekter .task-board .project-task:focus-within { background: var(--project-tint); }
+#panel-projekter .task-board .task-cell { border-color: var(--line); }
+#panel-projekter .task-board .task-complete-button { min-height: 40px; height: 40px; }
+#panel-projekter .task-board .task-complete-button > span { width: 18px; height: 18px; border-color: #bab3b9; border-radius: 4px; }
+#panel-projekter .task-board .task-complete-button:hover > span { border-color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter .task-board .task-complete-button.is-complete > span { border-color: #39795c; background: #39795c; }
+#panel-projekter .task-board .task-children-toggle { min-height: 40px; height: 40px; color: var(--muted); }
+#panel-projekter .task-board .task-children-toggle:hover { color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter .task-board .task-branch-marker { color: #a39aa1; }
+#panel-projekter .task-board .project-task-title { min-height: 60px; }
+#panel-projekter .task-board .project-task-title strong { font-size: 14px; font-weight: 600; color: var(--project-ink); }
+#panel-projekter .task-board .project-task-title:hover strong { color: var(--project-accent); }
+#panel-projekter .task-board .project-task.done .project-task-title strong { color: #827b81; }
+#panel-projekter .task-board .task-title-copy > :is(.task-subcount, .task-kind) { color: var(--muted); font-size: 11px; }
+#panel-projekter .task-board .task-avatar { background: #eee9eb; color: #6d4b55; font-size: 10px; }
+#panel-projekter .task-board .task-avatar.is-unassigned { background: #f0eeef; color: #8b838a; }
+#panel-projekter .task-board .project-task select { min-height: 44px; font-size: 12px; color: #514a50; }
+#panel-projekter .task-board .task-cell-status { background: #f0eeef; }
+#panel-projekter .task-board .status-in_progress > .task-cell-status { background: #eaf0fa; }
+#panel-projekter .task-board .status-in_progress > .task-cell-status select { color: #315f9b; }
+#panel-projekter .task-board .status-blocked > .task-cell-status { background: #fff0dc; }
+#panel-projekter .task-board .status-blocked > .task-cell-status select { color: #925b15; }
+#panel-projekter .task-board .status-done > .task-cell-status { background: #e5f2eb; }
+#panel-projekter .task-board .status-done > .task-cell-status select { color: #2e7052; }
+#panel-projekter .task-board .task-due-label { color: var(--muted); font-size: 12px; }
+#panel-projekter .task-board .task-add-subtask { min-height: 40px; height: 40px; color: var(--muted); }
+#panel-projekter .task-board .task-add-subtask:hover { color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter .task-board .task-children { border-color: var(--line); background: #f7f6f6; }
+#panel-projekter .task-board .task-subitems-label { padding-top: 12px; padding-bottom: 12px; color: var(--muted); font-size: 11px; }
+#panel-projekter .task-board .task-subitems-label > span { background: #eae7e9; color: var(--muted); font-size: 10px; }
+#panel-projekter .task-board .task-children .project-task { border-color: var(--line); background: #fcfbfc; }
+#panel-projekter .task-board .task-children .project-task-title strong { font-size: 13px; }
+#panel-projekter .task-board :is(.task-details.is-open, .task-subtask-composer) { border-color: var(--line); background: #f8f6f7; }
+#panel-projekter .task-board .task-mobile-label { color: var(--muted); font-size: 12px; }
+#panel-projekter .task-edit-form label { color: var(--muted); font-size: 13px; }
+#panel-projekter .task-edit-form :is(input, textarea) { border-color: #d6d3d5; color: var(--project-ink); font-size: 14px; }
+#panel-projekter :is(.task-main-add-form, .task-extra-options, .subtask-form) { border-color: var(--line); }
+#panel-projekter .task-main-add-form { padding: 18px; }
+#panel-projekter .task-extra-options > summary { min-height: 36px; padding: 8px 0; color: var(--muted); font-size: 12px; }
+#panel-projekter .task-extra-options label { color: var(--muted); font-size: 13px; }
+#panel-projekter :is(.task-subtask-composer-heading span, .task-empty-hint) { color: var(--muted); font-size: 13px; }
+#panel-projekter .task-quick-add-row :is(input, select) { border-color: #d6d3d5; border-radius: 6px; font-size: 14px; }
+
+/* Project information, files, team and discussion. Workflow badge colors are retained. */
+#panel-projekter :is(.project-settings-form, .project-team-panel, .project-documents-panel, .project-comments-panel, .inline-project-form) { border-color: var(--line); }
+#panel-projekter :is(.project-settings-form, .application-edit-form, .project-create-form) { gap: 14px 12px; }
+#panel-projekter :is(.project-settings-form, .application-edit-form, .team-inline-form) :is(input, select) { padding: 9px 11px; font-size: 14px; }
+#panel-projekter .team-inline-form { gap: 10px; }
+#panel-projekter .team-member-card { padding: 14px 16px; border-color: var(--line); border-radius: 6px; background: #fff; box-shadow: none; transform: none; }
+#panel-projekter :is(.team-member-card:hover, .team-member-card.selected) { border-color: #b98994; background: var(--project-tint); box-shadow: none; transform: none; }
+#panel-projekter .team-member-card strong { color: var(--project-ink); font-size: 14px; }
+#panel-projekter .team-member-card :is(span, small) { color: var(--muted); font-size: 12px; }
+#panel-projekter .team-member-detail { border-left-color: var(--project-accent); border-radius: 0 6px 6px 0; background: #f7f5f6; }
+#panel-projekter .team-member-detail :is(span, small) { color: var(--muted); font-size: 12px; }
+#panel-projekter .team-chip { border-radius: 6px; background: #f0edef; color: var(--project-ink); font-size: 12px; }
+#panel-projekter .application-card { border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .project-document { border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .project-document:hover { border-color: #b98994; background: var(--project-tint); }
+#panel-projekter .project-document strong { font-size: 14px; font-weight: 600; }
+#panel-projekter .project-document :is(span, small) { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-comment-list { gap: 0; margin: 16px 0 24px; }
+#panel-projekter .project-comment { padding: 20px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+#panel-projekter .project-comment:first-child { padding-top: 0; }
+#panel-projekter .project-comment-meta strong { color: var(--project-ink); font-size: 14px; }
+#panel-projekter :is(.project-comment-meta time, .project-comment small) { color: var(--muted); font-size: 12px; }
+#panel-projekter .project-comment p { color: var(--project-ink); font-size: 14px; line-height: 1.7; }
+#panel-projekter .project-comment-form { padding: 18px; border-color: var(--line); border-radius: 6px; background: #f8f7f7; }
+#panel-projekter .project-comment-form textarea { padding: 12px; border-color: #d6d3d5; border-radius: 6px; font-size: 14px; }
+#panel-projekter .project-comment-form select { font-size: 14px; }
+#panel-projekter .project-comment-form > small { color: var(--muted); font-size: 12px; }
+#panel-projekter .mention-suggestions { border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .mention-suggestions button { min-height: 34px; padding: 5px 10px; border-color: var(--line); border-radius: 6px; color: var(--project-accent); background: #fff; font-size: 12px; }
+#panel-projekter :is(.mention-suggestions button:hover, .mention-suggestions .mention-active) { border-color: var(--project-accent); background: var(--project-tint); }
+#panel-projekter :is(.project-delete-confirm, .project-restore-notice) { border-color: #e8c9cd; border-radius: 6px; background: #fcf4f5; font-size: 13px; }
+#panel-projekter .project-delete-confirm p { color: var(--muted); }
+#panel-projekter .project-trash { color: var(--muted); font-size: 13px; }
+#panel-projekter .project-trash > summary { min-height: 40px; padding: 8px 0; }
+#panel-projekter .trash-row { padding: 12px; border-color: var(--line); border-radius: 6px; background: #fff; }
+#panel-projekter .empty-state { border-color: var(--line); border-radius: 6px; background: #faf9f9; color: var(--muted); font-size: 14px; }
+#panel-projekter .project-overview-stats > div { border-color: var(--line); border-radius: 6px; }
+
+#panel-projekter .portfolio-edit-dialog {
+  width: min(560px, calc(100vw - 32px)); max-width: none; max-height: min(88vh, 820px);
+  padding: 0; overflow: auto; border: 1px solid #dedadd; border-radius: 10px;
+  color: var(--project-ink); background: #fff; box-shadow: 0 24px 80px #20191d38;
+}
+#panel-projekter .portfolio-edit-dialog::backdrop { background: #20191d73; backdrop-filter: blur(2px); }
+#panel-projekter .portfolio-edit-form { display: grid; gap: 20px; padding: 25px; }
+#panel-projekter .portfolio-edit-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+#panel-projekter .portfolio-edit-header .section-kicker { margin: 0 0 4px; color: var(--project-accent); font-size: 11px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; }
+#panel-projekter .portfolio-edit-header h2 { margin: 0; font-size: 23px; letter-spacing: -.03em; }
+#panel-projekter .portfolio-edit-close { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: #fff; font-size: 23px; line-height: 1; cursor: pointer; }
+#panel-projekter .portfolio-edit-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+#panel-projekter .portfolio-edit-fields label { display: grid; gap: 6px; min-width: 0; }
+#panel-projekter .portfolio-edit-fields label > span { color: var(--muted); font-size: 12px; font-weight: 550; }
+#panel-projekter .portfolio-edit-description, #panel-projekter .portfolio-edit-full { grid-column: 1 / -1; }
+#panel-projekter .portfolio-edit-footer { display: flex; align-items: center; gap: 9px; padding-top: 17px; border-top: 1px solid var(--line); }
+#panel-projekter .portfolio-edit-footer > span { flex: 1; }
+#panel-projekter .portfolio-edit-footer button { min-height: 40px; padding: 8px 13px; border: 1px solid #d6d3d5; border-radius: 6px; color: var(--project-ink); background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+#panel-projekter .portfolio-edit-footer button.approve { border-color: var(--project-accent); color: #fff; background: var(--project-accent); }
+#panel-projekter .portfolio-edit-footer button:disabled { opacity: .6; cursor: wait; }
+#panel-projekter .portfolio-edit-error { margin: -5px 0 0; padding: 10px 12px; border-radius: 6px; color: #8e2331; background: #fbf0f1; font-size: 13px; }
+
+@media (max-width: 1100px) {
+  #panel-projekter .projects-workspace { grid-template-columns: 192px minmax(0, 1fr); gap: 16px; }
+  #panel-projekter .project-detail-panel { padding: 22px; }
+  #panel-projekter .project-facts { gap: 16px; }
+  #panel-projekter .project-header-actions { max-width: none; }
+}
+@media (max-width: 900px) {
+  #panel-projekter .dashboard-metrics article { padding: 18px; }
+  #panel-projekter .dashboard-metrics article:nth-child(2) { border-right: 0; }
+  #panel-projekter .dashboard-metrics article:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+}
+@media (max-width: 800px) {
+  #panel-projekter .projects-workspace { grid-template-columns: 1fr; }
+  #panel-projekter .project-list-panel { max-height: 210px; padding: 14px 0; }
+  #panel-projekter .project-list-edit { opacity: 1; }
+  #panel-projekter .project-detail-panel { padding: 20px; }
+  #panel-projekter .project-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #panel-projekter .project-create-more-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  #panel-projekter .task-board .project-task-list { gap: 12px; }
+  #panel-projekter .task-board .project-task-node.depth-0 { border: 1px solid var(--line); border-radius: 6px; }
+  #panel-projekter .task-board :is(.task-cell-person, .task-cell-status, .task-cell-date) { border-color: var(--line); }
+  #panel-projekter .task-board .task-cell-date { background: transparent; }
+  #panel-projekter .task-board .task-children { margin-left: 14px; }
+  #panel-projekter .project-title-group h2 { font-size: 24px; }
+  #panel-projekter .project-header-actions { justify-content: flex-start; }
+  #panel-projekter .project-comment-meta { flex-wrap: wrap; gap: 4px 12px; }
+}
+@media (max-width: 650px) {
+  #panel-projekter .portfolio-edit-form { padding: 20px 16px; }
+  #panel-projekter .portfolio-edit-fields { grid-template-columns: 1fr; }
+  #panel-projekter .portfolio-edit-description, #panel-projekter .portfolio-edit-full { grid-column: 1; }
+  #panel-projekter .portfolio-edit-footer { flex-wrap: wrap; }
+  #panel-projekter .portfolio-edit-footer > span { display: none; }
+  #panel-projekter :is(.projects-header, .dashboard-section) { padding: 18px; }
+  #panel-projekter .project-detail-panel { padding: 18px 14px; }
+  #panel-projekter .dashboard-project-card { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  #panel-projekter .dashboard-project-status { grid-column: 1; grid-row: 2; }
+  #panel-projekter .dashboard-project-card > span:not(.dashboard-project-status) { grid-row: 3; }
+  #panel-projekter .project-comment-form-row { grid-template-columns: 1fr; }
+  #panel-projekter .project-comment-form-row button { justify-self: stretch; }
+  #panel-projekter .project-auth-user { align-items: flex-start; gap: 12px; }
+  #panel-projekter .project-server-notice-actions { justify-items: start; }
+  #panel-projekter .project-server-notice-actions > span { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #panel-projekter * { animation: none; transition: none; scroll-behavior: auto; }
+}

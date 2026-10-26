@@ -324,6 +324,14 @@ export function createProjectRepository({ sqlitePath, cwd = process.cwd(), schem
       return (await query(`SELECT * FROM project_folders WHERE folder_id = ${sqlString(folderId)};`))[0];
     },
 
+    async updateFolder(folderId, input) {
+      const id = sqlString(folderId);
+      await query(`UPDATE project_folders SET folder_key = ${sqlString(keyFrom("folder", input.name))},
+        name = ${sqlString(input.name)}, parent_folder_id = ${sqlString(input.parent_folder_id)},
+        color = ${sqlString(input.color)}, updated_at = CURRENT_TIMESTAMP WHERE folder_id = ${id};`);
+      return (await query(`SELECT * FROM project_folders WHERE folder_id = ${id};`))[0] || null;
+    },
+
     async createWorkflowStatus(input) {
       const statusId = randomUUID();
       await query(`INSERT INTO workflow_statuses

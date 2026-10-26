@@ -19,7 +19,7 @@ const state = {
   },
   alerts: [],
   scanReviewOverrides: {},
-  activeTab: "fund",
+  activeTab: "fonde",
   loading: false,
   approvedScrapeFields: [],
   projects: [],
@@ -31,8 +31,10 @@ const state = {
   selectedTeamMemberId: null,
   expandedTaskId: null,
   subtaskComposerTaskId: null,
+  newTaskComposerProjectId: null,
   collapsedTaskIds: new Set(),
   projectPage: "dashboard",
+  projectLoadError: null,
   deletedProject: null,
 };
 
@@ -90,6 +92,8 @@ const els = {
   projectServerNoticeHelp: document.querySelector("#projectServerNoticeHelp"),
   projectAuthPanel: document.querySelector("#projectAuthPanel"),
   projectConfigPanel: document.querySelector(".project-config-panel"),
+  portfolioEditDialog: document.querySelector("#portfolioEditDialog"),
+  portfolioEditForm: document.querySelector("#portfolioEditForm"),
 };
 
 function parseCsv(text) {
@@ -168,7 +172,7 @@ function applicationActionLabel(program) {
   if (status.includes("forespørg")) return "Start forespørgsel";
   if (status.includes("invitation")) return "Læs om processen";
   if (status.includes("opslag") || status.includes("call")) return "Se aktuelle opslag";
-  return "Ansøgning";
+  return "Se ansøgningsside";
 }
 
 function cvrRequirementLabel(requirement) {
@@ -182,7 +186,7 @@ function cvrRequirementLabel(requirement) {
 
 function structuredGeographyLabel(profile, fallback) {
   if (!profile) return fallback || "Skal verificeres";
-  return [profile.local_area, profile.municipality, profile.region, profile.country_code]
+  return [profile.local_area, profile.municipality, profile.region, profile.country_code === "DK" ? "Danmark" : profile.country_code]
     .filter(Boolean)
     .filter((value, index, values) => values.indexOf(value) === index)
     .join(" · ") || fallback || "Skal verificeres";
@@ -402,21 +406,24 @@ function renderSummary() {
 
 function switchTab(tabName) {
   const availableTabs = [...els.tabButtons].map((button) => button.dataset.tab);
-  const nextTab = availableTabs.includes(tabName) ? tabName : "fund";
+  const nextTab = availableTabs.includes(tabName) ? tabName : "fonde";
   state.activeTab = nextTab;
   document.body.classList.toggle("is-project-workspace", nextTab === "projekter");
   if (nextTab === "projekter" && els.projectDashboard) {
     state.projectPage = "dashboard";
-    els.projectDashboard.hidden = false;
+    els.projectDashboard.hidden = !state.auth.authenticated;
     document.querySelector(".projects-workspace").hidden = true;
-    if (state.auth.authenticated) void renderProjectDashboard();
+    if (state.auth.authenticated) {
+      if (state.projectLoadError) renderProjectLoadError(state.projectLoadError, { notify: false });
+      else void renderProjectDashboard();
+    }
   }
   saveJson("fondsdb.activeTab", nextTab);
 
   els.tabButtons.forEach((button) => {
     const isActive = button.dataset.tab === nextTab;
     button.classList.toggle("active", isActive);
-    button.setAttribute("aria-selected", String(isActive));
+    button.removeAttribute("aria-selected");
   });
 
   els.tabPanels.forEach((panel) => {
@@ -424,6 +431,7 @@ function switchTab(tabName) {
     panel.classList.toggle("active", isActive);
     panel.hidden = !isActive;
   });
+  window.WorkspaceShell?.syncTab(nextTab);
 }
 
 function appendOptions(select, values) {
@@ -482,6 +490,10 @@ function renderChart() {
 
 function renderRows() {
   els.rows.replaceChildren();
+  if (!state.filtered.length) {
+    els.rows.innerHTML = `<tr class="empty-results-row"><td colspan="5"><div class="empty-state">Ingen muligheder matcher dine filtre. Prøv et andet søgeord eller færre filtre.</div></td></tr>`;
+    return;
+  }
 
   state.filtered.forEach((opportunity) => {
     const { foundation, program, deadline } = opportunity;
@@ -503,7 +515,7 @@ function renderRows() {
     tr.innerHTML = `
       <td class="opportunity-cell" data-label="Mulighed">
         <div class="name-cell">
-          <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
+          <button class="favorite-button ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}" aria-pressed="${isFavorite(foundation.foundation_id)}"><img src="frontend/icons/star.svg" alt="" /></button>
           <span class="opportunity-name">
             <strong>${escapeHtml(program.program_name)}</strong>
             <span>${escapeHtml(foundation.name)} · ${escapeHtml(program.geography || foundation.city || "Danmark")}</span>
@@ -511,7 +523,7 @@ function renderRows() {
         </div>
       </td>
       <td data-label="Støtteområder"><div class="pill-list">${areas}</div></td>
-      <td data-label="Ansøgere"><div class="pill-list">${applicants}</div></td>
+      <td class="applicant-column" data-label="Ansøgere"><div class="pill-list">${applicants}</div></td>
       <td data-label="Frist"><span class="deadline ${deadlineClass}">${escapeHtml(deadlineLabel(deadline))}</span></td>
       <td data-label="Status"><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></td>
     `;
@@ -531,7 +543,7 @@ function renderDetail() {
 
   const { foundation, program, deadline } = opportunity;
   const foundationSummary = foundation.support_areas
-    ? `${foundation.name} støtter overordnet initiativer inden for ${foundation.support_areas}.`
+    ? `${foundation.name} støtter initiativer inden for ${splitList(foundation.support_areas).join(", ")}.`
     : `${foundation.name} er en ${foundation.legal_type || "fond"}, der støtter almennyttige formål.`;
   const foundationSelfDescription = foundation.notes || "";
   const eligibility = state.programEligibility.find((item) => item.program_id === program.program_id);
@@ -541,65 +553,58 @@ function renderDetail() {
   els.detailContent.hidden = false;
   els.detailContent.innerHTML = `
     <div class="detail-title">
-      <div class="detail-title-row">
-        <h2>${escapeHtml(program.program_name)}</h2>
-        <button class="favorite-button detail-favorite ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}">${isFavorite(foundation.foundation_id) ? "★" : "☆"}</button>
+      <div class="detail-favorite-toolbar">
+        <button class="favorite-button detail-favorite ${isFavorite(foundation.foundation_id) ? "active" : ""}" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Favorit ${escapeHtml(foundation.name)}" aria-pressed="${isFavorite(foundation.foundation_id)}"><img src="frontend/icons/star.svg" alt="" /><span>${isFavorite(foundation.foundation_id) ? "Gemt som favorit" : "Gem som favorit"}</span></button>
       </div>
+      <h2>${escapeHtml(program.program_name)}</h2>
       <p>${escapeHtml(foundation.name)} · ${escapeHtml(program.program_type || foundation.legal_type || "Fond")}</p>
     </div>
-    <div class="pill-list">
-      ${splitList(program.support_areas).map((area) => `<span class="pill">${escapeHtml(area)}</span>`).join("")}
-    </div>
-    <div class="detail-block foundation-overview">
-      <h3>Om fonden</h3>
-      <div class="foundation-overview-part">
-        <strong>Overordnet</strong>
-        <p>${escapeHtml(foundationSummary)}</p>
-      </div>
-      ${foundationSelfDescription ? `<div class="foundation-overview-part foundation-self-description">
-        <strong>Fondens egen beskrivelse</strong>
-        <p>${escapeHtml(foundationSelfDescription)}</p>
-      </div>` : ""}
-      <small>${escapeHtml(foundation.country || "Danmark")}${foundation.city ? ` · ${escapeHtml(foundation.city)}` : ""}</small>
-    </div>
-    <div class="deadline-card ${deadline?.status === "open" ? "open" : ""}">
-      <span>Friststatus</span>
-      <strong>${escapeHtml(deadlineLabel(deadline))}</strong>
-      <p>${escapeHtml(deadline?.summary || program.deadline_summary || "-")}</p>
-    </div>
-    <div class="detail-block">
-      <h3>Hvem kan søge?</h3>
-      <p>${escapeHtml(eligibility?.eligibility_summary || program.applicant_types || "-")}</p>
-      <div class="pill-list eligibility-list">
-        ${applicants.map((item) => `<span class="pill ${item.eligibility_status === "conditional" ? "muted-pill" : ""}" title="${escapeHtml(item.conditions || "")}">${escapeHtml(item.label)}</span>`).join("")}
-      </div>
-    </div>
-    <div class="detail-block">
-      <h3>Geografi og CVR</h3>
-      <p><strong>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</strong><br>${escapeHtml(cvrRequirementLabel(eligibility?.cvr_requirement))}</p>
-      <small>${escapeHtml(eligibility?.cvr_notes || "")}</small>
-    </div>
-    <div class="detail-block">
-      <h3>Beløb</h3>
-      <p><strong>${escapeHtml(structuredAmountLabel(eligibility, program.amount_range))}</strong><br>${escapeHtml(eligibility?.amount_notes || program.amount_range || "Varierer")}</p>
-    </div>
-    ${exclusions.length ? `<div class="detail-block exclusions-block">
-      <h3>Udelukkelser</h3>
-      <ul>${exclusions.map((item) => `<li>${escapeHtml(item.description)}</li>`).join("")}</ul>
-    </div>` : ""}
-    <div class="detail-block">
-      <h3>Datastatus</h3>
-      <p>${escapeHtml(statusLabel(program.verification_status))} · tjekket ${escapeHtml(program.last_checked || "-")}</p>
-    </div>
-    <div class="detail-block">
-      <h3>Note</h3>
-      <p>${escapeHtml(program.notes || "-")}</p>
-    </div>
+    <p class="detail-summary">${escapeHtml(foundationSummary)}</p>
+    <dl class="detail-facts">
+      <div><dt>Status</dt><dd><span class="status ${escapeHtml(program.verification_status)}">${escapeHtml(statusLabel(program.verification_status))}</span></dd></div>
+      <div><dt>Støtteområder</dt><dd>${escapeHtml(splitList(program.support_areas).join(" · ") || "Skal verificeres")}</dd></div>
+      <div><dt>Ansøgere</dt><dd>${escapeHtml(splitList(program.applicant_types).join(" · ") || "Se vilkår")}</dd></div>
+      <div><dt>Frist</dt><dd><span class="deadline ${deadline?.status === "open" ? "open" : "to_verify"}">${escapeHtml(deadlineLabel(deadline))}</span></dd></div>
+      <div><dt>Geografi</dt><dd>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</dd></div>
+    </dl>
     <div class="detail-links">
-      <a class="button-link" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer">${escapeHtml(applicationActionLabel(program))}</a>
-      <a class="button-link secondary" href="${escapeHtml(linkOrHash(foundation.website))}" target="_blank" rel="noreferrer">Website</a>
-      <a class="button-link secondary" href="${escapeHtml(linkOrHash(program.source_url || foundation.source_url))}" target="_blank" rel="noreferrer">Kilde</a>
+      <a class="button-link detail-primary-action" href="${escapeHtml(linkOrHash(program.application_url || foundation.application_url))}" target="_blank" rel="noreferrer"><img src="frontend/icons/external-link.svg" alt="" />${escapeHtml(applicationActionLabel(program))}</a>
+      <a class="detail-source-link" href="${escapeHtml(linkOrHash(program.source_url || foundation.source_url))}" target="_blank" rel="noreferrer"><img src="frontend/icons/link.svg" alt="" />Kilde</a>
     </div>
+    <details class="detail-more">
+      <summary>Vilkår og flere oplysninger</summary>
+      <div class="detail-more-content">
+        <div class="detail-block foundation-overview">
+          <h3>Om fonden</h3>
+          <p>${escapeHtml(foundationSummary)}</p>
+          ${foundationSelfDescription ? `<div class="foundation-overview-part foundation-self-description"><strong>Fondens egen beskrivelse</strong><p>${escapeHtml(foundationSelfDescription)}</p></div>` : ""}
+          <small>${escapeHtml(foundation.country || "Danmark")}${foundation.city ? ` · ${escapeHtml(foundation.city)}` : ""}</small>
+          <a href="${escapeHtml(linkOrHash(foundation.website))}" target="_blank" rel="noreferrer">Besøg fondens website</a>
+        </div>
+        <div class="detail-block">
+          <h3>Frist og ansøgningsproces</h3>
+          <p><strong>${escapeHtml(deadlineLabel(deadline))}</strong></p>
+          <p>${escapeHtml(deadline?.summary || program.deadline_summary || "Fristen skal verificeres hos fonden.")}</p>
+        </div>
+        <div class="detail-block">
+          <h3>Hvem kan søge?</h3>
+          <p>${escapeHtml(eligibility?.eligibility_summary || program.applicant_types || "-")}</p>
+          <div class="pill-list eligibility-list">${applicants.map((item) => `<span class="pill ${item.eligibility_status === "conditional" ? "muted-pill" : ""}" title="${escapeHtml(item.conditions || "")}">${escapeHtml(item.label)}</span>`).join("")}</div>
+        </div>
+        <div class="detail-block">
+          <h3>Geografi og CVR</h3>
+          <p><strong>${escapeHtml(structuredGeographyLabel(eligibility, program.geography))}</strong><br>${escapeHtml(cvrRequirementLabel(eligibility?.cvr_requirement))}</p>
+          <small>${escapeHtml(eligibility?.cvr_notes || "")}</small>
+        </div>
+        <div class="detail-block">
+          <h3>Beløb</h3>
+          <p><strong>${escapeHtml(structuredAmountLabel(eligibility, program.amount_range))}</strong><br>${escapeHtml(eligibility?.amount_notes || program.amount_range || "Varierer")}</p>
+        </div>
+        ${exclusions.length ? `<div class="detail-block exclusions-block"><h3>Udelukkelser</h3><ul>${exclusions.map((item) => `<li>${escapeHtml(item.description)}</li>`).join("")}</ul></div>` : ""}
+        <div class="detail-block"><h3>Datastatus</h3><p>${escapeHtml(statusLabel(program.verification_status))} · tjekket ${escapeHtml(program.last_checked || "-")}</p></div>
+        <div class="detail-block"><h3>Note</h3><p>${escapeHtml(program.notes || "-")}</p></div>
+      </div>
+    </details>
   `;
 }
 
@@ -774,7 +779,7 @@ function renderFavoriteList() {
       </div>
       <div class="favorite-actions">
         <button class="button-link secondary" type="button" data-open-program-id="${escapeHtml(program.program_id)}">Åbn</button>
-        <button class="favorite-button active" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Fjern favorit ${escapeHtml(foundation.name)}">★</button>
+        <button class="favorite-button active" type="button" data-favorite-id="${escapeHtml(foundation.foundation_id)}" aria-label="Fjern favorit ${escapeHtml(foundation.name)}" aria-pressed="true"><img src="frontend/icons/star.svg" alt="" /></button>
       </div>
     `;
     els.favoriteList.append(item);
@@ -956,12 +961,14 @@ function applyFilters() {
   renderChart();
   renderRows();
   renderDetail();
+  window.WorkspaceShell?.syncFilters();
 }
 
 function selectProgram(id) {
   state.selectedId = id;
   renderRows();
   renderDetail();
+  window.WorkspaceShell?.showFundDetail();
 }
 
 function rebuildOpportunities() {
@@ -1225,9 +1232,10 @@ async function projectApi(pathname, options = {}) {
 }
 
 function renderAuthPanel() {
+  window.WorkspaceShell?.syncAuth(state.auth);
   const setup = state.auth.setupRequired;
   els.projectAuthPanel.hidden = false;
-  els.projectAuthPanel.innerHTML = `<div class="project-auth-card"><div><p class="section-kicker">Projektstyring</p><h3>${setup ? "Opret første konto" : "Log ind"}</h3><p>${setup ? "Opret administratoren, der skal have adgang til projekter og teamdata." : "Log ind for at se projekter, opgaver og kommentarer."}</p></div><form data-auth-form="${setup ? "setup" : "login"}"><input name="email" type="email" required placeholder="Email" autocomplete="email" /><input name="display_name" type="${setup ? "text" : "hidden"}" ${setup ? "required" : ""} placeholder="Navn" autocomplete="name" /><input name="password" type="password" required minlength="10" placeholder="Adgangskode (min. 10 tegn)" autocomplete="${setup ? "new-password" : "current-password"}" /><button class="button-link" type="submit">${setup ? "Opret konto" : "Log ind"}</button></form><p class="project-auth-error" data-auth-error hidden></p></div>`;
+  els.projectAuthPanel.innerHTML = `<div class="project-auth-card"><div><p class="section-kicker">Projektstyring</p><h3>${setup ? "Opret første konto" : "Log ind"}</h3><p>${setup ? "Opret administratoren, der skal have adgang til projekter og teamdata." : "Log ind for at se projekter, opgaver og kommentarer."}</p></div><form data-auth-form="${setup ? "setup" : "login"}"><input name="email" type="email" required placeholder="E-mail" aria-label="E-mail" autocomplete="email" /><input name="display_name" type="${setup ? "text" : "hidden"}" ${setup ? "required" : ""} placeholder="Navn" aria-label="Navn" autocomplete="name" /><input name="password" type="password" required minlength="10" placeholder="Adgangskode (min. 10 tegn)" aria-label="Adgangskode (min. 10 tegn)" autocomplete="${setup ? "new-password" : "current-password"}" /><button class="button-link" type="submit">${setup ? "Opret konto" : "Log ind"}</button></form><p class="project-auth-error" data-auth-error hidden></p></div>`;
 }
 
 async function loadAuthStatus() {
@@ -1235,6 +1243,7 @@ async function loadAuthStatus() {
   const payload = await response.json();
   state.auth = { authenticated: payload.authenticated, setupRequired: payload.setupRequired, user: payload.user || null };
   if (!state.auth.authenticated) { renderAuthPanel(); return false; }
+  window.WorkspaceShell?.syncAuth(state.auth);
   els.projectAuthPanel.hidden = false;
   els.projectAuthPanel.innerHTML = `<div class="project-auth-user"><span>Logget ind som <strong>${escapeHtml(state.auth.user?.display_name || state.auth.user?.email || "bruger")}</strong></span><button class="mini-button" type="button" data-auth-logout>Log ud</button></div>`;
   return true;
@@ -1245,12 +1254,13 @@ async function loadProjects({ selectNewest = false } = {}) {
     els.projectList.innerHTML = `<div class="empty-state">Start appen med <strong>Start fondsdatabase.command</strong> for at bruge projektstyring.</div>`;
     return;
   }
-  if (!(await loadAuthStatus())) { els.projectList.innerHTML = `<div class="empty-state">Log ind ovenfor for at se projektporteføljen.</div>`; return; }
+  if (!(await loadAuthStatus())) { els.projectList.innerHTML = `<div class="empty-state">Log ind for at se projektporteføljen.</div>`; return; }
   const [payload, teamPayload, configPayload] = await Promise.all([
     projectApi("/api/projects"),
     projectApi("/api/team-members"),
     projectApi("/api/project-config"),
   ]);
+  state.projectLoadError = null;
   state.projects = payload.projects;
   state.teamMembers = teamPayload.members;
   state.projectFolders = configPayload.folders;
@@ -1266,6 +1276,26 @@ async function loadProjects({ selectNewest = false } = {}) {
     document.querySelector(".projects-workspace").hidden = true;
     els.projectDashboard.hidden = false;
   } else if (state.selectedProjectId) await selectProject(state.selectedProjectId);
+}
+
+function renderProjectLoadError(error, { notify = true } = {}) {
+  state.projectLoadError = error?.message || String(error || "Projektdata kunne ikke indlæses.");
+  state.projectPage = "dashboard";
+  document.querySelector(".projects-header").hidden = true;
+  els.projectConfigPanel.hidden = true;
+  document.querySelector(".projects-workspace").hidden = true;
+  els.projectDashboard.hidden = false;
+  els.projectDashboard.innerHTML = `<section class="project-dashboard-loading" role="alert"><h3>Projektdata kunne ikke indlæses</h3><p>Du er stadig logget ind. Prøv at hente projekterne igen.</p><p>${escapeHtml(state.projectLoadError)}</p><button class="button-link" type="button" data-retry-projects>Prøv igen</button></section>`;
+  els.projectDashboard.querySelector("[data-retry-projects]").addEventListener("click", async (event) => {
+    event.currentTarget.disabled = true;
+    event.currentTarget.textContent = "Indlæser…";
+    try {
+      await loadProjects();
+    } catch (loadError) {
+      renderProjectLoadError(loadError);
+    }
+  });
+  if (notify) showActionToast("Projektdata kunne ikke indlæses. Du er stadig logget ind. Prøv igen under Projekter.", true);
 }
 
 async function renderProjectDashboard() {
@@ -1363,15 +1393,15 @@ function renderProjectList() {
   }
 
   const renderProjectButton = (project) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `project-list-item${project.project_id === state.selectedProjectId ? " active" : ""}`;
-    button.dataset.projectId = project.project_id;
-    button.innerHTML = `
+    const entry = document.createElement("div");
+    entry.className = `project-list-item${project.project_id === state.selectedProjectId ? " active" : ""}`;
+    entry.innerHTML = `
+      <button type="button" class="project-list-open" data-project-id="${escapeHtml(project.project_id)}" title="Åbn ${escapeHtml(project.name)}">
       <span class="project-list-title"><strong>${escapeHtml(project.name)}</strong><span class="project-status color-${escapeHtml(project.workflow_status_color)}">${escapeHtml(project.workflow_status_id ? project.workflow_status_label : projectStatusLabel(project.status))}</span></span>
       <span>${escapeHtml(project.focus_area || "Intet indsatsområde")} · ${Number(project.application_count)} ansøgninger · ${Number(project.open_task_count)} åbne opgaver</span>
-      <small>${project.next_task_due_on ? `Næste frist ${escapeHtml(project.next_task_due_on)}` : "Ingen kommende opgavefrist"}</small>`;
-    return button;
+      <small>${project.next_task_due_on ? `Næste frist ${escapeHtml(project.next_task_due_on)}` : "Ingen kommende opgavefrist"}</small>
+      </button><button type="button" class="project-list-edit" data-edit-project-id="${escapeHtml(project.project_id)}" title="Rediger projekt" aria-label="Rediger ${escapeHtml(project.name)}">✎</button>`;
+    return entry;
   };
 
   const projectsByFolder = new Map();
@@ -1384,10 +1414,9 @@ function renderProjectList() {
   const folders = [...state.projectFolders].sort((a, b) => (Number(a.sort_order) - Number(b.sort_order)) || a.name.localeCompare(b.name, "da"));
   folders.forEach((folder) => {
     const projects = projectsByFolder.get(folder.folder_id) || [];
-    if (!projects.length) return;
     const group = document.createElement("section");
     group.className = "project-folder-group";
-    group.innerHTML = `<div class="project-folder-heading"><span>📁 ${escapeHtml(folder.name)}</span><small>${projects.length} ${projects.length === 1 ? "projekt" : "projekter"}</small></div>`;
+    group.innerHTML = `<div class="project-folder-heading"><button type="button" class="project-folder-edit" data-edit-folder-id="${escapeHtml(folder.folder_id)}" title="Rediger mappe" aria-label="Rediger mappen ${escapeHtml(folder.name)}"><i class="project-folder-color color-${escapeHtml(folder.color || "gray")}" aria-hidden="true"></i>📁 ${escapeHtml(folder.name)}</button><small>${projects.length} ${projects.length === 1 ? "projekt" : "projekter"}</small></div>`;
     const projectList = document.createElement("div");
     projectList.className = "project-folder-projects";
     if (projects.length) {
@@ -1413,7 +1442,121 @@ function renderProjectList() {
   }
 }
 
+function openPortfolioProjectEditor(projectId) {
+  const project = state.projects.find((item) => item.project_id === projectId);
+  if (!project || !els.portfolioEditDialog) return;
+  const form = els.portfolioEditForm;
+  form.dataset.editType = "project";
+  form.dataset.projectId = project.project_id;
+  form.querySelector("#portfolioEditTitle").textContent = "Rediger projekt";
+  form.querySelector("[data-open-project]").hidden = false;
+  form.querySelector("[data-portfolio-edit-fields]").innerHTML = `
+    <label><span>Projektnavn</span><input name="name" required maxlength="160" value="${escapeHtml(project.name)}" /></label>
+    <label><span>Status</span><select name="workflow_status_id">${workflowStatusOptions("project", project.workflow_status_id, project.status)}</select></label>
+    <label><span>Indsatsområde</span><select name="focus_area"><option value="">Vælg område</option>${["Unge og fællesskaber","Grøn omstilling","Demokratisk deltagelse"].map(area => `<option value="${escapeHtml(area)}" ${project.focus_area === area ? "selected" : ""}>${escapeHtml(area)}</option>`).join("")}</select></label>
+    <label><span>Mappe</span><select name="folder_id"><option value="">Uden mappe</option>${state.projectFolders.map(folder => `<option value="${escapeHtml(folder.folder_id)}" ${project.folder_id === folder.folder_id ? "selected" : ""}>${escapeHtml(folder.name)}</option>`).join("")}</select></label>
+    <label><span>Ansvarlig</span><select name="owner_member_id"><option value="">Ingen ansvarlig</option>${state.teamMembers.map(member => `<option value="${escapeHtml(member.member_id)}" ${project.owner_member_id === member.member_id ? "selected" : ""}>${escapeHtml(member.display_name)}</option>`).join("")}</select></label>
+    <label><span>Budget (DKK)</span><input name="estimated_budget" type="number" min="0" step="1000" value="${escapeHtml(project.estimated_budget ?? "")}" /></label>
+    <label><span>Tidsbudget (timer)</span><input name="estimated_hours" type="number" min="0" step="0.5" value="${escapeHtml(project.estimated_hours ?? "")}" /></label>
+    <label><span>Start</span><input name="starts_on" type="date" value="${escapeHtml(project.starts_on || "")}" /></label>
+    <label><span>Slut</span><input name="ends_on" type="date" value="${escapeHtml(project.ends_on || "")}" /></label>
+    <label class="portfolio-edit-description"><span>Beskrivelse</span><textarea name="description" maxlength="5000" rows="3">${escapeHtml(project.description || "")}</textarea></label>`;
+  form.querySelector(".portfolio-edit-error").hidden = true;
+  els.portfolioEditDialog.showModal();
+  form.elements.name.focus();
+}
+
+function openPortfolioFolderEditor(folderId) {
+  const folder = state.projectFolders.find((item) => item.folder_id === folderId);
+  if (!folder || !els.portfolioEditDialog) return;
+  const form = els.portfolioEditForm;
+  form.dataset.editType = "folder";
+  form.dataset.folderId = folder.folder_id;
+  form.querySelector("#portfolioEditTitle").textContent = "Rediger mappe";
+  form.querySelector("[data-open-project]").hidden = true;
+  form.querySelector("[data-portfolio-edit-fields]").innerHTML = `
+    <label class="portfolio-edit-full"><span>Mappenavn</span><input name="name" required maxlength="120" value="${escapeHtml(folder.name)}" /></label>
+    <input type="hidden" name="parent_folder_id" value="${escapeHtml(folder.parent_folder_id || "")}" />
+    <label><span>Farve</span><select name="color">${[["gray","Grå"],["blue","Blå"],["green","Grøn"],["yellow","Gul"],["red","Rød"],["purple","Lilla"]].map(([value,label]) => `<option value="${value}" ${folder.color === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>`;
+  form.querySelector(".portfolio-edit-error").hidden = true;
+  els.portfolioEditDialog.showModal();
+  form.elements.name.focus();
+}
+
+async function submitPortfolioEdit(form) {
+  const values = Object.fromEntries(new FormData(form));
+  const submit = form.querySelector("button[type='submit']");
+  const error = form.querySelector(".portfolio-edit-error");
+  submit.disabled = true;
+  error.hidden = true;
+  try {
+    if (form.dataset.editType === "project") {
+      applyWorkflowStatus(values, "project");
+      values.currency = state.projects.find(project => project.project_id === form.dataset.projectId)?.currency || "DKK";
+      await projectApi(`/api/projects/${encodeURIComponent(form.dataset.projectId)}`, { method: "PATCH", body: JSON.stringify(values) });
+    } else {
+      await projectApi(`/api/project-folders/${encodeURIComponent(form.dataset.folderId)}`, { method: "PATCH", body: JSON.stringify(values) });
+    }
+    els.portfolioEditDialog.close();
+    await loadProjects();
+    showActionToast(form.dataset.editType === "project" ? "Projektet blev opdateret." : "Mappen blev opdateret.");
+  } catch (submitError) {
+    error.textContent = submitError.message;
+    error.hidden = false;
+  } finally {
+    submit.disabled = false;
+  }
+}
+
+function captureProjectTaskFocus(active = document.activeElement) {
+  if (!els.projectDetail.contains(active)) return null;
+  const node = active.closest("[data-task-node]");
+  if (node) return {
+    projectId: state.selectedProjectId,
+    taskId: node.dataset.taskNode,
+    control: active.dataset.taskFocus || (active.matches("button[type='submit']") ? "submit" : null),
+    formType: active.form?.dataset.form,
+    fieldName: active.name,
+  };
+  if (active.closest(".task-create-disclosure")) return {
+    projectId: state.selectedProjectId,
+    createTask: true,
+    control: active.matches("button[type='submit']") ? "submit" : null,
+    fieldName: active.name,
+  };
+  return null;
+}
+
+function restoreProjectTaskFocus(focus) {
+  if (!focus || focus.projectId !== state.selectedProjectId) return;
+  const visible = element => {
+    if (!element || element.disabled || element.closest("[hidden]") || !element.getClientRects().length) return false;
+    for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.tagName === "DETAILS" && !ancestor.open && !ancestor.querySelector(":scope > summary")?.contains(element)) return false;
+    }
+    return true;
+  };
+  if (focus.createTask) {
+    const disclosure = els.projectDetail.querySelector(".task-create-disclosure");
+    const form = disclosure?.querySelector("form");
+    const field = form?.elements.namedItem(focus.fieldName || "");
+    const submit = focus.control === "submit" ? form?.querySelector("button[type='submit']") : null;
+    [field, submit, disclosure?.querySelector("summary")].find(visible)?.focus({ preventScroll: true });
+    return;
+  }
+  const node = [...els.projectDetail.querySelectorAll("[data-task-node]")].find(item => item.dataset.taskNode === focus.taskId);
+  if (!node) return;
+  const controls = [...node.querySelectorAll("[data-task-focus]")].filter(item => item.closest("[data-task-node]") === node);
+  const form = [...node.querySelectorAll("form")].find(item => item.dataset.form === focus.formType && item.closest("[data-task-node]") === node);
+  const field = focus.fieldName ? form?.elements.namedItem(focus.fieldName) : null;
+  const submit = focus.control === "submit" ? form?.querySelector("button[type='submit']") : null;
+  const inlineAdd = focus.formType === "subtask" ? [...node.querySelectorAll(".task-inline-add")].find(item => item.dataset.addSubtask === focus.taskId) : null;
+  const target = [field, submit, controls.find(item => item.dataset.taskFocus === focus.control && visible(item)), inlineAdd, controls.find(item => item.dataset.taskFocus === "menu"), controls.find(item => item.dataset.taskFocus === "title")].find(visible);
+  target?.focus({ preventScroll: true });
+}
+
 async function selectProject(projectId) {
+  const taskFocus = state.selectedProjectId === projectId ? captureProjectTaskFocus() : null;
   if (state.selectedProjectId !== projectId) state.selectedTeamMemberId = null;
   state.selectedProjectId = projectId;
   state.projectPage = "project";
@@ -1426,6 +1569,7 @@ async function selectProject(projectId) {
   try {
     const { project } = await projectApi(`/api/projects/${encodeURIComponent(projectId)}`);
     renderProjectDetail(project);
+    restoreProjectTaskFocus(taskFocus);
   } catch (error) {
     els.projectDetail.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
   }
@@ -1490,21 +1634,25 @@ function renderProjectDetail(project) {
     const completedChildren = children.filter((child) => child.status === "done").length;
     const expanded = state.expandedTaskId === task.task_id;
     const composerOpen = state.subtaskComposerTaskId === task.task_id;
-    return `<div class="project-task-node depth-${Math.min(depth, 4)}" style="--task-depth:${Math.min(depth, 4)}">
-      <article class="project-task status-${escapeHtml(task.status)} ${task.status === "done" ? "done" : ""}" aria-label="${depth ? "Underopgave" : "Opgave"}: ${escapeHtml(task.title)}">
+    const childrenExpanded = !state.collapsedTaskIds.has(task.task_id);
+    const taskId = escapeHtml(task.task_id);
+    const taskTitle = escapeHtml(task.title);
+    const icon = name => `<img src="frontend/icons/${name}.svg" alt="" aria-hidden="true" />`;
+    return `<div class="project-task-node depth-${Math.min(depth, 4)}" data-task-node="${taskId}" style="--task-depth:${Math.min(depth, 4)}">
+      <article class="project-task status-${escapeHtml(task.status)} ${task.status === "done" ? "done" : ""}" aria-label="${depth ? "Underopgave" : "Opgave"}: ${taskTitle}">
         <div class="task-cell task-cell-check">
-          <button type="button" class="task-complete-button ${task.status === "done" ? "is-complete" : ""}" data-task-status-id="${escapeHtml(task.task_id)}" data-next-status="${task.status === "done" ? "todo" : "done"}" aria-label="${task.status === "done" ? "Genåbn" : "Færdigmeld"} ${escapeHtml(task.title)}" title="${task.status === "done" ? "Genåbn" : "Markér færdig"}"><span aria-hidden="true">${task.status === "done" ? "✓" : ""}</span></button>
+          <button type="button" class="task-complete-button ${task.status === "done" ? "is-complete" : ""}" data-task-focus="complete" data-task-status-id="${taskId}" data-next-status="${task.status === "done" ? "todo" : "done"}" aria-pressed="${task.status === "done"}" aria-label="${task.status === "done" ? "Genåbn" : "Færdigmeld"} ${taskTitle}" title="${task.status === "done" ? "Genåbn" : "Markér færdig"}"><span aria-hidden="true">${icon("check")}</span></button>
         </div>
         <div class="task-cell task-cell-name">
-          ${children.length ? `<button type="button" class="task-children-toggle" data-task-children-toggle="${escapeHtml(task.task_id)}" aria-expanded="${!state.collapsedTaskIds.has(task.task_id)}" aria-controls="task-children-${escapeHtml(task.task_id)}" aria-label="Vis eller skjul underopgaver til ${escapeHtml(task.title)}"><span aria-hidden="true">${state.collapsedTaskIds.has(task.task_id) ? "▸" : "▾"}</span></button>` : `<span class="task-branch-marker" aria-hidden="true">${depth ? "↳" : ""}</span>`}
-          <button class="project-task-title" type="button" data-task-toggle-id="${escapeHtml(task.task_id)}" aria-expanded="${expanded}" aria-controls="task-details-${escapeHtml(task.task_id)}" title="Åbn og rediger opgaven">
-            <span class="task-title-copy">${depth ? `<span class="task-kind">Underopgave</span>` : ""}<strong>${escapeHtml(task.title)}</strong>${children.length ? `<span class="task-subcount">${completedChildren}/${children.length} underopgaver færdige</span>` : ""}</span>
+          ${children.length ? `<button type="button" class="task-children-toggle" data-task-focus="children" data-task-children-toggle="${taskId}" aria-expanded="${childrenExpanded}" aria-controls="task-children-${taskId}" aria-label="${childrenExpanded ? "Skjul" : "Vis"} underopgaver til ${taskTitle}">${icon("chevron-right")}</button>` : `<span class="task-toggle-spacer" aria-hidden="true"></span>`}
+          <button class="project-task-title" type="button" data-task-focus="title" data-task-toggle-id="${taskId}" aria-expanded="${expanded}" aria-controls="task-details-${taskId}" title="Åbn og rediger opgaven">
+            <span class="task-title-copy"><strong>${taskTitle}</strong>${children.length ? `<span class="task-progress-summary"><progress value="${completedChildren}" max="${children.length}" aria-label="Færdige underopgaver til ${taskTitle}"></progress><span class="task-subcount">${completedChildren} af ${children.length} færdige</span></span>` : ""}</span>
           </button>
         </div>
-        <div class="task-cell task-cell-person"><span class="task-mobile-label">Ansvarlig</span><span class="task-avatar ${task.assignee_name ? "" : "is-unassigned"}" aria-hidden="true">${task.assignee_name ? escapeHtml(task.assignee_name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase()) : "—"}</span><select class="task-person-select" data-task-assignee-id="${escapeHtml(task.task_id)}" aria-label="Ansvarlig for ${escapeHtml(task.title)}">${assigneeOptions(task.assigned_to)}</select></div>
-        <div class="task-cell task-cell-status"><span class="task-mobile-label">Status</span><select class="task-status-select status-${escapeHtml(task.status)}" data-task-workflow-id="${escapeHtml(task.task_id)}" aria-label="Status for ${escapeHtml(task.title)}">${workflowStatusOptions("task", task.workflow_status_id, task.status)}</select></div>
-        <div class="task-cell task-cell-date"><span class="task-mobile-label">Frist</span><span class="task-due-label" title="${escapeHtml(task.due_on || "Ingen frist")}">${task.due_on ? escapeHtml(new Date(task.due_on + "T12:00:00").toLocaleDateString("da-DK",{day:"numeric",month:"short"})) : "Ingen frist"}</span></div>
-        <div class="task-cell task-cell-actions"><button type="button" class="task-add-subtask" data-add-subtask="${escapeHtml(task.task_id)}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${escapeHtml(task.task_id)}" aria-label="${composerOpen ? "Luk underopgave" : "Tilføj underopgave til " + escapeHtml(task.title)}" title="Tilføj underopgave">${composerOpen ? "−" : "+"}</button></div>
+        <div class="task-cell task-cell-person"><span class="task-mobile-label">Ansvarlig</span><span class="task-avatar ${task.assignee_name ? "" : "is-unassigned"}" aria-hidden="true">${task.assignee_name ? escapeHtml(task.assignee_name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase()) : "—"}</span><select class="task-person-select" data-task-focus="assignee" data-task-assignee-id="${taskId}" aria-label="Ansvarlig for ${taskTitle}">${assigneeOptions(task.assigned_to)}</select></div>
+        <div class="task-cell task-cell-status"><span class="task-mobile-label">Status</span><select class="task-status-select status-${escapeHtml(task.status)}" data-task-focus="status" data-task-workflow-id="${taskId}" aria-label="Status for ${taskTitle}">${workflowStatusOptions("task", task.workflow_status_id, task.status)}</select></div>
+        <div class="task-cell task-cell-date"><span class="task-mobile-label">Frist</span><button type="button" class="task-date-button" data-task-focus="date" data-task-edit-date="${taskId}" aria-label="Rediger frist for ${taskTitle}" title="${escapeHtml(task.due_on || "Tilføj frist")}">${icon("calendar")}<span class="task-due-label">${task.due_on ? escapeHtml(new Date(task.due_on + "T12:00:00").toLocaleDateString("da-DK",{day:"numeric",month:"short"})) : "Ingen frist"}</span></button></div>
+        <div class="task-cell task-cell-actions"><details class="task-row-menu"><summary data-task-focus="menu" aria-label="Flere handlinger for ${taskTitle}" title="Flere handlinger">${icon("more-vertical")}</summary><div class="task-row-menu-items"><button type="button" data-task-toggle-id="${taskId}" aria-controls="task-details-${taskId}" aria-expanded="${expanded}">Rediger opgave</button><button type="button" data-add-subtask="${taskId}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${taskId}">Tilføj underopgave</button></div></details></div>
       </article>
       <div id="task-details-${escapeHtml(task.task_id)}" class="task-details ${expanded ? "is-open" : ""}" ${expanded ? "" : "hidden"}>
         <form data-form="task-edit" data-task-id="${escapeHtml(task.task_id)}" class="task-edit-form">
@@ -1530,13 +1678,13 @@ function renderProjectDetail(project) {
           </div></details>
         </form>
       </div>
-      ${children.length ? `<div class="task-children" id="task-children-${escapeHtml(task.task_id)}" ${state.collapsedTaskIds.has(task.task_id) ? "hidden" : ""}><div class="task-subitems-label">Underopgaver <span>${children.length}</span></div>${children.map(child=>renderTask(child,depth+1)).join("")}</div>` : ""}
+      ${children.length ? `<div class="task-children" id="task-children-${taskId}" ${childrenExpanded ? "" : "hidden"}>${children.map(child=>renderTask(child,depth+1)).join("")}<button type="button" class="task-inline-add" data-add-subtask="${taskId}" aria-expanded="${composerOpen}" aria-controls="task-subtask-${taskId}">${icon("plus")}<span>Tilføj underopgave</span></button></div>` : ""}
     </div>`;
 
   };
   const tasks = project.tasks.length
     ? (tasksByParent.get("root") || []).map((task) => renderTask(task)).join("")
-    : `<p class="task-empty-hint">Ingen hovedopgaver endnu. Tilføj den første nedenfor.</p>`;
+    : `<p class="task-empty-hint">Ingen opgaver endnu. Opret den første med “Ny opgave”.</p>`;
   const documents = project.documents?.length
     ? project.documents.map((document) => `<a class="project-document" href="${escapeHtml(document.document_url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(documentTypeLabel(document.document_type))}</span><strong>${escapeHtml(document.title)}</strong><small>Åbn dokument ↗</small></a>`).join("")
     : `<div class="empty-state compact">Ingen dokumentlinks endnu.</div>`;
@@ -1611,9 +1759,8 @@ function renderProjectDetail(project) {
         </form>
       </section>
       <section>
-        <div class="section-heading"><div><h3>Opgaver</h3><p class="task-list-hint">Et klart overblik over hvem, hvad og hvornår.</p></div><span>${project.tasks.filter((task) => task.status !== "done").length} åbne</span></div>
-        <div class="task-board" role="region" aria-label="Projektets opgavetavle" tabindex="0">
-          <div class="task-board-header" aria-hidden="true"><span></span><span>Opgave</span><span>Ansvarlig</span><span>Status</span><span>Frist</span><span></span></div>
+        <div class="section-heading task-section-heading"><div><h3>Opgaver</h3><p class="task-list-hint">Et klart overblik over hvem, hvad og hvornår.</p></div><div class="task-section-actions"><span>${project.tasks.filter((task) => task.status !== "done").length} åbne</span></div></div>
+        <div class="task-board task-groups" role="region" aria-label="Projektets opgaver" tabindex="0">
           <div class="project-task-list">${tasks}</div>
         </div>
         <form class="task-main-add-form" data-form="task">
@@ -1748,7 +1895,22 @@ function simplifyProjectWorkspace(project) {
     settings.parentElement.open = true;
     settings.elements.name.focus();
   });
-  wrapForm(root.querySelector(".task-main-add-form"), "+ Ny opgave");
+  const taskForm = root.querySelector(".task-main-add-form");
+  const taskCreate = document.createElement("details");
+  taskCreate.className = "task-create-disclosure";
+  taskCreate.open = state.newTaskComposerProjectId === project.project_id;
+  taskCreate.innerHTML = `<summary><img src="frontend/icons/plus.svg" alt="" aria-hidden="true" /><span>Ny opgave</span></summary>`;
+  root.querySelector(".task-section-actions").append(taskCreate);
+  taskCreate.append(taskForm);
+  taskCreate.addEventListener("toggle", () => {
+    if (taskCreate.open) state.newTaskComposerProjectId = project.project_id;
+    else if (state.newTaskComposerProjectId === project.project_id) state.newTaskComposerProjectId = null;
+  });
+  taskCreate.querySelector("summary").addEventListener("click", () => {
+    requestAnimationFrame(() => {
+      if (taskCreate.open) taskForm.elements.title.focus();
+    });
+  });
   activate(sections.some(([id]) => id === activeKey) ? activeKey : "tasks");
 }
 
@@ -1823,6 +1985,7 @@ async function submitProjectDetailForm(form) {
     applyWorkflowStatus(values, "task");
     await projectApi("/api/tasks", { method: "POST", body: JSON.stringify(values) });
     if (formType === "subtask") { state.subtaskComposerTaskId = null; state.collapsedTaskIds.delete(values.parent_task_id); }
+    else if (formType === "task") state.newTaskComposerProjectId = null;
     message = formType === "subtask" ? "Underopgaven blev tilføjet." : "Hovedopgaven blev tilføjet.";
   }
   await loadProjects();
@@ -1868,8 +2031,9 @@ async function decideScrapeChange(row, button) {
 }
 
 async function init() {
+  window.WorkspaceShell?.init(state.auth);
   setupFilePreviewLauncher();
-  state.activeTab = loadJson("fondsdb.activeTab", "fund");
+  state.activeTab = loadJson("fondsdb.activeTab", "fonde");
   state.favorites = new Set(loadJson("fondsdb.favorites", []));
   state.alertSettings = {
     ...state.alertSettings,
@@ -1899,7 +2063,11 @@ async function init() {
   });
   await loadProjects().catch((error) => {
     console.warn(error);
-    els.projectList.innerHTML = `<div class="empty-state">Projektmodulet kunne ikke indlæses.</div>`;
+    if (state.auth.authenticated) renderProjectLoadError(error);
+    else {
+      renderAuthPanel();
+      els.projectList.innerHTML = `<div class="empty-state">Projektmodulet kunne ikke indlæses.</div>`;
+    }
   });
   rebuildOpportunities();
   state.selectedId = state.opportunities[0]?.program.program_id || null;
@@ -1938,7 +2106,7 @@ async function init() {
     await fetch("/api/auth/logout", { method: "POST" });
     state.auth = { authenticated: false, setupRequired: false, user: null };
     renderAuthPanel();
-    els.projectList.innerHTML = `<div class="empty-state">Log ind ovenfor for at se projektporteføljen.</div>`;
+    els.projectList.innerHTML = `<div class="empty-state">Log ind for at se projektporteføljen.</div>`;
   });
 
   els.projectAuthPanel.addEventListener("submit", async (event) => {
@@ -1947,8 +2115,16 @@ async function init() {
     try {
       const response = await fetch(`/api/auth/${form.dataset.authForm}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
       const payload = await response.json(); if (!response.ok || !payload.ok) throw new Error(payload.message || "Login fejlede");
-      state.auth = { authenticated: true, setupRequired: false, user: payload.user }; await loadProjects(); showActionToast("Du er logget ind.");
-    } catch (errorValue) { error.hidden = false; error.textContent = errorValue.message; }
+      state.auth = { authenticated: true, setupRequired: false, user: payload.user };
+    } catch (errorValue) { error.hidden = false; error.textContent = errorValue.message; return; }
+    window.WorkspaceShell?.syncAuth(state.auth);
+    window.WorkspaceShell?.closeAccount();
+    try {
+      await loadProjects();
+      showActionToast("Du er logget ind.");
+    } catch (loadError) {
+      renderProjectLoadError(loadError);
+    }
   });
 
   els.projectCreateForm.addEventListener("submit", async (event) => {
@@ -1966,25 +2142,86 @@ async function init() {
   els.projectCreateForm.elements.program_id.addEventListener("change", () => updateApplicationDeadlineOptions(els.projectCreateForm));
 
   els.projectList.addEventListener("click", (event) => {
+    const projectEditButton = event.target.closest("[data-edit-project-id]");
+    if (projectEditButton) {
+      openPortfolioProjectEditor(projectEditButton.dataset.editProjectId);
+      return;
+    }
+    const folderButton = event.target.closest("[data-edit-folder-id]");
+    if (folderButton) {
+      openPortfolioFolderEditor(folderButton.dataset.editFolderId);
+      return;
+    }
     const button = event.target.closest("[data-project-id]");
     if (button) void selectProject(button.dataset.projectId);
+  });
+
+  els.portfolioEditForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void submitPortfolioEdit(event.currentTarget);
+  });
+  els.portfolioEditForm.addEventListener("click", (event) => {
+    if (event.target.closest("[data-close-portfolio-edit]")) els.portfolioEditDialog.close();
+    if (event.target.closest("[data-open-project]")) {
+      const projectId = els.portfolioEditForm.dataset.projectId;
+      els.portfolioEditDialog.close();
+      void selectProject(projectId);
+    }
+  });
+  els.portfolioEditDialog.addEventListener("click", (event) => {
+    if (event.target === els.portfolioEditDialog) els.portfolioEditDialog.close();
   });
 
   els.projectDetail.addEventListener("submit", async (event) => {
     const form = event.target.closest("[data-form]");
     if (!form) return;
     event.preventDefault();
-    const button = form.querySelector("button[type='submit']");
+    const button = event.submitter || form.querySelector("button[type='submit']");
+    const taskFocus = captureProjectTaskFocus(button);
     button.disabled = true;
     try {
       await submitProjectDetailForm(form);
+      restoreProjectTaskFocus(taskFocus);
     } catch (error) {
       showActionToast(error.message, true);
       button.disabled = false;
+      restoreProjectTaskFocus(taskFocus);
     }
   });
 
+  els.projectDetail.addEventListener("toggle", event => {
+    if (!event.target.matches(".task-row-menu[open]")) return;
+    els.projectDetail.querySelectorAll(".task-row-menu[open]").forEach(menu => {
+      if (menu !== event.target) menu.open = false;
+    });
+  }, true);
+
   els.projectDetail.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      const editor = event.target.closest(".task-details:not([hidden]), .task-subtask-composer:not([hidden])");
+      if (editor) {
+        const node = editor.closest("[data-task-node]");
+        const taskId = node.dataset.taskNode;
+        const isSubtask = editor.classList.contains("task-subtask-composer");
+        editor.hidden = true;
+        editor.classList.remove("is-open");
+        if (isSubtask) state.subtaskComposerTaskId = null;
+        else state.expandedTaskId = null;
+        node.querySelectorAll(isSubtask ? "[data-add-subtask]" : "[data-task-toggle-id]").forEach(button => {
+          if ((button.dataset.addSubtask || button.dataset.taskToggleId) === taskId) button.setAttribute("aria-expanded", "false");
+        });
+        node.querySelector(isSubtask ? ".task-row-menu > summary" : ".project-task-title")?.focus();
+        event.preventDefault();
+        return;
+      }
+      const menu = event.target.closest(".task-row-menu[open], .task-create-disclosure[open]");
+      if (menu) {
+        menu.open = false;
+        menu.querySelector("summary").focus();
+        event.preventDefault();
+        return;
+      }
+    }
     const textarea = event.target.closest("[data-mention-input]");
     if (!textarea) return;
     const menu = textarea.form.querySelector("[data-mention-suggestions]");
@@ -2076,6 +2313,9 @@ async function init() {
   });
 
   els.projectDetail.addEventListener("click", async (event) => {
+    els.projectDetail.querySelectorAll(".task-row-menu[open]").forEach(menu => {
+      if (!menu.contains(event.target)) menu.open = false;
+    });
     if (event.target.closest("[data-project-dashboard-back]")) {
       state.projectPage = "dashboard";
       document.querySelector(".projects-workspace").hidden = true;
@@ -2124,29 +2364,49 @@ async function init() {
       const collapsed = !state.collapsedTaskIds.has(taskId);
       if (collapsed) state.collapsedTaskIds.add(taskId); else state.collapsedTaskIds.delete(taskId);
       childrenToggle.setAttribute("aria-expanded", String(!collapsed));
-      childrenToggle.querySelector("span").textContent = collapsed ? "▸" : "▾";
+      const title = childrenToggle.closest("[data-task-node]").querySelector(".project-task-title strong").textContent;
+      childrenToggle.setAttribute("aria-label", `${collapsed ? "Vis" : "Skjul"} underopgaver til ${title}`);
       document.getElementById(`task-children-${taskId}`).hidden = collapsed;
       return;
     }
-    const toggle = event.target.closest("[data-task-toggle-id]");
+    const toggle = event.target.closest("[data-task-toggle-id], [data-task-edit-date]");
     if (toggle) {
-      state.expandedTaskId = state.expandedTaskId === toggle.dataset.taskToggleId ? null : toggle.dataset.taskToggleId;
-      await selectProject(state.selectedProjectId);
+      const taskId = toggle.dataset.taskToggleId || toggle.dataset.taskEditDate;
+      const opening = toggle.hasAttribute("data-task-edit-date") || state.expandedTaskId !== taskId;
+      state.expandedTaskId = opening ? taskId : null;
+      els.projectDetail.querySelectorAll(".task-details").forEach(panel => {
+        const open = opening && panel.id === `task-details-${taskId}`;
+        panel.hidden = !open;
+        panel.classList.toggle("is-open", open);
+      });
+      els.projectDetail.querySelectorAll("[data-task-toggle-id]").forEach(button => button.setAttribute("aria-expanded", String(opening && button.dataset.taskToggleId === taskId)));
+      toggle.closest(".task-row-menu")?.removeAttribute("open");
+      if (opening) {
+        const form = document.getElementById(`task-details-${taskId}`)?.querySelector("form");
+        form?.elements[toggle.hasAttribute("data-task-edit-date") ? "due_on" : "title"]?.focus();
+      } else {
+        toggle.closest("[data-task-node]")?.querySelector(".project-task-title")?.focus();
+      }
       return;
     }
     const addSubtask = event.target.closest("[data-add-subtask]");
     if (addSubtask) {
       const taskId = addSubtask.dataset.addSubtask;
-      state.subtaskComposerTaskId = state.subtaskComposerTaskId === taskId ? null : taskId;
-      await selectProject(state.selectedProjectId);
-      if (state.subtaskComposerTaskId === taskId) {
-        const form = [...els.projectDetail.querySelectorAll(".subtask-form")].find(candidate => candidate.elements.parent_task_id.value === taskId);
-        form?.querySelector("[data-subtask-title]")?.focus();
+      const opening = state.subtaskComposerTaskId !== taskId;
+      state.subtaskComposerTaskId = opening ? taskId : null;
+      els.projectDetail.querySelectorAll(".task-subtask-composer").forEach(panel => { panel.hidden = !opening || panel.id !== `task-subtask-${taskId}`; });
+      els.projectDetail.querySelectorAll("[data-add-subtask]").forEach(button => button.setAttribute("aria-expanded", String(opening && button.dataset.addSubtask === taskId)));
+      addSubtask.closest(".task-row-menu")?.removeAttribute("open");
+      if (opening) {
+        document.getElementById(`task-subtask-${taskId}`)?.querySelector("[data-subtask-title]")?.focus();
+      } else {
+        addSubtask.closest("[data-task-node]")?.querySelector(".task-row-menu > summary")?.focus();
       }
       return;
     }
     const button = event.target.closest("[data-task-status-id]");
     if (!button) return;
+    const taskFocus = captureProjectTaskFocus(button);
     button.disabled = true;
     try {
       await projectApi(`/api/tasks/${encodeURIComponent(button.dataset.taskStatusId)}/status`, {
@@ -2154,9 +2414,11 @@ async function init() {
         body: JSON.stringify({ status: button.dataset.nextStatus }),
       });
       await loadProjects();
+      restoreProjectTaskFocus(taskFocus);
     } catch (error) {
       showActionToast(error.message, true);
       button.disabled = false;
+      restoreProjectTaskFocus(taskFocus);
     }
   });
 
@@ -2208,6 +2470,7 @@ async function init() {
   });
 
   els.rows.addEventListener("keydown", (event) => {
+    if (event.target.closest("button, a, input, select, textarea")) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     const row = event.target.closest("tr[data-id]");
     if (row) {
