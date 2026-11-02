@@ -6,9 +6,10 @@
     <title>Dansk Fondsdatabase</title>
     <meta name="theme-color" content="#1e1c1d" />
     <link rel="stylesheet" href="frontend/styles.css?v=24" />
-    <link rel="stylesheet" href="frontend/workspace.css?v=1" />
-    <link rel="stylesheet" href="frontend/project-theme.css?v=1" />
+    <link rel="stylesheet" href="frontend/workspace.css?v=2" />
+    <link rel="stylesheet" href="frontend/project-theme.css?v=2" />
     <link rel="stylesheet" href="frontend/task-groups.css?v=1" />
+    <link rel="stylesheet" href="frontend/project-dashboard.css?v=1" />
   </head>
   <body>
     <div id="actionToast" class="action-toast" role="status" aria-live="polite" hidden></div>
@@ -19,12 +20,19 @@
         <span>Dansk<br />Fondsdatabase</span>
       </a>
       <nav class="work-tabs" aria-label="Arbejdsområder">
-        <button class="tab-button" type="button" data-tab="fund"><img src="frontend/icons/search.svg" alt="" /><span>Fund</span></button>
+        <div id="fundsNavGroup" class="sidebar-nav-group">
+          <div class="sidebar-nav-parent">
+            <button class="tab-button active" type="button" data-tab="fonde" aria-current="page"><img src="frontend/icons/database.svg" alt="" /><span>Fonde</span></button>
+            <button id="fundsNavToggle" class="sidebar-subnav-toggle" type="button" aria-expanded="false" aria-controls="fundsSubnav" aria-label="Vis undersider til Fonde"><img src="frontend/icons/chevron-down.svg" alt="" /></button>
+          </div>
+          <div id="fundsSubnav" class="sidebar-subnav" role="group" aria-label="Fonde – undersider" hidden>
+            <button class="tab-button" type="button" data-tab="fund"><img src="frontend/icons/search.svg" alt="" /><span>Nye opslag</span></button>
+            <button class="tab-button" type="button" data-tab="favoritter"><img src="frontend/icons/star.svg" alt="" /><span>Favoritter</span></button>
+            <button class="tab-button" type="button" data-tab="alerts"><img src="frontend/icons/bell.svg" alt="" /><span>Varslinger</span></button>
+            <button class="tab-button" type="button" data-tab="data"><img src="frontend/icons/bar-chart-2.svg" alt="" /><span>Data og kilder</span></button>
+          </div>
+        </div>
         <button class="tab-button" type="button" data-tab="projekter"><img src="frontend/icons/file-text.svg" alt="" /><span>Projekter</span></button>
-        <button class="tab-button active" type="button" data-tab="fonde" aria-current="page"><img src="frontend/icons/database.svg" alt="" /><span>Fonde</span></button>
-        <button class="tab-button" type="button" data-tab="favoritter"><img src="frontend/icons/star.svg" alt="" /><span>Favoritter</span></button>
-        <button class="tab-button" type="button" data-tab="alerts"><img src="frontend/icons/bell.svg" alt="" /><span>Alerts</span></button>
-        <button class="tab-button" type="button" data-tab="data"><img src="frontend/icons/bar-chart-2.svg" alt="" /><span>Data</span></button>
       </nav>
       <div class="sidebar-footer">
         <a href="dashboard/index.html"><img src="frontend/icons/bar-chart-2.svg" alt="" /><span>Dashboard · demo</span></a>
@@ -35,7 +43,8 @@
       <div class="workspace-heading">
         <button id="menuToggle" class="menu-toggle" type="button" aria-label="Åbn menu" aria-controls="appSidebar" aria-expanded="false"><img src="frontend/icons/menu.svg" alt="" /></button>
         <div>
-          <h1 id="workspaceTitle">Fonde i Danmark</h1>
+          <p id="workspaceBreadcrumb" class="workspace-breadcrumb" hidden></p>
+          <h1 id="workspaceTitle">Fonde</h1>
           <p id="workspaceSubtitle" class="header-subtitle">Find, vurder og følg de rette støttemuligheder.</p>
         </div>
       </div>
@@ -48,6 +57,7 @@
             <a href="outputs/dansk_fonds_database.xlsx" download><img src="frontend/icons/download.svg" alt="" />Download Excel</a>
           </div>
         </details>
+        <button id="dashboardNewProject" class="dashboard-new-project" type="button" aria-expanded="false" aria-controls="projectCreateForm"><img src="frontend/icons/plus.svg" alt="" />Nyt projekt</button>
         <button id="accountButton" class="account-button" type="button" aria-haspopup="dialog"><img src="frontend/icons/user.svg" alt="" /><span data-account-label>Log ind</span></button>
       </div>
     </header>
@@ -83,7 +93,7 @@
         <section class="review-panel primary-workspace" aria-label="Review af fundne calls">
           <div class="review-header">
             <div>
-              <h2>Review fund</h2>
+              <h2>Nye opslag til gennemgang</h2>
               <p>Prioritér, godkend eller ignorér fund fra hurtig scanner og deep crawler.</p>
             </div>
             <div class="review-stats">
@@ -170,7 +180,7 @@
           </form>
           </details>
         </section>
-        <details class="project-config-panel">
+        <details id="projectConfigPanel" class="project-config-panel">
           <summary>Tilpas mapper og statusser</summary>
           <p class="project-config-help"><strong>Mapper</strong> samler projekter i kategorier, fx Klima eller Kommunikation. <strong>Statusser</strong> viser hvor et projekt, en ansøgning eller en opgave er i processen, fx Planlægning, Aktiv eller Afsluttet. Brug kun denne sektion, hvis standardvalgene ikke passer til jeres arbejdsgang.</p>
           <div class="project-config-forms">
@@ -300,7 +310,7 @@
         <section class="alerts-panel" aria-label="Emailvarslinger og favoritter">
           <div class="alerts-header">
             <div>
-              <h2>Alerts</h2>
+              <h2>Varslinger</h2>
               <p>Få overblik over frister, nye fonde og ændringer på favoritter.</p>
             </div>
           </div>
@@ -392,7 +402,8 @@
       </section>
     </main>
 
-    <script src="frontend/workspace-shell.js?v=1" defer></script>
-    <script src="frontend/app.js?v=30" defer></script>
+    <script src="frontend/workspace-shell.js?v=2" defer></script>
+    <script src="frontend/vendor/chart.umd.min.js?v=4.5.1" defer></script>
+    <script src="frontend/app.js?v=32" defer></script>
   </body>
 </html>

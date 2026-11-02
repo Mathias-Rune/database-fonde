@@ -408,6 +408,7 @@ function switchTab(tabName) {
   const availableTabs = [...els.tabButtons].map((button) => button.dataset.tab);
   const nextTab = availableTabs.includes(tabName) ? tabName : "fonde";
   state.activeTab = nextTab;
+  document.body.classList.toggle("is-project-dashboard", nextTab === "projekter" && state.auth.authenticated);
   document.body.classList.toggle("is-project-workspace", nextTab === "projekter");
   if (nextTab === "projekter" && els.projectDashboard) {
     state.projectPage = "dashboard";
@@ -432,6 +433,7 @@ function switchTab(tabName) {
     panel.hidden = !isActive;
   });
   window.WorkspaceShell?.syncTab(nextTab);
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 function appendOptions(select, values) {
@@ -1299,6 +1301,10 @@ function renderProjectLoadError(error, { notify = true } = {}) {
 }
 
 async function renderProjectDashboard() {
+  document.body.classList.toggle("is-project-dashboard", state.activeTab === "projekter" && state.auth.authenticated);
+  const dashboardView = await import("./project-dashboard.js?v=1");
+  dashboardView.destroyDashboardCharts();
+  if (state.activeTab === "projekter") document.querySelector("#workspaceSubtitle").textContent = "Overblik over dine projekter, opgaver og ansøgninger.";
   document.querySelector(".projects-header").hidden = false;
   els.projectConfigPanel.hidden = false;
   const dashboard = els.projectDashboard;
@@ -1348,6 +1354,7 @@ async function renderProjectDashboard() {
     dashboard.querySelector("[data-dashboard-action='retry']")?.addEventListener("click", () => void renderProjectDashboard());
     return;
   }
+  if (state.projectPage !== "dashboard") return;
   const tasks = details.flatMap(project => (project.tasks || []).map(task => ({ ...task, project_name: project.name })));
   const openTasks = tasks.filter(task => task.status !== "done");
   const now = new Date();
@@ -1357,25 +1364,26 @@ async function renderProjectDashboard() {
   openTasks.forEach(task => { const name = task.assignee_name || "Ikke tildelt"; workload.set(name,(workload.get(name)||0)+1); });
   const workloadRows = [...workload].sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maximumLoad = Math.max(1,...workloadRows.map(([, count])=>count));
-  const projectCards = state.projects.map(project => `<button class="dashboard-project-card" type="button" data-dashboard-project="${escapeHtml(project.project_id)}">
-    <span class="dashboard-project-status"><i class="status-dot color-${escapeHtml(project.workflow_status_color || "gray")}"></i>${escapeHtml(project.workflow_status_label || projectStatusLabel(project.status))}</span>
-    <strong>${escapeHtml(project.name)}</strong><span>${escapeHtml(project.folder_name || project.focus_area || "Projekt")} · ${escapeHtml(project.owner_name || "Ingen ansvarlig")}</span>
-    <small>${Number(project.application_count || 0)} ansøgninger · ${Number(project.open_task_count || 0)} åbne opgaver</small>
-    ${project.next_task_due_on ? `<small>Næste opgavefrist ${escapeHtml(project.next_task_due_on)}</small>` : ""}</button>`).join("");
   const taskRows = deadlineTasks.length ? deadlineTasks.map(task => {
     const overdue = task.due_on < today;
     const dueDate = new Date(`${task.due_on}T12:00:00`).toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" });
     return `<button class="dashboard-task-row${overdue ? " is-overdue" : ""}" type="button" data-dashboard-project="${escapeHtml(task.project_id)}"><span><strong>${escapeHtml(task.title)}</strong><small>${escapeHtml(task.project_name)}${task.assignee_name ? ` · ${escapeHtml(task.assignee_name)}` : " · Ikke tildelt"}</small></span><time>${overdue ? "Overskredet · " : ""}${escapeHtml(dueDate)}</time></button>`;
   }).join("") : `<p class="dashboard-muted">Ingen åbne opgaver med en frist endnu.</p>`;
-  dashboard.innerHTML = restoreNotice + `<header class="dashboard-heading"><div><h2>Jeres projekter</h2><p>Fælles overblik. Mere tid til det, der gør en forskel.</p></div></header>
-    <section class="dashboard-metrics" aria-label="Nøgletal"><article><span>Projekter</span><strong>${state.projects.length}</strong></article><article><span>Åbne opgaver</span><strong>${openTasks.length}</strong></article><article><span>Ansøgninger</span><strong>${state.projects.reduce((sum,p)=>sum+Number(p.application_count||0),0)}</strong></article><article><span>Uden ansvarlig</span><strong>${workload.get("Ikke tildelt")||0}</strong></article></section>
-    <section class="dashboard-section"><div class="section-heading"><div><h3>Projektportefølje</h3><p>Vælg et projekt for at åbne arbejdsområdet.</p></div></div><div class="dashboard-project-grid">${projectCards}</div></section>
-    <div class="dashboard-lower-grid"><section class="dashboard-section"><div class="section-heading"><div><h3>Arbejdsbyrde</h3><p>Åbne opgaver fordelt på ansvarlig.</p></div></div>${workloadRows.length ? `<div class="workload-list">${workloadRows.map(([name,count])=>`<div class="workload-row"><span>${escapeHtml(name)}</span><div class="workload-track"><i style="width:${Math.max(6,Math.round(count/maximumLoad*100))}%"></i></div><strong>${count}</strong></div>`).join("")}</div>` : `<p class="dashboard-muted">Opret opgaver og tildel dem til teamet for at se arbejdsbyrden.</p>`}</section>
-    <section class="dashboard-section"><div class="section-heading"><div><h3>Frister, der kræver opmærksomhed</h3><p>Forfaldne og kommende opgaver.</p></div></div><div class="dashboard-task-list">${taskRows}</div></section></div>`;
+  dashboard.innerHTML = restoreNotice + dashboardView.renderDashboard(state.projects, details) + `
+    <div class="dashboard-lower-grid dashboard-supporting"><section class="dashboard-section"><div class="section-heading"><div><h3>Arbejdsbyrde</h3><p>Åbne opgaver fordelt på ansvarlig.</p></div></div>${workloadRows.length ? `<div class="workload-list">${workloadRows.map(([name,count])=>`<div class="workload-row"><span>${escapeHtml(name)}</span><div class="workload-track"><i style="width:${Math.max(6,Math.round(count/maximumLoad*100))}%"></i></div><strong>${count}</strong></div>`).join("")}</div>` : `<p class="dashboard-muted">Opret opgaver og tildel dem til teamet for at se arbejdsbyrden.</p>`}</section>
+    <section class="dashboard-section"><div class="section-heading"><div><h3>Frister</h3><p>Forfaldne og kommende opgaver.</p></div></div><div class="dashboard-task-list">${taskRows}</div></section></div>`;
+  dashboardView.bindDashboard(dashboard, state.projects, details, {
+    openProject: selectProject,
+    editProject: openPortfolioProjectEditor,
+    openConfig: () => {
+      els.projectConfigPanel.open = !els.projectConfigPanel.open;
+      if (els.projectConfigPanel.open) els.projectConfigPanel.scrollIntoView({block:"nearest", behavior:"smooth"});
+    },
+  });
+  dashboardView.mountDashboardCharts(dashboard, state.projects, details);
   dashboard.insertAdjacentHTML("beforeend",trashMarkup);
   bindTrash();
   bindRestore();
-  dashboard.querySelectorAll("[data-dashboard-project]").forEach(button => button.addEventListener("click", () => selectProject(button.dataset.dashboardProject)));
   dashboard.querySelector("[data-dashboard-action='new-project']")?.addEventListener("click", () => {
     const disclosure = document.querySelector(".project-create-disclosure");
     disclosure.open = true;
@@ -1560,6 +1568,7 @@ async function selectProject(projectId) {
   if (state.selectedProjectId !== projectId) state.selectedTeamMemberId = null;
   state.selectedProjectId = projectId;
   state.projectPage = "project";
+  document.body.classList.remove("is-project-dashboard");
   document.querySelector(".projects-header").hidden = true;
   els.projectConfigPanel.hidden = true;
   els.projectDashboard.hidden = true;
@@ -1824,7 +1833,6 @@ function simplifyProjectWorkspace(project) {
   const overview = document.createElement("section");
   overview.innerHTML = `<div class="section-heading"><h3>Om projektet</h3><span>Detaljer, finansiering og team</span></div>`;
   overview.append(settings);
-  wrapForm(settings, "Rediger projektoplysninger");
   const columns = root.querySelector(".project-columns");
   overview.append(columns.children[0], root.querySelector(".project-team-panel"), root.querySelector(".project-documents-panel"));
   const sections = [
@@ -1892,7 +1900,6 @@ function simplifyProjectWorkspace(project) {
   }));
   root.querySelector("[data-project-edit]").addEventListener("click", () => {
     activate("overview");
-    settings.parentElement.open = true;
     settings.elements.name.focus();
   });
   const taskForm = root.querySelector(".task-main-add-form");
@@ -1933,6 +1940,7 @@ async function submitProjectForm(form) {
   for (const field of ["program_id","deadline_id","application_workflow_status_id","requested_amount","awarded_amount","submitted_on"]) delete values[field];
   const payload = await projectApi("/api/projects", { method: "POST", body: JSON.stringify(values) });
   form.reset();
+  document.querySelector(".project-create-disclosure").open = false;
   state.selectedProjectId = payload.project.project_id;
   state.projectPage = "project";
   await loadProjects();
@@ -2124,6 +2132,16 @@ async function init() {
       showActionToast("Du er logget ind.");
     } catch (loadError) {
       renderProjectLoadError(loadError);
+    }
+  });
+
+  document.querySelector(".project-create-disclosure").addEventListener("toggle", event => document.querySelector("#dashboardNewProject").setAttribute("aria-expanded", String(event.currentTarget.open)));
+  document.querySelector("#dashboardNewProject").addEventListener("click", () => {
+    const disclosure = document.querySelector(".project-create-disclosure");
+    disclosure.open = !disclosure.open;
+    if (disclosure.open) {
+      disclosure.scrollIntoView({block:"nearest", behavior:"smooth"});
+      disclosure.querySelector("input[name='name']").focus();
     }
   });
 

@@ -1,0 +1,161 @@
+/* Dashboard: compact portfolio above live, accessible chart summaries. */
+.dashboard-new-project { display:none; }
+.is-project-dashboard .dashboard-new-project { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:44px; padding:0 20px; border:1px solid #8a1a30; border-radius:6px; background:#8a1a30; color:#fff; font:600 14px Inter,sans-serif; cursor:pointer; }
+.is-project-dashboard .dashboard-new-project img { width:19px; height:19px; filter:invert(1); }
+.is-project-dashboard .dashboard-new-project:hover { background:#701428; }
+.is-project-dashboard .top-actions > :is(#updateButton,.export-menu) { display:none; }
+.is-project-dashboard #accountButton { width:44px; padding:0; }
+.is-project-dashboard #accountButton [data-account-label] { display:none; }
+.is-project-dashboard .workspace-header.topbar { padding:36px 28px 26px; }
+.is-project-dashboard #panel-projekter > .projects-header:not(:has(.project-create-disclosure[open])) { display:none; }
+.is-project-dashboard #panel-projekter > .projects-header > div { display:none; }
+.is-project-dashboard #panel-projekter > .projects-header { grid-template-columns:1fr; margin-bottom:18px; }
+.is-project-dashboard #panel-projekter > .project-config-panel:not([open]) { display:none; }
+#panel-projekter #projectDashboard { gap:24px; }
+#panel-projekter #projectDashboard .dashboard-metrics { border-radius:3px; }
+#panel-projekter #projectDashboard .dashboard-metrics article { padding:18px 26px; gap:3px; }
+#panel-projekter #projectDashboard .dashboard-metrics strong { font-size:30px; }
+#panel-projekter .dashboard-portfolio { min-width:0; }
+#panel-projekter .dashboard-portfolio .section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 16px; }
+#panel-projekter .dashboard-portfolio h2 { margin:0; font-size:24px; line-height:1.2; letter-spacing:-.035em; }
+#panel-projekter .dashboard-config-action { padding:6px 0; border:0; background:transparent; color:#625d68; font:500 13px Inter,sans-serif; cursor:pointer; }
+#panel-projekter .dashboard-config-action:hover { color:#8a1a30; text-decoration:underline; }
+#panel-projekter .dashboard-table-scroll { overflow-x:auto; border:1px solid #e4e2e3; border-radius:4px; background:#fff; }
+#panel-projekter .dashboard-project-table { width:100%; min-width:690px; border-collapse:collapse; table-layout:fixed; font-size:14px; }
+#panel-projekter .dashboard-project-table th { padding:0; height:46px; border:0; border-bottom:1px solid #e4e2e3; background:#f8f7f8; text-align:left; color:#514c56; font-size:12px; text-transform:none; letter-spacing:0; }
+#panel-projekter .dashboard-project-table th:nth-child(1) { width:38%; }
+#panel-projekter .dashboard-project-table th:nth-child(2) { width:22%; }
+#panel-projekter .dashboard-project-table th:nth-child(3) { width:23%; }
+#panel-projekter .dashboard-project-table th:nth-child(4) { width:12%; }
+#panel-projekter .dashboard-project-table th:nth-child(5) { width:5%; }
+#panel-projekter .dashboard-project-table th button { display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:10px 14px; border:0; background:transparent; color:inherit; font:600 12px Inter,sans-serif; text-align:left; cursor:pointer; }
+#panel-projekter .dashboard-project-table th:first-child button { padding-left:50px; }
+#panel-projekter .dashboard-project-table th img { width:12px; height:12px; opacity:.65; }
+#panel-projekter .dashboard-project-table th[aria-sort="ascending"] img { transform:rotate(180deg); }
+#panel-projekter .dashboard-project-table td { height:58px; padding:8px 14px; border:0; border-bottom:1px solid #e9e7e9; background:transparent; color:#6c6671; vertical-align:middle; font-size:13px; }
+#panel-projekter .dashboard-project-table td:first-child { padding:0; }
+#panel-projekter .dashboard-project-table tr:last-child td { border-bottom:0; }
+#panel-projekter .dashboard-project-table tbody tr:hover { background:#faf5f7; }
+#panel-projekter .dashboard-project-open { display:flex; align-items:center; gap:18px; width:100%; min-height:58px; padding:13px 16px; border:0; background:transparent; color:#242226; text-align:left; font:inherit; cursor:pointer; }
+#panel-projekter .dashboard-project-open img { flex:0 0 14px; width:14px; height:14px; }
+#panel-projekter .dashboard-project-open strong { font-size:14px; font-weight:600; overflow-wrap:anywhere; }
+#panel-projekter .dashboard-project-edit { display:grid; place-items:center; width:30px; height:34px; padding:5px; border:0; border-radius:5px; background:transparent; cursor:pointer; }
+#panel-projekter .dashboard-project-edit:hover { background:#eee7eb; }
+#panel-projekter .dashboard-project-edit img { width:18px; height:18px; }
+#panel-projekter .dashboard-status { display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:5px 10px; border-radius:20px; color:#57515d; background:#f2f1f3; font-size:11px; line-height:1.3; }
+#panel-projekter .dashboard-status i { flex:0 0 7px; width:7px; height:7px; border-radius:50%; background:#8c8890; }
+#panel-projekter .dashboard-status.color-blue { background:#edf3fc; }
+#panel-projekter .dashboard-status.color-blue i { background:#4e7dba; }
+#panel-projekter .dashboard-status.color-green { background:#edf5ec; }
+#panel-projekter .dashboard-status.color-green i { background:#76a15f; }
+#panel-projekter .dashboard-status.color-red i { background:#8a1a30; }
+#panel-projekter .dashboard-status.color-purple i { background:#8c70ae; }
+#panel-projekter .dashboard-status.color-yellow i, #panel-projekter .dashboard-status.color-orange i { background:#c39a42; }
+#panel-projekter .dashboard-completion { display:flex; align-items:center; gap:7px; margin:-2px 0 -10px; color:#6f6974; font-size:15px; }
+#panel-projekter .dashboard-completion strong { color:#242226; font-size:19px; font-weight:650; }
+#panel-projekter .dashboard-chart-grid { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.35fr); gap:16px; }
+#panel-projekter .dashboard-chart-panel { min-width:0; padding:22px; border:1px solid #e4e2e3; border-radius:4px; background:#fff; }
+#panel-projekter .dashboard-chart-panel h3 { margin:0; color:#242226; font-size:17px; font-weight:650; line-height:1.35; letter-spacing:-.025em; }
+#panel-projekter .dashboard-chart-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; }
+#panel-projekter .dashboard-chart-heading p { margin:5px 0 0; color:#716b76; font-size:13px; }
+#panel-projekter .dashboard-status-chart { display:flex; align-items:center; gap:20px; min-height:190px; padding-top:18px; }
+#panel-projekter .dashboard-donut { position:relative; flex:0 0 145px; width:145px; height:145px; }
+#panel-projekter .dashboard-donut > div { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+#panel-projekter .dashboard-donut strong { font-size:28px; line-height:1.25; }
+#panel-projekter .dashboard-donut span { color:#6f6974; font-size:12px; }
+#panel-projekter .dashboard-chart-legend { display:grid; align-content:center; gap:0; min-width:0; width:100%; padding:0; margin:0; list-style:none; }
+#panel-projekter .dashboard-chart-legend li { display:grid; grid-template-columns:10px minmax(0,1fr) auto; align-items:center; gap:8px; padding:11px 0; border-bottom:1px solid #eeecef; font-size:12px; }
+#panel-projekter .dashboard-chart-legend li:last-child { border:0; }
+#panel-projekter .dashboard-chart-legend li > span:last-child { color:#6f6974; white-space:nowrap; }
+#panel-projekter .dashboard-chart-legend i { width:10px; height:10px; border-radius:50%; background:var(--chart-color); }
+#panel-projekter .dashboard-progress-legend { display:flex; flex-wrap:wrap; gap:13px; color:#6f6974; font-size:11px; }
+#panel-projekter .dashboard-progress-legend span { display:flex; align-items:center; gap:6px; }
+#panel-projekter .dashboard-progress-legend i { width:10px; height:10px; border-radius:50%; background:#dedde1; }
+#panel-projekter .dashboard-progress-legend i.done { background:#76a15f; }
+#panel-projekter .dashboard-progress-row { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(65px,1fr) auto; align-items:center; gap:15px; min-height:39px; border-bottom:1px solid #eeecef; }
+#panel-projekter .dashboard-progress-row:last-child { border:0; }
+#panel-projekter .dashboard-progress-row button { padding:7px 0; border:0; background:transparent; color:#3a353e; font:400 12px Inter,sans-serif; text-align:left; overflow-wrap:anywhere; cursor:pointer; }
+#panel-projekter .dashboard-progress-row button:hover { color:#8a1a30; text-decoration:underline; }
+#panel-projekter .dashboard-progress-row > span { color:#514b57; font-size:12px; text-align:right; }
+#panel-projekter .dashboard-progress-row progress { width:100%; height:13px; overflow:hidden; border:0; border-radius:12px; background:#e3e2e6; accent-color:#76a15f; }
+#panel-projekter .dashboard-progress-row progress::-webkit-progress-bar { border-radius:12px; background:#e3e2e6; }
+#panel-projekter .dashboard-progress-row progress::-webkit-progress-value { border-radius:12px; background:#76a15f; }
+#panel-projekter .dashboard-progress-row progress::-moz-progress-bar { border-radius:12px; background:#76a15f; }
+#panel-projekter .dashboard-weekly-panel .dashboard-chart-heading { margin-bottom:8px; }
+#panel-projekter .dashboard-week-controls { display:flex; align-items:center; gap:6px; }
+#panel-projekter .dashboard-week-controls button { display:grid; place-items:center; min-width:30px; min-height:32px; padding:5px 8px; border:1px solid #e4e2e3; border-radius:4px; background:#fff; color:#625b67; font-size:11px; cursor:pointer; }
+#panel-projekter .dashboard-week-controls button:hover { background:#f7eef0; color:#8a1a30; }
+#panel-projekter .dashboard-week-controls img { width:14px; height:14px; }
+#panel-projekter .dashboard-week-controls [data-week-shift="-12"] img { transform:rotate(180deg); }
+#panel-projekter .dashboard-week-summary { display:flex; justify-content:space-between; gap:12px; margin:0 0 12px; color:#716b76; font-size:11px; }
+#panel-projekter .dashboard-week-scroll { overflow-x:auto; }
+#panel-projekter .dashboard-week-inner { min-width:900px; }
+#panel-projekter .dashboard-line-container { position:relative; height:180px; }
+#panel-projekter .dashboard-week-labels { box-sizing:border-box; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); }
+#panel-projekter .dashboard-week-labels button { position:relative; display:flex; flex-direction:column; align-items:center; gap:5px; min-height:82px; padding:12px 4px 7px; border:0; border-right:1px solid #eeecef; border-radius:0; background:#fff; color:#3e3745; font-size:11px; line-height:1.4; cursor:pointer; }
+#panel-projekter .dashboard-week-labels button:nth-child(even) { background:#fafafa; }
+#panel-projekter .dashboard-week-labels button.is-current { background:#f9eef1; }
+#panel-projekter .dashboard-week-labels button:hover, #panel-projekter .dashboard-week-labels button.is-selected { box-shadow:inset 0 2px #8a1a30; }
+#panel-projekter .dashboard-week-labels strong { font-size:11px; white-space:nowrap; }
+#panel-projekter .dashboard-week-labels span { color:#726a78; font-size:10px; }
+#panel-projekter .dashboard-week-labels em { color:#8a1a30; font:600 9px Inter,sans-serif; }
+#panel-projekter .dashboard-week-detail { min-height:20px; margin:10px 0 0; color:#635b69; font-size:12px; }
+@media(min-width:901px) and (max-width:1200px) {
+  #panel-projekter .dashboard-chart-grid { grid-template-columns:1fr; }
+  #panel-projekter .dashboard-status-chart { min-height:170px; }
+  #panel-projekter .dashboard-chart-legend { max-width:350px; }
+}
+@media(max-width:900px) {
+  #panel-projekter .dashboard-chart-grid { grid-template-columns:1fr; }
+  #panel-projekter .dashboard-status-chart { min-height:160px; }
+  #panel-projekter .dashboard-chart-legend { max-width:350px; }
+  .is-project-dashboard .workspace-header.topbar { padding:26px 22px 22px; }
+}
+@media(max-width:650px) {
+  .is-project-dashboard .workspace-header.topbar { padding:22px 16px 20px; }
+  .is-project-dashboard .workspace-header .top-actions { flex-basis:auto; margin-left:auto; }
+  .is-project-dashboard .dashboard-new-project { min-height:40px; padding:0 12px; font-size:12px; }
+  #panel-projekter #projectDashboard { gap:20px; }
+  #panel-projekter #projectDashboard .dashboard-metrics article { padding:14px 18px; }
+  #panel-projekter .dashboard-portfolio .section-heading { flex-wrap:wrap; gap:7px; }
+  #panel-projekter .dashboard-portfolio h2 { font-size:21px; }
+  #panel-projekter .dashboard-chart-panel { padding:17px; }
+  #panel-projekter .dashboard-status-chart { gap:14px; }
+  #panel-projekter .dashboard-donut { flex-basis:120px; width:120px; height:120px; }
+  #panel-projekter .dashboard-chart-heading { flex-wrap:wrap; }
+  #panel-projekter .dashboard-progress-row { gap:9px; grid-template-columns:minmax(0,1fr) 65px 35px; }
+  #panel-projekter .dashboard-week-summary { flex-wrap:wrap; }
+  #panel-projekter .dashboard-progress-legend { margin-left:auto; }
+}
+.is-project-dashboard.is-signed-out .dashboard-new-project { display:none; }
+/* Match the selected desktop mock's compact vertical rhythm. */
+.is-project-dashboard .workspace-header.topbar { padding-bottom:20px; }
+#panel-projekter #projectDashboard { gap:20px; }
+#panel-projekter #projectDashboard .dashboard-metrics article { padding-block:16px; }
+#panel-projekter .dashboard-project-table td { height:48px; }
+#panel-projekter .dashboard-project-open { min-height:48px; padding-block:10px; }
+#panel-projekter .dashboard-portfolio .section-heading { margin-bottom:14px; }
+#panel-projekter .dashboard-chart-panel { padding:18px; }
+#panel-projekter .dashboard-status-chart { min-height:170px; }
+#panel-projekter .dashboard-progress-row { min-height:36px; }
+#panel-projekter .dashboard-chart-heading { margin-bottom:14px; }
+#panel-projekter .dashboard-line-container { height:155px; }
+#panel-projekter .dashboard-week-labels button { min-height:67px; padding-top:9px; }
+#panel-projekter .dashboard-project-table td { height:44px; }
+#panel-projekter .dashboard-project-open { min-height:44px; padding-block:8px; }
+#panel-projekter .dashboard-status-chart { min-height:160px; }
+#panel-projekter .dashboard-weekly-panel { position:relative; padding:16px; }
+#panel-projekter .dashboard-week-summary { position:absolute; top:49px; right:16px; margin:0; }
+#panel-projekter .dashboard-week-year { margin-left:8px; color:#716b76; font-size:13px; font-weight:500; }
+#panel-projekter .dashboard-line-container { height:145px; margin-top:18px; }
+#panel-projekter .dashboard-week-detail { min-height:18px; margin-top:4px; font-size:11px; }
+@media(max-width:650px) {
+  #panel-projekter .dashboard-week-summary { position:static; margin:0 0 8px; }
+}
+#panel-projekter .dashboard-project-table td:last-child { padding-block:0; }
+#panel-projekter .dashboard-project-edit { height:44px; }
+#panel-projekter .dashboard-progress-row { min-height:34px; }
+#panel-projekter .dashboard-project-table td { font-size:14px; }
+#panel-projekter .dashboard-status { font-size:12px; }
+#panel-projekter .dashboard-week-labels strong { font-size:12px; }
+#panel-projekter .dashboard-week-labels span { font-size:11px; }

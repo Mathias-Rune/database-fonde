@@ -1,12 +1,14 @@
 (() => {
   const sectionCopy = {
-    fund: ["Fund og nye opslag", "Vurder nye støttemuligheder fra dine kilder."],
+    fund: ["Nye opslag", "Vurder nye støttemuligheder fra dine kilder."],
     projekter: ["Dine projekter", "Saml projekter, fondsansøgninger og opgaver ét sted."],
-    fonde: ["Fonde i Danmark", "Find, vurder og følg de rette støttemuligheder."],
+    fonde: ["Fonde", "Find, vurder og følg de rette støttemuligheder."],
     favoritter: ["Dine favoritter", "Hold styr på de fonde, der passer til dine projekter."],
-    alerts: ["Alerts", "Følg frister, nye fonde og ændringer i dine favoritter."],
+    alerts: ["Varslinger", "Følg frister, nye fonde og ændringer i dine favoritter."],
     data: ["Data og kilder", "Se datakvalitet og hold fondenes oplysninger opdateret."],
   };
+  const fundsPages = new Set(["fonde", "fund", "favoritter", "alerts", "data"]);
+  let selectedTab = "fonde";
   const mobile = window.matchMedia("(max-width: 900px)");
   const stackedFunds = window.matchMedia("(max-width: 700px)");
   let initialized = false;
@@ -14,6 +16,15 @@
   let dialogTrigger = null;
 
   const element = (selector) => document.querySelector(selector);
+
+  function setFundsExpanded(open) {
+    const subnav = element("#fundsSubnav");
+    const toggle = element("#fundsNavToggle");
+    if (!subnav || !toggle) return;
+    subnav.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", `${open ? "Skjul" : "Vis"} undersider til Fonde`);
+  }
 
   function setDrawer(open, { restoreFocus = false } = {}) {
     const sidebar = element("#appSidebar");
@@ -24,7 +35,10 @@
     if (sidebar) sidebar.inert = mobile.matches && !drawerOpen;
     const backdrop = element("#sidebarBackdrop");
     if (backdrop) backdrop.hidden = !drawerOpen;
-    if (drawerOpen) (sidebar?.querySelector("[aria-current='page']") || sidebar?.querySelector("[data-tab]"))?.focus();
+    if (drawerOpen) {
+      if (fundsPages.has(selectedTab)) setFundsExpanded(true);
+      (sidebar?.querySelector("[aria-current='page']") || sidebar?.querySelector("[data-tab]"))?.focus();
+    }
     else if (restoreFocus) toggle?.focus();
   }
 
@@ -42,11 +56,20 @@
   }
 
   function syncTab(tabName) {
+    selectedTab = tabName;
+    const inFunds = fundsPages.has(tabName);
+    element("#fundsNavGroup")?.classList.toggle("is-current-section", inFunds);
+    if (inFunds) setFundsExpanded(true);
     const [title, subtitle] = sectionCopy[tabName] || sectionCopy.fonde;
     const heading = element("#workspaceTitle");
     const description = element("#workspaceSubtitle");
     if (heading) heading.textContent = title;
     if (description) description.textContent = subtitle;
+    const breadcrumb = element("#workspaceBreadcrumb");
+    if (breadcrumb) {
+      breadcrumb.hidden = !inFunds || tabName === "fonde";
+      breadcrumb.textContent = `Fonde / ${title}`;
+    }
     document.title = `${title} · Dansk Fondsdatabase`;
     document.querySelectorAll("#appSidebar [data-tab]").forEach((button) => {
       if (button.dataset.tab === tabName) button.setAttribute("aria-current", "page");
@@ -116,6 +139,7 @@
     setDrawer(false);
     syncAuth(auth);
     syncFilters();
+    element("#fundsNavToggle")?.addEventListener("click", () => setFundsExpanded(element("#fundsSubnav").hidden));
     element("#menuToggle")?.addEventListener("click", () => setDrawer(!drawerOpen));
     element("#sidebarBackdrop")?.addEventListener("click", () => setDrawer(false, { restoreFocus: true }));
     element("#accountButton")?.addEventListener("click", (event) => openAccount(event.currentTarget));
@@ -149,7 +173,7 @@
         });
       }
       if (event.key !== "Tab" || !drawerOpen) return;
-      const controls = [...element("#appSidebar").querySelectorAll("button:not([disabled]), a[href]")];
+      const controls = [...element("#appSidebar").querySelectorAll("button:not([disabled]), a[href]")].filter(control => control.getClientRects().length > 0);
       const first = controls[0];
       const last = controls.at(-1);
       if (event.shiftKey && document.activeElement === first) {
