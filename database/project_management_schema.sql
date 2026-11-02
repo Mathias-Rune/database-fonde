@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS projects (
   project_key TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   description TEXT,
+  focus_area TEXT,
+  estimated_hours REAL CHECK (estimated_hours IS NULL OR estimated_hours >= 0),
+  deleted_at TEXT,
   status TEXT NOT NULL DEFAULT 'idea'
     CHECK (status IN ('idea', 'planning', 'active', 'completed', 'cancelled')),
   owner_member_id TEXT,
@@ -236,10 +239,23 @@ INSERT OR IGNORE INTO workflow_statuses (status_id, status_key, entity_type, lab
   ('task-status-blocked', 'task-blocked', 'task', 'Blokeret', 'red', 'blocked', 30, 1),
   ('task-status-done', 'task-done', 'task', 'Færdig', 'green', 'done', 40, 1);
 
+-- Stable IDs keep existing assignments valid while labels follow the NGO workflow.
+UPDATE workflow_statuses SET label = CASE status_id
+  WHEN 'project-status-idea' THEN 'Idea'
+  WHEN 'project-status-planning' THEN 'Ansøgningsfase'
+  WHEN 'project-status-active' THEN 'Development'
+  WHEN 'task-status-todo' THEN 'Started'
+  WHEN 'task-status-in-progress' THEN 'In progress'
+  WHEN 'task-status-blocked' THEN 'Stuck'
+  WHEN 'task-status-done' THEN 'Done' ELSE label END
+WHERE is_system = 1;
+INSERT OR IGNORE INTO workflow_statuses (status_id, status_key, entity_type, label, color, base_status, sort_order, is_system)
+VALUES ('project-status-submitted', 'project-submitted', 'project', 'Applikation sendt til fond', 'purple', 'planning', 35, 1);
+
 DROP VIEW IF EXISTS project_overview;
 CREATE VIEW project_overview AS
-SELECT p.project_id, p.project_key, p.name, p.description, p.status, p.owner_member_id, p.starts_on, p.ends_on,
-       p.estimated_budget, p.currency, p.updated_at, owner.display_name AS owner_name,
+SELECT p.project_id, p.project_key, p.name, p.description, p.focus_area, p.status, p.owner_member_id, p.starts_on, p.ends_on,
+       p.estimated_budget, p.estimated_hours, p.deleted_at, p.currency, p.updated_at, owner.display_name AS owner_name,
        pf.folder_id, pf.name AS folder_name, ws.status_id AS workflow_status_id,
        COALESCE(ws.label, p.status) AS workflow_status_label, COALESCE(ws.color, 'gray') AS workflow_status_color,
        (SELECT COUNT(*) FROM applications a WHERE a.project_id = p.project_id) AS application_count,
