@@ -1,40 +1,40 @@
 {
-  "generated_at": "2026-07-27T14:42:58.743Z",
+  "generated_at": "2026-11-09T16:26:40.928Z",
   "total_foundations": 18,
   "failed_foundations": 0,
   "total_programs": 22,
-  "failed_programs": 0,
+  "failed_programs": 1,
   "dry_run": false,
-  "updated_csv": true,
+  "updated_csv": false,
   "results": [
     {
       "foundation_id": "nordea-fonden",
       "name": "Nordea-fonden",
-      "checked_at": "2026-07-27T14:42:34.229Z",
+      "checked_at": "2026-11-09T16:25:57.042Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://nordeafonden.dk/",
-          "hash": "f2f459a352609f88d86eb10dad1eeb9ae2799959d1b60f6e82ae481c2434b1f9",
-          "bytes": 100247,
+          "hash": "2bef541babf7384987b5c01e0388148627a7cbe6e94e402c766ca00f90f943a5",
+          "bytes": 99885,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://nordeafonden.dk/soeg-stoette",
-          "hash": "2e5f7f4613be419269d39544394d53b193b9c154786761f58b152b01ed2c5c34",
-          "bytes": 89593,
+          "hash": "d500ed73dcee6f23f08cd1888e2a1b99f356fd44e92705774defce34adf645d8",
+          "bytes": 89349,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://nordeafonden.dk/soeg-stoette",
-          "hash": "2e5f7f4613be419269d39544394d53b193b9c154786761f58b152b01ed2c5c34",
-          "bytes": 89593,
+          "hash": "d500ed73dcee6f23f08cd1888e2a1b99f356fd44e92705774defce34adf645d8",
+          "bytes": 89349,
           "error": ""
         }
       }
@@ -42,31 +42,31 @@
     {
       "foundation_id": "trygfonden",
       "name": "TrygFonden",
-      "checked_at": "2026-07-27T14:42:34.490Z",
+      "checked_at": "2026-11-09T16:25:57.924Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tryghed.dk/",
-          "hash": "9170e2e41f03747f691be7efe96b33e77f96401ac6c98376fad51450ced6d104",
-          "bytes": 63982,
+          "hash": "1c285e274d2c5172f4cf4d0b5525e0c7de18bdaa92fa3686a2b074fe60ba1bbc",
+          "bytes": 71238,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tryghed.dk/sog-stotte",
-          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
-          "bytes": 52146,
+          "hash": "c540f0cbbb1ba28a6262f4cbc9f3c8d1849d644398e0c80d3bdeec3ceb6aeb0a",
+          "bytes": 55359,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tryghed.dk/sog-stotte",
-          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
-          "bytes": 52146,
+          "hash": "c540f0cbbb1ba28a6262f4cbc9f3c8d1849d644398e0c80d3bdeec3ceb6aeb0a",
+          "bytes": 55359,
           "error": ""
         }
       }
@@ -74,31 +74,31 @@
     {
       "foundation_id": "villum-fonden",
       "name": "VILLUM FONDEN",
-      "checked_at": "2026-07-27T14:42:37.710Z",
+      "checked_at": "2026-11-09T16:25:58.925Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://villumfonden.dk/da",
-          "hash": "fcbeaac32991fdc39c8a8a9f49abe4faa61fde1115a99ed3d734e71d657f4802",
-          "bytes": 129391,
+          "hash": "957ddb3dc44f497cb9794c98fcc05fbc67d21d9dbb8cc0a20e3942cd3ac74a6e",
+          "bytes": 128850,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://villumfonden.dk/da/simpel-side/aktuelle-opslag-0",
-          "hash": "202512c8d65abe44a8dea32f47e284a7d66fd51faebdf0c7ec4efc3b20dbcc71",
-          "bytes": 51821,
+          "hash": "45f68e4bcbc7742cd972f5eb0031eeb959ea788543ef8fb5e57206513ab78414",
+          "bytes": 51617,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://villumfonden.dk/da/simpel-side/aktuelle-opslag-0",
-          "hash": "202512c8d65abe44a8dea32f47e284a7d66fd51faebdf0c7ec4efc3b20dbcc71",
-          "bytes": 51821,
+          "hash": "45f68e4bcbc7742cd972f5eb0031eeb959ea788543ef8fb5e57206513ab78414",
+          "bytes": 51617,
           "error": ""
         }
       }
@@ -106,31 +106,31 @@
     {
       "foundation_id": "velux-fonden",
       "name": "VELUX FONDEN",
-      "checked_at": "2026-07-27T14:42:37.916Z",
+      "checked_at": "2026-11-09T16:25:59.914Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://veluxfonden.dk/da",
-          "hash": "e470807fcbcfde4bdb52eecec056e57f74ff0779ee9b11eb80d35d75dd2516c0",
-          "bytes": 89267,
+          "hash": "9327afdfd7f33e521d4359fb86e37109bc4a052278c2538b069cf769ff68c711",
+          "bytes": 93922,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://veluxfonden.dk/da/simpel-side/aktuelle-opslag",
-          "hash": "26fe6b56d8c0fef4487e3b1db4438efbcc74e27645beac46c058b26727e699b9",
-          "bytes": 47124,
+          "hash": "ea75b828bea4d9a5b6808b1511bb5847fb5b265382f2bf7bfa44b3d35a7a8505",
+          "bytes": 41688,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://veluxfonden.dk/da/artikel/saadan-soeger-du",
-          "hash": "bf350532e26adfe9c63ebf58c2a858a01ab1e2cc36138dcb14b96b7907eb594b",
-          "bytes": 48712,
+          "hash": "647fa2556362f6cc79fd4915e068c8831a59a6c53dbd77ab8b7997aac732dc1f",
+          "bytes": 49051,
           "error": ""
         }
       }
@@ -138,31 +138,31 @@
     {
       "foundation_id": "bikubenfonden",
       "name": "Bikubenfonden",
-      "checked_at": "2026-07-27T14:42:38.376Z",
+      "checked_at": "2026-11-09T16:26:01.241Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.bikubenfonden.dk/",
-          "hash": "ac954734a4cf7f19cb3d7ebfdf8ff9eb9db8979fae51fa5e346b92b7ace3f4b4",
-          "bytes": 156538,
+          "hash": "c850abbfc230ac3aa90a2af176f651a6ae500af7068ca97a53f626dc2c404e27",
+          "bytes": 139451,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.bikubenfonden.dk/kom-i-dialog",
-          "hash": "fe132660da0260bb3eff823f154ab5021060db336e89ccefe1d258c25520c9fd",
-          "bytes": 65439,
+          "hash": "ea8594285f00b77de4bb7aa332e0258757b35be19acde5e7af24ec3f0a07ab4c",
+          "bytes": 76569,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.bikubenfonden.dk/kom-i-dialog",
-          "hash": "fe132660da0260bb3eff823f154ab5021060db336e89ccefe1d258c25520c9fd",
-          "bytes": 65439,
+          "hash": "ea8594285f00b77de4bb7aa332e0258757b35be19acde5e7af24ec3f0a07ab4c",
+          "bytes": 76569,
           "error": ""
         }
       }
@@ -170,31 +170,31 @@
     {
       "foundation_id": "tuborgfondet",
       "name": "Tuborgfondet",
-      "checked_at": "2026-07-27T14:42:39.330Z",
+      "checked_at": "2026-11-09T16:26:02.621Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tuborgfondet.dk/",
-          "hash": "fee304e1241341b92f666130eae92a7a9649516e4edf021f34fe6bfc75b12920",
-          "bytes": 187937,
+          "hash": "e62d27cd1a5669a72e2d181d2224bab25314b39a325c38b0f2796137eda156ef",
+          "bytes": 219947,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tuborgfondet.dk/projektstoette",
-          "hash": "da0c1045697dedfd105e11698508b98e8083990f73db90b48318482e9f20b1b0",
-          "bytes": 228984,
+          "hash": "271f1d7799db08d59ad1504457a5c14c664a06133982b12eb74b45695a0e3f2e",
+          "bytes": 241497,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tuborgfondet.dk/projektstoette",
-          "hash": "14096f51792eb3642ca37531c8a174c753d70e7523b22e1c3970d326af060376",
-          "bytes": 228984,
+          "hash": "9a4db0c1e404917429605649fe08ce8c95549120c91589723fb7cda755998423",
+          "bytes": 241454,
           "error": ""
         }
       }
@@ -202,31 +202,31 @@
     {
       "foundation_id": "egmont-fonden",
       "name": "Egmont Fonden",
-      "checked_at": "2026-07-27T14:42:40.475Z",
+      "checked_at": "2026-11-09T16:26:04.605Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.egmont.dk/",
-          "hash": "d7614bdc6d95b8a29651f4cda7f395e2cfe5a7a21dfc9a4058c63431c219cb10",
-          "bytes": 349851,
+          "hash": "d80235da93a532e715c779f64e26468895ccb5d1fb3ca2c1773f3c737f4d14d7",
+          "bytes": 273583,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.egmont.dk/saadan-ansoeger-i",
-          "hash": "a3231857a912d07f1b6f8bb91d481de4ce23073d3135b4a47da4f03e8138b60f",
-          "bytes": 217668,
+          "hash": "48b32adf73b34095c2e85528f3ca0989dfe0e420f7bfbf026c9bb32705e61197",
+          "bytes": 148957,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.egmont.dk/saadan-ansoeger-i",
-          "hash": "078fb9a6a15fd14ae8927e09ba83426e4c5609bc7695de1c0798e91310a72201",
-          "bytes": 217563,
+          "hash": "89fe7b0c1f17d7490ef81f583f814a2c09a0517a8546c20a844132a903d05d27",
+          "bytes": 148981,
           "error": ""
         }
       }
@@ -234,31 +234,31 @@
     {
       "foundation_id": "lauritzen-fonden",
       "name": "Lauritzen Fonden",
-      "checked_at": "2026-07-27T14:42:40.758Z",
+      "checked_at": "2026-11-09T16:26:06.106Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://lauritzenfonden.com/",
-          "hash": "52707190742277207792fb14e752e89f302d05e8bc4d370bc19482e2bc06447a",
-          "bytes": 123411,
+          "hash": "06b3055161cf3b3c500735f73e1e118eb663fc9b939c8743c08786829868c62a",
+          "bytes": 114818,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://lauritzenfonden.com/soeg-stoette/",
-          "hash": "26e1d717837aa6f93d69c14890313dd3d0af9363b90757e7098f1adc91b93045",
-          "bytes": 87947,
+          "hash": "8132a610cc810dffccba91e5926fd5c1cd2296f2748444d624cc3cd0cb163de1",
+          "bytes": 81665,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://lauritzenfonden.com/soeg-stoette/",
-          "hash": "26e1d717837aa6f93d69c14890313dd3d0af9363b90757e7098f1adc91b93045",
-          "bytes": 87947,
+          "hash": "8132a610cc810dffccba91e5926fd5c1cd2296f2748444d624cc3cd0cb163de1",
+          "bytes": 81665,
           "error": ""
         }
       }
@@ -266,31 +266,31 @@
     {
       "foundation_id": "ole-kirks-fond",
       "name": "Ole Kirk's Fond",
-      "checked_at": "2026-07-27T14:42:41.277Z",
+      "checked_at": "2026-11-09T16:26:07.140Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.olekirksfond.dk/",
-          "hash": "718d7393c8ed3a411452d5dc4886dbe798661cff30866e2f1e88716b7720dfe6",
-          "bytes": 120573,
+          "hash": "bf28a00045a028f63d5bfe6e488cd323326521bb0809446109d2da769edbe751",
+          "bytes": 120899,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.olekirksfond.dk/ansoegningsprocessen/",
-          "hash": "75073ca990aacdf034d99a468ceb590d83771ac72c6a153be9e571d10e062c7f",
-          "bytes": 161071,
+          "hash": "c927903bc79210e13ee13044b61096cd57f2216668fcc788388419e476eac367",
+          "bytes": 154049,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.olekirksfond.dk/ansoegningsprocessen/",
-          "hash": "9e948eaa250fdbdfbd34eeeba7de776f9f8bdee86b2e1db1b22c471245cf0fe1",
-          "bytes": 161071,
+          "hash": "9068cc8949a50d74cc6154217b811d33b4a1e88fef6d71f1d697fd69fd77f1de",
+          "bytes": 154049,
           "error": ""
         }
       }
@@ -298,31 +298,31 @@
     {
       "foundation_id": "kr-foundation",
       "name": "KR Foundation",
-      "checked_at": "2026-07-27T14:42:42.243Z",
+      "checked_at": "2026-11-09T16:26:08.843Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://krfnd.org/",
-          "hash": "c413f51e928be63c5c7e655933e3ef5d5782c0d2851f2185e02ff325d855118f",
-          "bytes": 62116,
+          "hash": "3059b78c655fca3568f836424bc556343a67221894cefcf5f76a1ab983b5b9ee",
+          "bytes": 65871,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://krfnd.org/how-we-work/",
-          "hash": "bc6776c96f985d385a79be7b7ef9d9c097e63330ac376d4ba6909725ce013866",
-          "bytes": 50223,
+          "hash": "2c63b51d9da530ae33bc3800fd40a7f6af18bc25c184c9a41e9a11384ad48456",
+          "bytes": 54022,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://krfnd.org/how-we-work/",
-          "hash": "998dd62af0514f585f085b319016a2a3253e3df901a8504962e5cecb3cd3b924",
-          "bytes": 50223,
+          "hash": "2c63b51d9da530ae33bc3800fd40a7f6af18bc25c184c9a41e9a11384ad48456",
+          "bytes": 54022,
           "error": ""
         }
       }
@@ -330,31 +330,31 @@
     {
       "foundation_id": "duf",
       "name": "Dansk Ungdoms Fællesråd (DUF)",
-      "checked_at": "2026-07-27T14:42:43.470Z",
+      "checked_at": "2026-11-09T16:26:09.886Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://duf.dk/",
-          "hash": "4df73ee33b15354fbf43b638f1dbfe96f833a8c0b857ab98cefdc3fb708abb0e",
-          "bytes": 274863,
+          "hash": "e93eb63cbfbd5d9612c876bdebecf93697b4ef632b0a9b56c52840580d5009cf",
+          "bytes": 307233,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://duf.dk/tilskud-puljer/initiativstoetten/",
-          "hash": "3710103044a4795f61e1de96f40e685878258cc1403f171599b918b0321a766c",
-          "bytes": 152013,
+          "hash": "4e93c7ba05eb02633c5bc48b38dadd5148a6071cff8bb2379119af6591fc370e",
+          "bytes": 182930,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://duf.dk/tilskud-puljer/initiativstoetten/",
-          "hash": "3710103044a4795f61e1de96f40e685878258cc1403f171599b918b0321a766c",
-          "bytes": 152013,
+          "hash": "4e93c7ba05eb02633c5bc48b38dadd5148a6071cff8bb2379119af6591fc370e",
+          "bytes": 182930,
           "error": ""
         }
       }
@@ -362,31 +362,31 @@
     {
       "foundation_id": "oestifterne",
       "name": "Østifterne",
-      "checked_at": "2026-07-27T14:42:43.909Z",
+      "checked_at": "2026-11-09T16:26:10.907Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.oestifterne.dk/",
-          "hash": "79e5c4b28f9964f33a6d3ee3c8f421fd219a8da39826772b37f3d77dd8fb2fb5",
-          "bytes": 143494,
+          "hash": "48d500413e42aaf6d7cf4655081766723ce956f923e9f7dbe4df71a6d9b159af",
+          "bytes": 147713,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.oestifterne.dk/uddelinger/uddelingspuljer/",
-          "hash": "4e6233fa4cfd39a97c5ca8ddac28040c4455bd90e5622f43d2dcb996b2cd4da7",
-          "bytes": 151666,
+          "hash": "8e0e5ac653533094088f87f8a8afc1824b2c950606dfde06825d9e61cb815fc4",
+          "bytes": 151929,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.oestifterne.dk/uddelinger/uddelingspuljer/",
-          "hash": "0e764eb08194261b9a951734d03d2d667c8fea60dab1e446105d7d331a432535",
-          "bytes": 151665,
+          "hash": "8e0e5ac653533094088f87f8a8afc1824b2c950606dfde06825d9e61cb815fc4",
+          "bytes": 151929,
           "error": ""
         }
       }
@@ -394,31 +394,31 @@
     {
       "foundation_id": "lb-foreningen",
       "name": "LB Foreningen",
-      "checked_at": "2026-07-27T14:42:44.141Z",
+      "checked_at": "2026-11-09T16:26:12.160Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.lbforeningen.dk/",
-          "hash": "1dc448bb03933b4dc48f583c0cdeee8c4f972da15f7c30e85b8160601d9e7877",
-          "bytes": 86541,
+          "hash": "dc61c9632d899b323c33e9e42ab5dce7e956cb64240189ae7034a8f931048fe9",
+          "bytes": 87985,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.lbforeningen.dk/soeg-stoette",
-          "hash": "d9366cda6abbf2c316402c444bb7a1b6739f93f7c8bcb6917fcdc6384dfdcbc7",
-          "bytes": 74354,
+          "hash": "d88531cefe85759031c5f65ca96f10f4685b83ae4abdeb3a659fde8a015e33fb",
+          "bytes": 77409,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.lbforeningen.dk/soeg-stoette",
-          "hash": "40d188ec1746c0cb7ae9d2e6438551b34de0ad418c9df819e0f830c9314a1c08",
-          "bytes": 74356,
+          "hash": "caf3aaee573e2e4f55b3124b80b01a7b01c3cbc03d373fbc8379c10fba94075d",
+          "bytes": 77409,
           "error": ""
         }
       }
@@ -426,31 +426,31 @@
     {
       "foundation_id": "nordjyllandsfonden",
       "name": "Nordjyllandsfonden",
-      "checked_at": "2026-07-27T14:42:45.465Z",
+      "checked_at": "2026-11-09T16:26:14.320Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.nordjyllandsfonden.dk/",
-          "hash": "efa305040743a2e2d8c7b4ec8d9c2431eb443a96cb9ec8c2576af2e581deee43",
-          "bytes": 315454,
+          "hash": "79c76fa7c9a21987d2efc3554c10e7f872ba02b86f03b08b1056d41377cdbdbb",
+          "bytes": 314724,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.nordjyllandsfonden.dk/ansoeg",
-          "hash": "f70a2890acfab6b988e1e8793a48741e38c0f68008c19eddc1390573fbdea069",
-          "bytes": 263079,
+          "hash": "d486888880f6e44f95918720ad33ffcd95f74129760bb4c53a3168058abe17cb",
+          "bytes": 262770,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.nordjyllandsfonden.dk/ansoeg",
-          "hash": "1fe101ed2bcc17c489c8c5357d9f3c655efd89fa5dcba1d9569b56e738caf327",
-          "bytes": 263122,
+          "hash": "d486888880f6e44f95918720ad33ffcd95f74129760bb4c53a3168058abe17cb",
+          "bytes": 262770,
           "error": ""
         }
       }
@@ -458,31 +458,31 @@
     {
       "foundation_id": "velliv-foreningen",
       "name": "Velliv Foreningen",
-      "checked_at": "2026-07-27T14:42:46.028Z",
+      "checked_at": "2026-11-09T16:26:15.410Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.vellivforeningen.dk/",
-          "hash": "c49c30756521e93daa7ac84734d4a4d3169287e0857213605600357863fc15f8",
-          "bytes": 108238,
+          "hash": "dfb9ed576d259b589bdc39bece7fb5d4e8c3c8781c214d891733e75866a6ad35",
+          "bytes": 117187,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.vellivforeningen.dk/soeg-stoette",
-          "hash": "a39bc151707373fbe4ae433a045de5ea31fd5dfdd2998adeb267dacab0788286",
-          "bytes": 92345,
+          "hash": "635357e99b059c647c5432940c4943a17dc83f1fd5b6460d3794a38ea1f894f9",
+          "bytes": 103630,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.vellivforeningen.dk/soeg-stoette",
-          "hash": "c52bd11de80f04f5f5755a625bf99763b0a27ac37ed2eb29869eeeace70d2719",
-          "bytes": 92345,
+          "hash": "d16477facc2e0588f45a401f90de4bea611c0101cd846be9d8b758f7dc615d6a",
+          "bytes": 103630,
           "error": ""
         }
       }
@@ -490,31 +490,31 @@
     {
       "foundation_id": "noerrebro-lokaludvalg",
       "name": "Nørrebro Lokaludvalg",
-      "checked_at": "2026-07-27T14:42:47.907Z",
+      "checked_at": "2026-11-09T16:26:17.416Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://noerrebrolokaludvalg.kk.dk/",
-          "hash": "886d0157be7ca8d3659c7d7673e170c0ed50051077f9568ae1c183122c12a86a",
-          "bytes": 150719,
+          "hash": "97112a6ba9ee5a559b3c083e5938f323d338bb7c82c5f9ab43fdf43eb748f715",
+          "bytes": 82726,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge/",
-          "hash": "7fe1862e2c38896094ff563b92f08bd1256a909a60d38ed38f5c6d3008a8ea48",
-          "bytes": 128052,
+          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge",
+          "hash": "df01f7b70f65c1c749cf4aabd22302292595fb570311df178c7280da5eb56a01",
+          "bytes": 60361,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge/",
-          "hash": "100db1e7b5cd89254e41d155ee84436b55014c2935fa4da581b814fa5e5ff3f4",
-          "bytes": 128052,
+          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge",
+          "hash": "df01f7b70f65c1c749cf4aabd22302292595fb570311df178c7280da5eb56a01",
+          "bytes": 60361,
           "error": ""
         }
       }
@@ -522,31 +522,31 @@
     {
       "foundation_id": "frederiksberg-kommune",
       "name": "Frederiksberg Kommune",
-      "checked_at": "2026-07-27T14:42:48.562Z",
+      "checked_at": "2026-11-09T16:26:18.552Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.frederiksberg.dk/",
-          "hash": "759d0de8628c0cd8272d98c596b132591f789f3604861b73dcdfb163b5b25120",
-          "bytes": 73207,
+          "hash": "121a94e3fdf2863f799c79a2f2b8f9d90030d5ce354f7fb7b9936d5c10f62d98",
+          "bytes": 79848,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser?idTab=tabe8&activeTab=2",
-          "hash": "55a8dafed8e34dd49368f5c5a5583f436fc4af6dc8aeae0cb23a01f473698f6b",
-          "bytes": 113066,
+          "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer",
+          "hash": "0291ec1380cc37bfa9e68922b67b15d5bc15cc9842ec0cadaba44c04c3214cb5",
+          "bytes": 44568,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser?idTab=tabe8&activeTab=2",
-          "hash": "55a8dafed8e34dd49368f5c5a5583f436fc4af6dc8aeae0cb23a01f473698f6b",
-          "bytes": 113066,
+          "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer",
+          "hash": "86b509a043f97ae0cdb14e9684e8533a14bbd54dd7033f5abdbc5a2afeddd753",
+          "bytes": 44568,
           "error": ""
         }
       }
@@ -554,31 +554,31 @@
     {
       "foundation_id": "koebenhavns-kommune",
       "name": "Københavns Kommune",
-      "checked_at": "2026-07-27T14:42:49.131Z",
+      "checked_at": "2026-11-09T16:26:19.996Z",
       "failed": [],
       "checks": {
         "website": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/",
-          "hash": "bd2638a286aabe8796a1412b4e4f3ee301d18c2ad48a0e89c0cde0d68c77af3d",
-          "bytes": 71244,
+          "hash": "8daf06d520b88c0f0ee1994926721647f2b428d470e8fce3cf7fe70bf70f5a54",
+          "bytes": 78318,
           "error": ""
         },
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/kultur-og-projektstoette",
-          "hash": "790922661faf48fc57dbb296542876f2f72023ebd58e7f9e2c5698cfd19e921f",
-          "bytes": 64396,
+          "hash": "5af265e1914b74ec130207d6af4ceb72949a86dcd22c1048c929369797a7b67d",
+          "bytes": 64158,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/kultur-og-projektstoette",
-          "hash": "790922661faf48fc57dbb296542876f2f72023ebd58e7f9e2c5698cfd19e921f",
-          "bytes": 64396,
+          "hash": "5af265e1914b74ec130207d6af4ceb72949a86dcd22c1048c929369797a7b67d",
+          "bytes": 64158,
           "error": ""
         }
       }
@@ -589,23 +589,23 @@
       "program_id": "nordea-fonden-good-lives",
       "foundation_id": "nordea-fonden",
       "name": "Støtte til gode liv",
-      "checked_at": "2026-07-27T14:42:49.413Z",
+      "checked_at": "2026-11-09T16:26:21.195Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://nordeafonden.dk/soeg-stoette",
-          "hash": "2e5f7f4613be419269d39544394d53b193b9c154786761f58b152b01ed2c5c34",
-          "bytes": 89593,
+          "hash": "d500ed73dcee6f23f08cd1888e2a1b99f356fd44e92705774defce34adf645d8",
+          "bytes": 89349,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://nordeafonden.dk/soeg-stoette",
-          "hash": "2e5f7f4613be419269d39544394d53b193b9c154786761f58b152b01ed2c5c34",
-          "bytes": 89593,
+          "hash": "d500ed73dcee6f23f08cd1888e2a1b99f356fd44e92705774defce34adf645d8",
+          "bytes": 89349,
           "error": ""
         }
       }
@@ -614,23 +614,23 @@
       "program_id": "trygfonden-safety",
       "foundation_id": "trygfonden",
       "name": "Tryghed og trivsel",
-      "checked_at": "2026-07-27T14:42:49.610Z",
+      "checked_at": "2026-11-09T16:26:21.836Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tryghed.dk/sog-stotte",
-          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
-          "bytes": 52146,
+          "hash": "c540f0cbbb1ba28a6262f4cbc9f3c8d1849d644398e0c80d3bdeec3ceb6aeb0a",
+          "bytes": 55359,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tryghed.dk/sog-stotte",
-          "hash": "732dadb5e87fcb67a08c11326487c925a4e216b74d6624928c88663901b86918",
-          "bytes": 52146,
+          "hash": "c540f0cbbb1ba28a6262f4cbc9f3c8d1849d644398e0c80d3bdeec3ceb6aeb0a",
+          "bytes": 55359,
           "error": ""
         }
       }
@@ -639,23 +639,23 @@
       "program_id": "villum-research-calls",
       "foundation_id": "villum-fonden",
       "name": "VILLUM FONDEN opslag",
-      "checked_at": "2026-07-27T14:42:50.168Z",
+      "checked_at": "2026-11-09T16:26:22.519Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://villumfonden.dk/da/simpel-side/aktuelle-opslag-0",
-          "hash": "202512c8d65abe44a8dea32f47e284a7d66fd51faebdf0c7ec4efc3b20dbcc71",
-          "bytes": 51821,
+          "hash": "45f68e4bcbc7742cd972f5eb0031eeb959ea788543ef8fb5e57206513ab78414",
+          "bytes": 51617,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://villumfonden.dk/da/simpel-side/aktuelle-opslag-0",
-          "hash": "202512c8d65abe44a8dea32f47e284a7d66fd51faebdf0c7ec4efc3b20dbcc71",
-          "bytes": 51821,
+          "hash": "45f68e4bcbc7742cd972f5eb0031eeb959ea788543ef8fb5e57206513ab78414",
+          "bytes": 51617,
           "error": ""
         }
       }
@@ -664,23 +664,23 @@
       "program_id": "velux-humanities-calls",
       "foundation_id": "velux-fonden",
       "name": "VELUX FONDEN opslag",
-      "checked_at": "2026-07-27T14:42:50.308Z",
+      "checked_at": "2026-11-09T16:26:23.190Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://veluxfonden.dk/da/simpel-side/aktuelle-opslag",
-          "hash": "26fe6b56d8c0fef4487e3b1db4438efbcc74e27645beac46c058b26727e699b9",
-          "bytes": 47124,
+          "hash": "ea75b828bea4d9a5b6808b1511bb5847fb5b265382f2bf7bfa44b3d35a7a8505",
+          "bytes": 41688,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://veluxfonden.dk/da/artikel/saadan-soeger-du",
-          "hash": "bf350532e26adfe9c63ebf58c2a858a01ab1e2cc36138dcb14b96b7907eb594b",
-          "bytes": 48712,
+          "hash": "647fa2556362f6cc79fd4915e068c8831a59a6c53dbd77ab8b7997aac732dc1f",
+          "bytes": 49051,
           "error": ""
         }
       }
@@ -689,23 +689,23 @@
       "program_id": "bikuben-art-social",
       "foundation_id": "bikubenfonden",
       "name": "Kunst og sociale forandringer",
-      "checked_at": "2026-07-27T14:42:50.624Z",
+      "checked_at": "2026-11-09T16:26:23.806Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.bikubenfonden.dk/kom-i-dialog",
-          "hash": "fe132660da0260bb3eff823f154ab5021060db336e89ccefe1d258c25520c9fd",
-          "bytes": 65439,
+          "hash": "ea8594285f00b77de4bb7aa332e0258757b35be19acde5e7af24ec3f0a07ab4c",
+          "bytes": 76569,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.bikubenfonden.dk/kom-i-dialog",
-          "hash": "fe132660da0260bb3eff823f154ab5021060db336e89ccefe1d258c25520c9fd",
-          "bytes": 65439,
+          "hash": "ea8594285f00b77de4bb7aa332e0258757b35be19acde5e7af24ec3f0a07ab4c",
+          "bytes": 76569,
           "error": ""
         }
       }
@@ -714,23 +714,23 @@
       "program_id": "tuborg-youth",
       "foundation_id": "tuborgfondet",
       "name": "Unge og fællesskaber",
-      "checked_at": "2026-07-27T14:42:51.146Z",
+      "checked_at": "2026-11-09T16:26:24.915Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tuborgfondet.dk/projektstoette",
-          "hash": "46223ce59cc388ed5dce4468c3a8ab1ad1d673db967fd1ed68cd5b2b206bdf2d",
-          "bytes": 228984,
+          "hash": "504df83aeb09853fe41310bcf792ae298775a31f45e2437d1e42940bd15b0143",
+          "bytes": 241411,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://tuborgfondet.dk/projektstoette",
-          "hash": "210bdcd691263b8ac8f1efb5cf7edfb05289bf0f0b6225cbc84f2afdaa3c22e3",
-          "bytes": 228984,
+          "hash": "5f6e05673800de917bc737ad5392e3f95c7aec0154446e4cb80ecdcd1fc4901c",
+          "bytes": 241411,
           "error": ""
         }
       }
@@ -739,23 +739,23 @@
       "program_id": "egmont-children",
       "foundation_id": "egmont-fonden",
       "name": "Børn og unge i udsatte positioner",
-      "checked_at": "2026-07-27T14:42:51.861Z",
+      "checked_at": "2026-11-09T16:26:26.577Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.egmont.dk/saadan-ansoeger-i",
-          "hash": "3341b03e0a456d3e008dcdf76de68cfca6bedd45d4cffc3ff55f524ac2183707",
-          "bytes": 217554,
+          "hash": "c2ab85927658ceedaec1fb4a5155dacf1286af1db2a69b5d237d517b84de10e7",
+          "bytes": 148957,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.egmont.dk/saadan-ansoeger-i",
-          "hash": "3e01129833a051a26e273a1eed6baedb9c88e102ce00786a8b2abb38adb13afc",
-          "bytes": 217591,
+          "hash": "25454cf9ffbfe35509d7dd963401c4fbec2ed2e602f1449f12010549fc6722bd",
+          "bytes": 148981,
           "error": ""
         }
       }
@@ -764,23 +764,23 @@
       "program_id": "lauritzen-general",
       "foundation_id": "lauritzen-fonden",
       "name": "Almennyttige uddelinger",
-      "checked_at": "2026-07-27T14:42:52.034Z",
+      "checked_at": "2026-11-09T16:26:27.597Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://lauritzenfonden.com/soeg-stoette/",
-          "hash": "26e1d717837aa6f93d69c14890313dd3d0af9363b90757e7098f1adc91b93045",
-          "bytes": 87947,
+          "hash": "8132a610cc810dffccba91e5926fd5c1cd2296f2748444d624cc3cd0cb163de1",
+          "bytes": 81665,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://lauritzenfonden.com/soeg-stoette/",
-          "hash": "26e1d717837aa6f93d69c14890313dd3d0af9363b90757e7098f1adc91b93045",
-          "bytes": 87947,
+          "hash": "8132a610cc810dffccba91e5926fd5c1cd2296f2748444d624cc3cd0cb163de1",
+          "bytes": 81665,
           "error": ""
         }
       }
@@ -789,23 +789,23 @@
       "program_id": "ole-kirks-children",
       "foundation_id": "ole-kirks-fond",
       "name": "Børn og familier",
-      "checked_at": "2026-07-27T14:42:52.395Z",
+      "checked_at": "2026-11-09T16:26:28.206Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.olekirksfond.dk/ansoegningsprocessen/",
-          "hash": "c6effd8ce2efe3dc4409401eccb7f729038f37458d9aef64203924504e460200",
-          "bytes": 161071,
+          "hash": "56554373ab5fddeca9bc4b8bf548ebd605a1df36e07bd2d1ea8ac46fd6952a6f",
+          "bytes": 154049,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.olekirksfond.dk/ansoegningsprocessen/",
-          "hash": "bd081767580792b8714761d663e13225d2abdd7fff2786a75dbe66c8e246f031",
-          "bytes": 161071,
+          "hash": "669ef811a947db9b3495b78bf4f907692e5f7861d5ce341935a129ad7ed43d74",
+          "bytes": 154049,
           "error": ""
         }
       }
@@ -814,23 +814,23 @@
       "program_id": "kr-climate",
       "foundation_id": "kr-foundation",
       "name": "Climate funding",
-      "checked_at": "2026-07-27T14:42:52.929Z",
+      "checked_at": "2026-11-09T16:26:29.360Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://krfnd.org/how-we-work/",
-          "hash": "031389e68aa4ab0c47ba2dd9b616b9fb0b15f6400df1f622378cba81c71b81e1",
-          "bytes": 50223,
+          "hash": "d88432cd698e29ca3df182253ab550550b15a11764a59679ccdbe537c9faa412",
+          "bytes": 54022,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://krfnd.org/how-we-work/",
-          "hash": "031389e68aa4ab0c47ba2dd9b616b9fb0b15f6400df1f622378cba81c71b81e1",
-          "bytes": 50223,
+          "hash": "3ada8fc17fb47e7d575ccf1ed7005b4bfcb34cd9d242e9046d20ab2d1107870f",
+          "bytes": 54022,
           "error": ""
         }
       }
@@ -839,23 +839,23 @@
       "program_id": "duf-initiativstoetten",
       "foundation_id": "duf",
       "name": "Initiativstøtten",
-      "checked_at": "2026-07-27T14:42:54.176Z",
+      "checked_at": "2026-11-09T16:26:30.245Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://duf.dk/tilskud-puljer/initiativstoetten/",
-          "hash": "3710103044a4795f61e1de96f40e685878258cc1403f171599b918b0321a766c",
-          "bytes": 152013,
+          "hash": "4e93c7ba05eb02633c5bc48b38dadd5148a6071cff8bb2379119af6591fc370e",
+          "bytes": 182930,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://duf.dk/tilskud-puljer/initiativstoetten/",
-          "hash": "3710103044a4795f61e1de96f40e685878258cc1403f171599b918b0321a766c",
-          "bytes": 152013,
+          "hash": "4e93c7ba05eb02633c5bc48b38dadd5148a6071cff8bb2379119af6591fc370e",
+          "bytes": 182930,
           "error": ""
         }
       }
@@ -864,23 +864,23 @@
       "program_id": "oestifterne-pools",
       "foundation_id": "oestifterne",
       "name": "Uddelingspuljer",
-      "checked_at": "2026-07-27T14:42:54.513Z",
+      "checked_at": "2026-11-09T16:26:31.106Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.oestifterne.dk/uddelinger/uddelingspuljer/",
-          "hash": "0e764eb08194261b9a951734d03d2d667c8fea60dab1e446105d7d331a432535",
-          "bytes": 151665,
+          "hash": "8e0e5ac653533094088f87f8a8afc1824b2c950606dfde06825d9e61cb815fc4",
+          "bytes": 151929,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.oestifterne.dk/uddelinger/uddelingspuljer/",
-          "hash": "0e764eb08194261b9a951734d03d2d667c8fea60dab1e446105d7d331a432535",
-          "bytes": 151665,
+          "hash": "7a5e26d1285027e09783e96d8c9f8bf1bcb108a8b6598627f31e07671ff8ba76",
+          "bytes": 151930,
           "error": ""
         }
       }
@@ -889,23 +889,23 @@
       "program_id": "lb-national-grants",
       "foundation_id": "lb-foreningen",
       "name": "Nationale og regionale uddelinger",
-      "checked_at": "2026-07-27T14:42:54.701Z",
+      "checked_at": "2026-11-09T16:26:32.013Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.lbforeningen.dk/soeg-stoette",
-          "hash": "647d90f3f9ad90beed77ed39dff405c42606845888a34b37a74e326ff5e3537a",
-          "bytes": 74355,
+          "hash": "13a44413c4af7a22e890bb30f33ea87c2aa840a382eb7837c79fcea466189735",
+          "bytes": 77409,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.lbforeningen.dk/soeg-stoette",
-          "hash": "d1429bbb30a31844c766c4e2e36f2dcae7540721cb8000d050f7c88e009a06f2",
-          "bytes": 74355,
+          "hash": "1d2c23ee251ce3d89fd3be23ad2149d411d75da7dbe197ed5f62dc37633a9ff1",
+          "bytes": 77408,
           "error": ""
         }
       }
@@ -914,23 +914,23 @@
       "program_id": "nordjyllandsfonden-community",
       "foundation_id": "nordjyllandsfonden",
       "name": "Fællesskaber",
-      "checked_at": "2026-07-27T14:42:55.739Z",
+      "checked_at": "2026-11-09T16:26:33.697Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.nordjyllandsfonden.dk/ansoeg",
-          "hash": "1fe101ed2bcc17c489c8c5357d9f3c655efd89fa5dcba1d9569b56e738caf327",
-          "bytes": 263122,
+          "hash": "d486888880f6e44f95918720ad33ffcd95f74129760bb4c53a3168058abe17cb",
+          "bytes": 262770,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.nordjyllandsfonden.dk/ansoeg",
-          "hash": "1fe101ed2bcc17c489c8c5357d9f3c655efd89fa5dcba1d9569b56e738caf327",
-          "bytes": 263122,
+          "hash": "d486888880f6e44f95918720ad33ffcd95f74129760bb4c53a3168058abe17cb",
+          "bytes": 262770,
           "error": ""
         }
       }
@@ -939,23 +939,23 @@
       "program_id": "velliv-youth-mental-health",
       "foundation_id": "velliv-foreningen",
       "name": "Unge og mental sundhed i arbejdslivet",
-      "checked_at": "2026-07-27T14:42:56.054Z",
+      "checked_at": "2026-11-09T16:26:34.466Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.vellivforeningen.dk/soeg-stoette",
-          "hash": "27259c7b06040bd6c43511f74711b56365e298be942fc84cdce1dbd8f8273198",
-          "bytes": 92345,
+          "hash": "9589970493b3d10d8999d80b663b0ba99d6178b613ead900a4fe24de80355429",
+          "bytes": 103630,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.vellivforeningen.dk/soeg-stoette",
-          "hash": "1d59430654f4b87d0b3a7bcc746b48909ba9f723a3b846a1f0ddefcef0a82235",
-          "bytes": 92345,
+          "hash": "133f7b46cef58f8fc865fcbd26f8730fdbc215b83e097b905eef98dea668de87",
+          "bytes": 103630,
           "error": ""
         }
       }
@@ -964,23 +964,30 @@
       "program_id": "noerrebro-byens-puls",
       "foundation_id": "noerrebro-lokaludvalg",
       "name": "Byens Puls",
-      "checked_at": "2026-07-27T14:42:56.771Z",
-      "failed": [],
+      "checked_at": "2026-11-09T16:26:36.356Z",
+      "failed": [
+        {
+          "field": "source_url",
+          "status": 404,
+          "error": "",
+          "url": "https://noerrebrolokaludvalg.kk.dk/byens-puls-er-aaben-igen-3/"
+        }
+      ],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge/",
-          "hash": "08bc5f6979b4c11ca18778e3134899d20f4222f14a336d1fc374048f6a62294d",
-          "bytes": 128052,
+          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge",
+          "hash": "df01f7b70f65c1c749cf4aabd22302292595fb570311df178c7280da5eb56a01",
+          "bytes": 60361,
           "error": ""
         },
         "source_url": {
-          "ok": true,
-          "status": 200,
+          "ok": false,
+          "status": 404,
           "finalUrl": "https://noerrebrolokaludvalg.kk.dk/byens-puls-er-aaben-igen-3/",
-          "hash": "a9c588dedfce7d419bec3975b361e9c1c2ee74dea56d558bf2a14e2ff2a10825",
-          "bytes": 131909,
+          "hash": "4611d80a5b198e85a8ccff455ab274e0f342a50463a8d82dcec471bf04aaac7a",
+          "bytes": 54236,
           "error": ""
         }
       }
@@ -989,23 +996,23 @@
       "program_id": "noerrebro-puljen",
       "foundation_id": "noerrebro-lokaludvalg",
       "name": "Nørrebro Puljen",
-      "checked_at": "2026-07-27T14:42:57.326Z",
+      "checked_at": "2026-11-09T16:26:37.114Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge/",
-          "hash": "666e8233731519bbc60097d1e7ec31f3d863ba6240b03b40a030e390c57a82fe",
-          "bytes": 128052,
+          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge",
+          "hash": "df01f7b70f65c1c749cf4aabd22302292595fb570311df178c7280da5eb56a01",
+          "bytes": 60361,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
-          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge/",
-          "hash": "019f21f0d8e422e2b1985f14082bba78d341fee7df25f12fdcf6b326465b52aa",
-          "bytes": 128052,
+          "finalUrl": "https://noerrebrolokaludvalg.kk.dk/soeg-penge",
+          "hash": "df01f7b70f65c1c749cf4aabd22302292595fb570311df178c7280da5eb56a01",
+          "bytes": 60361,
           "error": ""
         }
       }
@@ -1014,23 +1021,23 @@
       "program_id": "frederiksberg-hurtigpuljen",
       "foundation_id": "frederiksberg-kommune",
       "name": "Hurtigpuljen",
-      "checked_at": "2026-07-27T14:42:57.601Z",
+      "checked_at": "2026-11-09T16:26:37.997Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/hurtigpuljen",
-          "hash": "694e6fd3db1a7bb11f9140f26d01c94facffd1fd9fb28a1ec1694877ff16c3f9",
-          "bytes": 57844,
+          "hash": "bb1ea2499d264deacf88f80238f242a1fe74311108ee8a64c222bb520e0764af",
+          "bytes": 63188,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/hurtigpuljen",
-          "hash": "694e6fd3db1a7bb11f9140f26d01c94facffd1fd9fb28a1ec1694877ff16c3f9",
-          "bytes": 57844,
+          "hash": "f4b910d13545b933aca1d687dac29a3a9bbf03e82a3b3eacc4532f737971156d",
+          "bytes": 63188,
           "error": ""
         }
       }
@@ -1039,23 +1046,23 @@
       "program_id": "frederiksberg-kultur-fritid",
       "foundation_id": "frederiksberg-kommune",
       "name": "Kultur- og fritidspuljen",
-      "checked_at": "2026-07-27T14:42:57.745Z",
+      "checked_at": "2026-11-09T16:26:38.448Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/kultur-og-fritidspuljen",
-          "hash": "a1d807ee1032d47bf5aa63bf04bdaa968da1bca4520f2cae30c83b518cc7ca48",
-          "bytes": 59229,
+          "hash": "167796a1b545b639fd2caed64c8b3cbad3f4eea4a2ad88e74192c9e269b35308",
+          "bytes": 65139,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.frederiksberg.dk/fritid-og-oplevelser/tilskud-fra-puljer/kultur-og-fritidspuljen",
-          "hash": "a1d807ee1032d47bf5aa63bf04bdaa968da1bca4520f2cae30c83b518cc7ca48",
-          "bytes": 59229,
+          "hash": "bc0fca5dcb8067f91037f08db4ce8f66e9570661739da2537d7b2a9860fd2192",
+          "bytes": 65139,
           "error": ""
         }
       }
@@ -1064,23 +1071,23 @@
       "program_id": "kk-snabslanten",
       "foundation_id": "koebenhavns-kommune",
       "name": "Snabslanten",
-      "checked_at": "2026-07-27T14:42:58.035Z",
+      "checked_at": "2026-11-09T16:26:39.344Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://snabslanten.kk.dk/retningslinjer",
-          "hash": "66f1db99be520cfbfd56bc452b6f8a3d031db87f0e9d2a33d9e919037eb1a67e",
-          "bytes": 83777,
+          "hash": "00fffa23f4585d77afe9072fad1c2bf4a84b863f55d2716c6e08e1a56d337fe4",
+          "bytes": 82692,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://snabslanten.kk.dk/retningslinjer",
-          "hash": "66f1db99be520cfbfd56bc452b6f8a3d031db87f0e9d2a33d9e919037eb1a67e",
-          "bytes": 83777,
+          "hash": "00fffa23f4585d77afe9072fad1c2bf4a84b863f55d2716c6e08e1a56d337fe4",
+          "bytes": 82692,
           "error": ""
         }
       }
@@ -1089,23 +1096,23 @@
       "program_id": "kk-udviklingspulje-boern-unge",
       "foundation_id": "koebenhavns-kommune",
       "name": "Udviklingspuljen for børn og unge",
-      "checked_at": "2026-07-27T14:42:58.512Z",
+      "checked_at": "2026-11-09T16:26:40.639Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/foreninger-og-fritidsliv/tilskud-og-puljer-for-foreninger-og-aftenskoler/soeg-udviklingspuljen-for-boern-og-unge",
-          "hash": "f512364e5065148dc5b98f7267d9046597db875be74552b1defbb74c8533e24c",
-          "bytes": 86851,
+          "hash": "6459216be2a7b3eda9b0a1062d63ebae95303aa87171fdf7fa51bb51e4c0f34c",
+          "bytes": 86590,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/foreninger-og-fritidsliv/tilskud-og-puljer-for-foreninger-og-aftenskoler/soeg-udviklingspuljen-for-boern-og-unge",
-          "hash": "f512364e5065148dc5b98f7267d9046597db875be74552b1defbb74c8533e24c",
-          "bytes": 86851,
+          "hash": "6459216be2a7b3eda9b0a1062d63ebae95303aa87171fdf7fa51bb51e4c0f34c",
+          "bytes": 86590,
           "error": ""
         }
       }
@@ -1114,23 +1121,23 @@
       "program_id": "kk-paragraf-18",
       "foundation_id": "koebenhavns-kommune",
       "name": "§18-puljen",
-      "checked_at": "2026-07-27T14:42:58.743Z",
+      "checked_at": "2026-11-09T16:26:40.928Z",
       "failed": [],
       "checks": {
         "application_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/kultur-og-projektstoette/stoette-til-socialt-arbejde/stoette-til-frivilligt-socialt-arbejde-ss18",
-          "hash": "4bd7107e68c05fcab8ed3b72b92dbbe8fd3a0bd0d570e2a4592b2a6ed7dc4b3a",
-          "bytes": 104024,
+          "hash": "a927ef3c2f33da2d651e5eb26f7925ebcb76204fb2b95051b39564abbf662f7d",
+          "bytes": 103763,
           "error": ""
         },
         "source_url": {
           "ok": true,
           "status": 200,
           "finalUrl": "https://www.kk.dk/brug-byen/kultur-og-projektstoette/stoette-til-socialt-arbejde/stoette-til-frivilligt-socialt-arbejde-ss18",
-          "hash": "4bd7107e68c05fcab8ed3b72b92dbbe8fd3a0bd0d570e2a4592b2a6ed7dc4b3a",
-          "bytes": 104024,
+          "hash": "a927ef3c2f33da2d651e5eb26f7925ebcb76204fb2b95051b39564abbf662f7d",
+          "bytes": 103763,
           "error": ""
         }
       }
