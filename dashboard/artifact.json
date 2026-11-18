@@ -1,0 +1,1348 @@
+{
+  "surface": "dashboard",
+  "manifest": {
+    "version": 1,
+    "title": "Fondsblik · demo-dashboard",
+    "generatedAt": "2026-10-13T12:00:00Z",
+    "surface": "dashboard",
+    "description": "Overblik over fondsansøgninger, pipeline og kommende frister.",
+    "sources": [
+      {
+        "id": "applications",
+        "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+        "path": "scripts/build_dashboard_demo.mjs",
+        "query": {
+          "engine": "SQLite",
+          "language": "sql",
+          "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')) SELECT * FROM applications",
+          "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+          "tables_used": [
+            "dashboard/demo-applications.json"
+          ],
+          "filters": [
+            "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+          ],
+          "metric_definitions": [
+            "Ansøgninger: antal unikke demo-id’er.",
+            "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+            "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+            "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+            "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+          ]
+        }
+      },
+      {
+        "id": "deadlines",
+        "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+        "path": "scripts/build_dashboard_demo.mjs",
+        "query": {
+          "engine": "SQLite",
+          "language": "sql",
+          "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')) SELECT * FROM applications WHERE status IN ('Idé','Under udarbejdelse') AND deadline >= '2026-10-13'",
+          "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+          "tables_used": [
+            "dashboard/demo-applications.json"
+          ],
+          "filters": [
+            "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+          ],
+          "metric_definitions": [
+            "Ansøgninger: antal unikke demo-id’er.",
+            "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+            "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+            "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+            "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+          ]
+        }
+      },
+      {
+        "id": "summary",
+        "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+        "path": "scripts/build_dashboard_demo.mjs",
+        "query": {
+          "engine": "SQLite",
+          "language": "sql",
+          "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')) SELECT s.area, COUNT(a.id) count, SUM(CASE WHEN status NOT IN ('Bevilget','Afslag') THEN requested ELSE 0 END) pipeline, SUM(granted) granted, SUM(CASE WHEN status IN ('Idé','Under udarbejdelse') AND deadline BETWEEN '2026-10-13' AND '2026-11-12' THEN 1 ELSE 0 END) due FROM scopes s LEFT JOIN applications a ON s.area='all' OR s.area=a.area GROUP BY s.area",
+          "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+          "tables_used": [
+            "dashboard/demo-applications.json"
+          ],
+          "filters": [
+            "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+          ],
+          "metric_definitions": [
+            "Ansøgninger: antal unikke demo-id’er.",
+            "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+            "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+            "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+            "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+          ]
+        }
+      },
+      {
+        "id": "pipeline",
+        "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+        "path": "scripts/build_dashboard_demo.mjs",
+        "query": {
+          "engine": "SQLite",
+          "language": "sql",
+          "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')), stages(status,rank) AS (VALUES ('Idé',0),('Under udarbejdelse',1),('Indsendt',2),('Bevilget',3),('Afslag',4)) SELECT s.area,t.status,COUNT(a.id) count,COALESCE(SUM(a.requested),0) requested FROM scopes s CROSS JOIN stages t LEFT JOIN applications a ON (s.area='all' OR s.area=a.area) AND a.status=t.status GROUP BY s.area,t.status ORDER BY s.area,t.rank",
+          "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+          "tables_used": [
+            "dashboard/demo-applications.json"
+          ],
+          "filters": [
+            "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+          ],
+          "metric_definitions": [
+            "Ansøgninger: antal unikke demo-id’er.",
+            "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+            "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+            "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+            "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+          ]
+        }
+      },
+      {
+        "id": "monthly",
+        "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+        "path": "scripts/build_dashboard_demo.mjs",
+        "query": {
+          "engine": "SQLite",
+          "language": "sql",
+          "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')), months(month) AS (VALUES ('2026-01-01'),('2026-02-01'),('2026-03-01'),('2026-04-01'),('2026-05-01'),('2026-06-01'),('2026-07-01'),('2026-08-01'),('2026-09-01'),('2026-10-01')) SELECT s.area,m.month,COUNT(a.id) count,COALESCE(SUM(a.requested),0) requested FROM scopes s CROSS JOIN months m LEFT JOIN applications a ON (s.area='all' OR s.area=a.area) AND substr(a.submitted,1,7)=substr(m.month,1,7) GROUP BY s.area,m.month ORDER BY s.area,m.month",
+          "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+          "tables_used": [
+            "dashboard/demo-applications.json"
+          ],
+          "filters": [
+            "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+          ],
+          "metric_definitions": [
+            "Ansøgninger: antal unikke demo-id’er.",
+            "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+            "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+            "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+            "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+          ]
+        }
+      }
+    ],
+    "cards": [
+      {
+        "id": "count",
+        "dataset": "summary",
+        "sourceId": "summary",
+        "description": "Antal fiktive ansøgninger i det valgte område.",
+        "metrics": [
+          {
+            "field": "count",
+            "label": "Ansøgninger",
+            "format": "compact"
+          }
+        ]
+      },
+      {
+        "id": "pipeline",
+        "dataset": "summary",
+        "sourceId": "summary",
+        "description": "Ansøgt beløb i idé, under udarbejdelse og indsendt. Ikke forventet indtægt.",
+        "metrics": [
+          {
+            "field": "pipeline",
+            "label": "Aktiv pipeline · DKK",
+            "format": "compact"
+          }
+        ]
+      },
+      {
+        "id": "granted",
+        "dataset": "summary",
+        "sourceId": "summary",
+        "description": "Tildelte beløb; ikke udbetalinger.",
+        "metrics": [
+          {
+            "field": "granted",
+            "label": "Bevilget · DKK",
+            "format": "compact"
+          }
+        ]
+      },
+      {
+        "id": "due",
+        "dataset": "summary",
+        "sourceId": "summary",
+        "description": "Ikke indsendte ansøgninger med frist 13. okt.–12. nov. 2026.",
+        "metrics": [
+          {
+            "field": "due",
+            "label": "Frister næste 30 dage",
+            "format": "compact"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "pipeline",
+        "title": "Ansøgninger efter status",
+        "subtitle": "Antal ansøgninger · status pr. 13. okt. 2026",
+        "type": "horizontalBar",
+        "intent": "comparison",
+        "dataset": "pipeline",
+        "sourceId": "pipeline",
+        "layout": "half",
+        "encodings": {
+          "x": {
+            "field": "status",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "count",
+            "type": "quantitative",
+            "format": "number"
+          }
+        },
+        "palette": {
+          "kind": "sequential",
+          "name": "blue"
+        },
+        "labels": {
+          "values": "all"
+        }
+      },
+      {
+        "id": "monthly",
+        "title": "Indsendelser pr. måned",
+        "subtitle": "Antal · jan.–okt. 2026 · oktober til og med 13. okt.",
+        "type": "bar",
+        "intent": "trend",
+        "dataset": "monthly",
+        "sourceId": "monthly",
+        "layout": "half",
+        "encodings": {
+          "x": {
+            "field": "month",
+            "type": "temporal"
+          },
+          "y": {
+            "field": "count",
+            "type": "quantitative",
+            "format": "number"
+          }
+        },
+        "palette": {
+          "kind": "sequential",
+          "name": "blue"
+        },
+        "labels": {
+          "values": "all"
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "deadlines",
+        "title": "Kommende frister",
+        "subtitle": "Idéer og ansøgninger under udarbejdelse · sorteret efter frist",
+        "dataset": "deadlines",
+        "sourceId": "deadlines",
+        "defaultSort": {
+          "field": "deadline",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "foundation",
+            "label": "Fond",
+            "type": "text"
+          },
+          {
+            "field": "project",
+            "label": "Projekt",
+            "type": "text"
+          },
+          {
+            "field": "area",
+            "label": "Indsatsområde",
+            "type": "text"
+          },
+          {
+            "field": "requested",
+            "label": "Ansøgt · DKK",
+            "type": "number"
+          },
+          {
+            "field": "deadline",
+            "label": "Frist",
+            "type": "date"
+          },
+          {
+            "field": "owner",
+            "label": "Ansvarlig",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "id": "applications",
+        "title": "Alle demoansøgninger",
+        "dataset": "applications",
+        "sourceId": "applications",
+        "defaultSort": {
+          "field": "requested",
+          "direction": "desc"
+        },
+        "columns": [
+          {
+            "field": "foundation",
+            "label": "Fond",
+            "type": "text"
+          },
+          {
+            "field": "project",
+            "label": "Projekt",
+            "type": "text"
+          },
+          {
+            "field": "area",
+            "label": "Indsatsområde",
+            "type": "text"
+          },
+          {
+            "field": "status",
+            "label": "Status",
+            "type": "text"
+          },
+          {
+            "field": "requested",
+            "label": "Ansøgt · DKK",
+            "type": "number"
+          },
+          {
+            "field": "granted",
+            "label": "Bevilget · DKK",
+            "type": "number"
+          },
+          {
+            "field": "deadline",
+            "label": "Frist",
+            "type": "date"
+          },
+          {
+            "field": "owner",
+            "label": "Ansvarlig",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "id": "area",
+        "label": "Indsatsområde",
+        "dataset": "summary",
+        "field": "area",
+        "includeAll": true,
+        "targets": [
+          {
+            "dataset": "applications",
+            "field": "area"
+          },
+          {
+            "dataset": "deadlines",
+            "field": "area"
+          },
+          {
+            "dataset": "pipeline",
+            "field": "area"
+          },
+          {
+            "dataset": "monthly",
+            "field": "area"
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "intro",
+        "type": "markdown",
+        "body": "# Fondsblik · demo-dashboard\n\n**DEMODATA · 13. oktober 2026**\n\nPrioritér fondsarbejdet: følg ansøgninger, finansiering og næste frister. Alle navne, beløb og frister er fiktive. Google Drive er ikke tilsluttet. Vælg et indsatsområde for at filtrere hele dashboardet."
+      },
+      {
+        "id": "kpis",
+        "type": "metric-strip",
+        "cardIds": [
+          "count",
+          "pipeline",
+          "granted",
+          "due"
+        ]
+      },
+      {
+        "id": "chart-pipeline",
+        "type": "chart",
+        "chartId": "pipeline",
+        "layout": "half"
+      },
+      {
+        "id": "chart-monthly",
+        "type": "chart",
+        "chartId": "monthly",
+        "layout": "half"
+      },
+      {
+        "id": "table-deadlines",
+        "type": "table",
+        "tableId": "deadlines"
+      },
+      {
+        "id": "table-applications",
+        "type": "table",
+        "tableId": "applications"
+      },
+      {
+        "id": "definitions",
+        "type": "markdown",
+        "sourceId": "summary",
+        "body": "### Sådan læses tallene\n\n**Aktiv pipeline** er ansøgt beløb i idé, under udarbejdelse og indsendt. Beløbet er ikke en prognose. **Bevilget** viser tilsagn, ikke udbetalinger. **Frister næste 30 dage** omfatter kun ansøgninger, der endnu ikke er indsendt, fra 13. oktober til og med 12. november 2026.\n\nDette er et fast demosnapshot. Ingen automatisk opdatering eller eksterne forbindelser."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-10-13T12:00:00Z",
+    "status": "fixture",
+    "datasets": {
+      "applications": [
+        {
+          "id": "DEMO-01",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 1",
+          "area": "Unge og fællesskaber",
+          "status": "Idé",
+          "requested": 75000,
+          "granted": 0,
+          "deadline": "2026-10-14",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-02",
+          "foundation": "Spirepuljen (demo)",
+          "project": "Grønne mødesteder 1",
+          "area": "Grøn omstilling",
+          "status": "Under udarbejdelse",
+          "requested": 150000,
+          "granted": 0,
+          "deadline": "2026-10-15",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-03",
+          "foundation": "Fælles Fremtid (demo)",
+          "project": "Stemmer i byen 1",
+          "area": "Demokratisk deltagelse",
+          "status": "Indsendt",
+          "requested": 225000,
+          "granted": 0,
+          "deadline": "2026-10-16",
+          "submitted": "2026-03-10",
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-04",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 2",
+          "area": "Unge og fællesskaber",
+          "status": "Bevilget",
+          "requested": 300000,
+          "granted": 240000,
+          "deadline": "2026-10-17",
+          "submitted": "2026-04-10",
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-05",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 2",
+          "area": "Grøn omstilling",
+          "status": "Afslag",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-10-18",
+          "submitted": "2026-05-10",
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-06",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 2",
+          "area": "Demokratisk deltagelse",
+          "status": "Idé",
+          "requested": 450000,
+          "granted": 0,
+          "deadline": "2026-10-19",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-07",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 3",
+          "area": "Unge og fællesskaber",
+          "status": "Under udarbejdelse",
+          "requested": 75000,
+          "granted": 0,
+          "deadline": "2026-10-20",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-08",
+          "foundation": "Spirepuljen (demo)",
+          "project": "Grønne mødesteder 3",
+          "area": "Grøn omstilling",
+          "status": "Indsendt",
+          "requested": 150000,
+          "granted": 0,
+          "deadline": "2026-10-21",
+          "submitted": "2026-08-10",
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-09",
+          "foundation": "Fælles Fremtid (demo)",
+          "project": "Stemmer i byen 3",
+          "area": "Demokratisk deltagelse",
+          "status": "Bevilget",
+          "requested": 225000,
+          "granted": 180000,
+          "deadline": "2026-10-22",
+          "submitted": "2026-09-10",
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-10",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 4",
+          "area": "Unge og fællesskaber",
+          "status": "Afslag",
+          "requested": 300000,
+          "granted": 0,
+          "deadline": "2026-10-23",
+          "submitted": "2026-01-10",
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-11",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 4",
+          "area": "Grøn omstilling",
+          "status": "Idé",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-10-24",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-12",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 4",
+          "area": "Demokratisk deltagelse",
+          "status": "Under udarbejdelse",
+          "requested": 450000,
+          "granted": 0,
+          "deadline": "2026-10-25",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-13",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 5",
+          "area": "Unge og fællesskaber",
+          "status": "Indsendt",
+          "requested": 75000,
+          "granted": 0,
+          "deadline": "2026-11-14",
+          "submitted": "2026-04-10",
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-14",
+          "foundation": "Spirepuljen (demo)",
+          "project": "Grønne mødesteder 5",
+          "area": "Grøn omstilling",
+          "status": "Bevilget",
+          "requested": 150000,
+          "granted": 120000,
+          "deadline": "2026-11-15",
+          "submitted": "2026-05-10",
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-15",
+          "foundation": "Fælles Fremtid (demo)",
+          "project": "Stemmer i byen 5",
+          "area": "Demokratisk deltagelse",
+          "status": "Afslag",
+          "requested": 225000,
+          "granted": 0,
+          "deadline": "2026-11-16",
+          "submitted": "2026-06-10",
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-16",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 6",
+          "area": "Unge og fællesskaber",
+          "status": "Idé",
+          "requested": 300000,
+          "granted": 0,
+          "deadline": "2026-11-17",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-17",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 6",
+          "area": "Grøn omstilling",
+          "status": "Under udarbejdelse",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-11-18",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-18",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 6",
+          "area": "Demokratisk deltagelse",
+          "status": "Indsendt",
+          "requested": 450000,
+          "granted": 0,
+          "deadline": "2026-11-19",
+          "submitted": "2026-09-10",
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-19",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 7",
+          "area": "Unge og fællesskaber",
+          "status": "Bevilget",
+          "requested": 75000,
+          "granted": 60000,
+          "deadline": "2026-11-20",
+          "submitted": "2026-01-10",
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-20",
+          "foundation": "Spirepuljen (demo)",
+          "project": "Grønne mødesteder 7",
+          "area": "Grøn omstilling",
+          "status": "Afslag",
+          "requested": 150000,
+          "granted": 0,
+          "deadline": "2026-11-21",
+          "submitted": "2026-02-10",
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-21",
+          "foundation": "Fælles Fremtid (demo)",
+          "project": "Stemmer i byen 7",
+          "area": "Demokratisk deltagelse",
+          "status": "Idé",
+          "requested": 225000,
+          "granted": 0,
+          "deadline": "2026-11-22",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-22",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 8",
+          "area": "Unge og fællesskaber",
+          "status": "Under udarbejdelse",
+          "requested": 300000,
+          "granted": 0,
+          "deadline": "2026-11-23",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-23",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 8",
+          "area": "Grøn omstilling",
+          "status": "Indsendt",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-11-24",
+          "submitted": "2026-05-10",
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-24",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 8",
+          "area": "Demokratisk deltagelse",
+          "status": "Bevilget",
+          "requested": 450000,
+          "granted": 360000,
+          "deadline": "2026-11-25",
+          "submitted": "2026-06-10",
+          "owner": "Team C"
+        }
+      ],
+      "deadlines": [
+        {
+          "id": "DEMO-01",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 1",
+          "area": "Unge og fællesskaber",
+          "status": "Idé",
+          "requested": 75000,
+          "granted": 0,
+          "deadline": "2026-10-14",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-02",
+          "foundation": "Spirepuljen (demo)",
+          "project": "Grønne mødesteder 1",
+          "area": "Grøn omstilling",
+          "status": "Under udarbejdelse",
+          "requested": 150000,
+          "granted": 0,
+          "deadline": "2026-10-15",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-06",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 2",
+          "area": "Demokratisk deltagelse",
+          "status": "Idé",
+          "requested": 450000,
+          "granted": 0,
+          "deadline": "2026-10-19",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-07",
+          "foundation": "Horisontfonden (demo)",
+          "project": "Unge i handling 3",
+          "area": "Unge og fællesskaber",
+          "status": "Under udarbejdelse",
+          "requested": 75000,
+          "granted": 0,
+          "deadline": "2026-10-20",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-11",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 4",
+          "area": "Grøn omstilling",
+          "status": "Idé",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-10-24",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-12",
+          "foundation": "Morgendagens Fond (demo)",
+          "project": "Stemmer i byen 4",
+          "area": "Demokratisk deltagelse",
+          "status": "Under udarbejdelse",
+          "requested": 450000,
+          "granted": 0,
+          "deadline": "2026-10-25",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-16",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 6",
+          "area": "Unge og fællesskaber",
+          "status": "Idé",
+          "requested": 300000,
+          "granted": 0,
+          "deadline": "2026-11-17",
+          "submitted": null,
+          "owner": "Team A"
+        },
+        {
+          "id": "DEMO-17",
+          "foundation": "Brobyggerpuljen (demo)",
+          "project": "Grønne mødesteder 6",
+          "area": "Grøn omstilling",
+          "status": "Under udarbejdelse",
+          "requested": 375000,
+          "granted": 0,
+          "deadline": "2026-11-18",
+          "submitted": null,
+          "owner": "Team B"
+        },
+        {
+          "id": "DEMO-21",
+          "foundation": "Fælles Fremtid (demo)",
+          "project": "Stemmer i byen 7",
+          "area": "Demokratisk deltagelse",
+          "status": "Idé",
+          "requested": 225000,
+          "granted": 0,
+          "deadline": "2026-11-22",
+          "submitted": null,
+          "owner": "Team C"
+        },
+        {
+          "id": "DEMO-22",
+          "foundation": "Nordlysfonden (demo)",
+          "project": "Unge i handling 8",
+          "area": "Unge og fællesskaber",
+          "status": "Under udarbejdelse",
+          "requested": 300000,
+          "granted": 0,
+          "deadline": "2026-11-23",
+          "submitted": null,
+          "owner": "Team A"
+        }
+      ],
+      "summary": [
+        {
+          "area": "Demokratisk deltagelse",
+          "count": 8,
+          "pipeline": 1800000,
+          "granted": 540000,
+          "due": 2
+        },
+        {
+          "area": "Grøn omstilling",
+          "count": 8,
+          "pipeline": 1425000,
+          "granted": 120000,
+          "due": 2
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "count": 8,
+          "pipeline": 825000,
+          "granted": 300000,
+          "due": 2
+        },
+        {
+          "area": "all",
+          "count": 24,
+          "pipeline": 4050000,
+          "granted": 960000,
+          "due": 6
+        }
+      ],
+      "pipeline": [
+        {
+          "area": "Demokratisk deltagelse",
+          "status": "Idé",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "status": "Under udarbejdelse",
+          "count": 1,
+          "requested": 450000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "status": "Indsendt",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "status": "Bevilget",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "status": "Afslag",
+          "count": 1,
+          "requested": 225000
+        },
+        {
+          "area": "Grøn omstilling",
+          "status": "Idé",
+          "count": 1,
+          "requested": 375000
+        },
+        {
+          "area": "Grøn omstilling",
+          "status": "Under udarbejdelse",
+          "count": 2,
+          "requested": 525000
+        },
+        {
+          "area": "Grøn omstilling",
+          "status": "Indsendt",
+          "count": 2,
+          "requested": 525000
+        },
+        {
+          "area": "Grøn omstilling",
+          "status": "Bevilget",
+          "count": 1,
+          "requested": 150000
+        },
+        {
+          "area": "Grøn omstilling",
+          "status": "Afslag",
+          "count": 2,
+          "requested": 525000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "status": "Idé",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "status": "Under udarbejdelse",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "status": "Indsendt",
+          "count": 1,
+          "requested": 75000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "status": "Bevilget",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "status": "Afslag",
+          "count": 1,
+          "requested": 300000
+        },
+        {
+          "area": "all",
+          "status": "Idé",
+          "count": 5,
+          "requested": 1425000
+        },
+        {
+          "area": "all",
+          "status": "Under udarbejdelse",
+          "count": 5,
+          "requested": 1350000
+        },
+        {
+          "area": "all",
+          "status": "Indsendt",
+          "count": 5,
+          "requested": 1275000
+        },
+        {
+          "area": "all",
+          "status": "Bevilget",
+          "count": 5,
+          "requested": 1200000
+        },
+        {
+          "area": "all",
+          "status": "Afslag",
+          "count": 4,
+          "requested": 1050000
+        }
+      ],
+      "monthly": [
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-01-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-02-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-03-01",
+          "count": 1,
+          "requested": 225000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-04-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-05-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-06-01",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-07-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-08-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-09-01",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "Demokratisk deltagelse",
+          "month": "2026-10-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-01-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-02-01",
+          "count": 1,
+          "requested": 150000
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-03-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-04-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-05-01",
+          "count": 3,
+          "requested": 900000
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-06-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-07-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-08-01",
+          "count": 1,
+          "requested": 150000
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-09-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Grøn omstilling",
+          "month": "2026-10-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-01-01",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-02-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-03-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-04-01",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-05-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-06-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-07-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-08-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-09-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "Unge og fællesskaber",
+          "month": "2026-10-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "all",
+          "month": "2026-01-01",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "all",
+          "month": "2026-02-01",
+          "count": 1,
+          "requested": 150000
+        },
+        {
+          "area": "all",
+          "month": "2026-03-01",
+          "count": 1,
+          "requested": 225000
+        },
+        {
+          "area": "all",
+          "month": "2026-04-01",
+          "count": 2,
+          "requested": 375000
+        },
+        {
+          "area": "all",
+          "month": "2026-05-01",
+          "count": 3,
+          "requested": 900000
+        },
+        {
+          "area": "all",
+          "month": "2026-06-01",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "all",
+          "month": "2026-07-01",
+          "count": 0,
+          "requested": 0
+        },
+        {
+          "area": "all",
+          "month": "2026-08-01",
+          "count": 1,
+          "requested": 150000
+        },
+        {
+          "area": "all",
+          "month": "2026-09-01",
+          "count": 2,
+          "requested": 675000
+        },
+        {
+          "area": "all",
+          "month": "2026-10-01",
+          "count": 0,
+          "requested": 0
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "applications",
+      "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+      "path": "scripts/build_dashboard_demo.mjs",
+      "query": {
+        "engine": "SQLite",
+        "language": "sql",
+        "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')) SELECT * FROM applications",
+        "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+        "tables_used": [
+          "dashboard/demo-applications.json"
+        ],
+        "filters": [
+          "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+        ],
+        "metric_definitions": [
+          "Ansøgninger: antal unikke demo-id’er.",
+          "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+          "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+          "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+          "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+        ]
+      }
+    },
+    {
+      "id": "deadlines",
+      "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+      "path": "scripts/build_dashboard_demo.mjs",
+      "query": {
+        "engine": "SQLite",
+        "language": "sql",
+        "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')) SELECT * FROM applications WHERE status IN ('Idé','Under udarbejdelse') AND deadline >= '2026-10-13'",
+        "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+        "tables_used": [
+          "dashboard/demo-applications.json"
+        ],
+        "filters": [
+          "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+        ],
+        "metric_definitions": [
+          "Ansøgninger: antal unikke demo-id’er.",
+          "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+          "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+          "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+          "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+        ]
+      }
+    },
+    {
+      "id": "summary",
+      "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+      "path": "scripts/build_dashboard_demo.mjs",
+      "query": {
+        "engine": "SQLite",
+        "language": "sql",
+        "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')) SELECT s.area, COUNT(a.id) count, SUM(CASE WHEN status NOT IN ('Bevilget','Afslag') THEN requested ELSE 0 END) pipeline, SUM(granted) granted, SUM(CASE WHEN status IN ('Idé','Under udarbejdelse') AND deadline BETWEEN '2026-10-13' AND '2026-11-12' THEN 1 ELSE 0 END) due FROM scopes s LEFT JOIN applications a ON s.area='all' OR s.area=a.area GROUP BY s.area",
+        "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+        "tables_used": [
+          "dashboard/demo-applications.json"
+        ],
+        "filters": [
+          "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+        ],
+        "metric_definitions": [
+          "Ansøgninger: antal unikke demo-id’er.",
+          "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+          "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+          "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+          "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+        ]
+      }
+    },
+    {
+      "id": "pipeline",
+      "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+      "path": "scripts/build_dashboard_demo.mjs",
+      "query": {
+        "engine": "SQLite",
+        "language": "sql",
+        "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')), stages(status,rank) AS (VALUES ('Idé',0),('Under udarbejdelse',1),('Indsendt',2),('Bevilget',3),('Afslag',4)) SELECT s.area,t.status,COUNT(a.id) count,COALESCE(SUM(a.requested),0) requested FROM scopes s CROSS JOIN stages t LEFT JOIN applications a ON (s.area='all' OR s.area=a.area) AND a.status=t.status GROUP BY s.area,t.status ORDER BY s.area,t.rank",
+        "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+        "tables_used": [
+          "dashboard/demo-applications.json"
+        ],
+        "filters": [
+          "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+        ],
+        "metric_definitions": [
+          "Ansøgninger: antal unikke demo-id’er.",
+          "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+          "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+          "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+          "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+        ]
+      }
+    },
+    {
+      "id": "monthly",
+      "label": "Fiktive fondsansøgninger · demo, 13. okt. 2026",
+      "path": "scripts/build_dashboard_demo.mjs",
+      "query": {
+        "engine": "SQLite",
+        "language": "sql",
+        "sql": "WITH applications AS (SELECT json_extract(value,'$.id') id, json_extract(value,'$.foundation') foundation, json_extract(value,'$.project') project, json_extract(value,'$.area') area, json_extract(value,'$.status') status, json_extract(value,'$.requested') requested, json_extract(value,'$.granted') granted, json_extract(value,'$.deadline') deadline, json_extract(value,'$.submitted') submitted, json_extract(value,'$.owner') owner FROM json_each('[{\"id\":\"DEMO-01\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 1\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-14\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-02\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 1\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-15\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-03\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 1\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-10-16\",\"submitted\":\"2026-03-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-04\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 2\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":300000,\"granted\":240000,\"deadline\":\"2026-10-17\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-05\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 2\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-18\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-06\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 2\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-19\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-07\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 3\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-10-20\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-08\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 3\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-10-21\",\"submitted\":\"2026-08-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-09\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 3\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":225000,\"granted\":180000,\"deadline\":\"2026-10-22\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-10\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 4\",\"area\":\"Unge og fællesskaber\",\"status\":\"Afslag\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-10-23\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-11\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 4\",\"area\":\"Grøn omstilling\",\"status\":\"Idé\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-10-24\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-12\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 4\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Under udarbejdelse\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-10-25\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-13\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 5\",\"area\":\"Unge og fællesskaber\",\"status\":\"Indsendt\",\"requested\":75000,\"granted\":0,\"deadline\":\"2026-11-14\",\"submitted\":\"2026-04-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-14\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 5\",\"area\":\"Grøn omstilling\",\"status\":\"Bevilget\",\"requested\":150000,\"granted\":120000,\"deadline\":\"2026-11-15\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-15\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 5\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Afslag\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-16\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-16\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 6\",\"area\":\"Unge og fællesskaber\",\"status\":\"Idé\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-17\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-17\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 6\",\"area\":\"Grøn omstilling\",\"status\":\"Under udarbejdelse\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-18\",\"submitted\":null,\"owner\":\"Team B\"},{\"id\":\"DEMO-18\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 6\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Indsendt\",\"requested\":450000,\"granted\":0,\"deadline\":\"2026-11-19\",\"submitted\":\"2026-09-10\",\"owner\":\"Team C\"},{\"id\":\"DEMO-19\",\"foundation\":\"Horisontfonden (demo)\",\"project\":\"Unge i handling 7\",\"area\":\"Unge og fællesskaber\",\"status\":\"Bevilget\",\"requested\":75000,\"granted\":60000,\"deadline\":\"2026-11-20\",\"submitted\":\"2026-01-10\",\"owner\":\"Team A\"},{\"id\":\"DEMO-20\",\"foundation\":\"Spirepuljen (demo)\",\"project\":\"Grønne mødesteder 7\",\"area\":\"Grøn omstilling\",\"status\":\"Afslag\",\"requested\":150000,\"granted\":0,\"deadline\":\"2026-11-21\",\"submitted\":\"2026-02-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-21\",\"foundation\":\"Fælles Fremtid (demo)\",\"project\":\"Stemmer i byen 7\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Idé\",\"requested\":225000,\"granted\":0,\"deadline\":\"2026-11-22\",\"submitted\":null,\"owner\":\"Team C\"},{\"id\":\"DEMO-22\",\"foundation\":\"Nordlysfonden (demo)\",\"project\":\"Unge i handling 8\",\"area\":\"Unge og fællesskaber\",\"status\":\"Under udarbejdelse\",\"requested\":300000,\"granted\":0,\"deadline\":\"2026-11-23\",\"submitted\":null,\"owner\":\"Team A\"},{\"id\":\"DEMO-23\",\"foundation\":\"Brobyggerpuljen (demo)\",\"project\":\"Grønne mødesteder 8\",\"area\":\"Grøn omstilling\",\"status\":\"Indsendt\",\"requested\":375000,\"granted\":0,\"deadline\":\"2026-11-24\",\"submitted\":\"2026-05-10\",\"owner\":\"Team B\"},{\"id\":\"DEMO-24\",\"foundation\":\"Morgendagens Fond (demo)\",\"project\":\"Stemmer i byen 8\",\"area\":\"Demokratisk deltagelse\",\"status\":\"Bevilget\",\"requested\":450000,\"granted\":360000,\"deadline\":\"2026-11-25\",\"submitted\":\"2026-06-10\",\"owner\":\"Team C\"}]')), scopes(area) AS (VALUES ('all'), ('Unge og fællesskaber'),('Grøn omstilling'),('Demokratisk deltagelse')), months(month) AS (VALUES ('2026-01-01'),('2026-02-01'),('2026-03-01'),('2026-04-01'),('2026-05-01'),('2026-06-01'),('2026-07-01'),('2026-08-01'),('2026-09-01'),('2026-10-01')) SELECT s.area,m.month,COUNT(a.id) count,COALESCE(SUM(a.requested),0) requested FROM scopes s CROSS JOIN months m LEFT JOIN applications a ON (s.area='all' OR s.area=a.area) AND substr(a.submitted,1,7)=substr(m.month,1,7) GROUP BY s.area,m.month ORDER BY s.area,m.month",
+        "description": "SQL fra scripts/build_dashboard_demo.mjs beregner snapshot fra de indlejrede, deterministisk genererede demoansøgninger.",
+        "tables_used": [
+          "dashboard/demo-applications.json"
+        ],
+        "filters": [
+          "Alle 24 fiktive ansøgninger i 2026. Skæringsdato 13. oktober 2026."
+        ],
+        "metric_definitions": [
+          "Ansøgninger: antal unikke demo-id’er.",
+          "Aktiv pipeline, DKK: sum af ansøgt beløb for Idé, Under udarbejdelse og Indsendt; ikke forventet indtægt.",
+          "Bevilget, DKK: sum af tildelt beløb; ikke udbetalinger.",
+          "Frister næste 30 dage: antal Idé og Under udarbejdelse med frist 13. oktober til og med 12. november 2026.",
+          "Indsendelser pr. måned: antal ansøgninger med indsendelsesdato i måneden; omfatter senere bevillinger og afslag. Oktober vises til skæringsdato."
+        ]
+      }
+    }
+  ]
+}
