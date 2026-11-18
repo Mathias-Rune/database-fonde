@@ -25,6 +25,7 @@ const state = {
   projects: [],
   teamMembers: [],
   projectFolders: [],
+  collapsedFolderIds: new Set(loadJson("fondsdb.collapsedFolderIds", [])),
   workflowStatuses: [],
   selectedProjectId: null,
   auth: { authenticated: false, setupRequired: false, user: null },
@@ -1412,6 +1413,23 @@ function renderProjectList() {
     return entry;
   };
 
+  const addFolderToggle = (group, projectList, folderId, name, index) => {
+    const collapsed = state.collapsedFolderIds.has(folderId);
+    projectList.id = `portfolio-folder-projects-${index}`;
+    projectList.hidden = collapsed;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "project-folder-toggle";
+    toggle.dataset.toggleFolderId = folderId;
+    toggle.dataset.folderName = name;
+    toggle.setAttribute("aria-controls", projectList.id);
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.setAttribute("aria-label", `${collapsed ? "Vis" : "Skjul"} projekter i ${name}`);
+    toggle.title = collapsed ? "Fold mappe ud" : "Fold mappe sammen";
+    toggle.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    group.querySelector(".project-folder-heading").append(toggle);
+  };
+
   const projectsByFolder = new Map();
   state.projects.forEach((project) => {
     const folderId = project.folder_id || "__none__";
@@ -1420,7 +1438,7 @@ function renderProjectList() {
   });
 
   const folders = [...state.projectFolders].sort((a, b) => (Number(a.sort_order) - Number(b.sort_order)) || a.name.localeCompare(b.name, "da"));
-  folders.forEach((folder) => {
+  folders.forEach((folder, index) => {
     const projects = projectsByFolder.get(folder.folder_id) || [];
     const group = document.createElement("section");
     group.className = "project-folder-group";
@@ -1432,6 +1450,7 @@ function renderProjectList() {
     } else {
       projectList.innerHTML = `<div class="project-folder-empty">Ingen projekter i mappen endnu.</div>`;
     }
+    addFolderToggle(group, projectList, folder.folder_id, folder.name, index);
     group.append(projectList);
     els.projectList.append(group);
     projectsByFolder.delete(folder.folder_id);
@@ -1445,6 +1464,7 @@ function renderProjectList() {
     const projectList = document.createElement("div");
     projectList.className = "project-folder-projects";
     withoutFolder.forEach((project) => projectList.append(renderProjectButton(project)));
+    addFolderToggle(group, projectList, "__none__", "Uden mappe", folders.length);
     group.append(projectList);
     els.projectList.append(group);
   }
@@ -2160,6 +2180,19 @@ async function init() {
   els.projectCreateForm.elements.program_id.addEventListener("change", () => updateApplicationDeadlineOptions(els.projectCreateForm));
 
   els.projectList.addEventListener("click", (event) => {
+    const folderToggle = event.target.closest("[data-toggle-folder-id]");
+    if (folderToggle) {
+      const folderId = folderToggle.dataset.toggleFolderId;
+      const collapsed = !state.collapsedFolderIds.has(folderId);
+      if (collapsed) state.collapsedFolderIds.add(folderId);
+      else state.collapsedFolderIds.delete(folderId);
+      document.getElementById(folderToggle.getAttribute("aria-controls")).hidden = collapsed;
+      folderToggle.setAttribute("aria-expanded", String(!collapsed));
+      folderToggle.setAttribute("aria-label", `${collapsed ? "Vis" : "Skjul"} projekter i ${folderToggle.dataset.folderName}`);
+      folderToggle.title = collapsed ? "Fold mappe ud" : "Fold mappe sammen";
+      try { saveJson("fondsdb.collapsedFolderIds", [...state.collapsedFolderIds]); } catch { /* Keep the toggle usable when browser storage is unavailable. */ }
+      return;
+    }
     const projectEditButton = event.target.closest("[data-edit-project-id]");
     if (projectEditButton) {
       openPortfolioProjectEditor(projectEditButton.dataset.editProjectId);
